@@ -1,4 +1,11 @@
 <resources>
     <string name="app_name">FiveTV</string>
     <string name="service_description">FiveTV is running ...</string>
+    <string name="login_with_device_id">Login With Device ID</string>
+    <string name="login_with_username">Login With Username</string>
+    <string name="username_hint">username</string>
+    <string name="password_hint">password</string>
+    <string name="login">Login</string>
+    <string name="login_submit">Access</string>
+    <string name="login_error">login error</string>
 </resources>
