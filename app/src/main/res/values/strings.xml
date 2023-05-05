@@ -8,4 +8,8 @@
     <string name="login">Login</string>
     <string name="login_submit">Access</string>
     <string name="login_error">login error</string>
+    <string name="username_cannot_blank">Username can not be blank!</string>
+    <string name="username_too_short">Username must include at least %1$d characters or numbers!</string>
+    <string name="password_cannot_blank">Password can not be blank!</string>
+    <string name="password_too_short">Password must include at least %1$d characters or numbers!</string>
 </resources>
