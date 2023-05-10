@@ -227,7 +227,7 @@ public class SopApplication extends Application implements InvocationHandler {
         File rootDir = new File(Environment.getExternalStorageDirectory().getPath());
         if (rootDir.exists())
             rootDir.mkdirs();
-        okhttp3.Cache cache = new okhttp3.Cache(rootDir, 52428800L, FileSystem.SYSTEM); //r3
+        okhttp3.Cache cache = new okhttp3.Cache(rootDir, 52428800L); //r3
         return new OkHttpClient.Builder()
                 .sslSocketFactory(sslContext.getSocketFactory())
                 .hostnameVerifier(verifier)
