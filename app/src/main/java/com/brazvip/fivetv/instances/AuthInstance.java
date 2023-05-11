@@ -103,4 +103,52 @@ public class AuthInstance {
     private static void onLoginFail() {
         PrefUtils.Toast("Login server no response, retry later!");
     }
+
+    public enum API_TYPE {
+        AUTH,
+        CHANNEL,
+        VOD_CHANNEL,
+        EPG,
+        UPDATE,
+        MESSAGE
+    }
+
+    public static String addApiToken(String baseUrl) {
+        if (baseUrl == null || baseUrl.equals("")) {
+            return "";
+        }
+        if (baseUrl.indexOf("?") > 0) {
+            return (baseUrl + "&t=" + mAuthInfo.service.token);
+        }
+        return (baseUrl + "?t=" + mAuthInfo.service.token);
+    }
+
+    public static String getApiUrl(API_TYPE type) {
+        AuthInfo authInfo = mAuthInfo;
+        String url = "";
+        if (authInfo != null && authInfo.service != null) {
+            switch (type) {
+                case AUTH:
+                    url = mAuthInfo.service.auth_url;
+                    break;
+                case CHANNEL:
+                    url = addApiToken(mAuthInfo.service.ch_url);
+                    break;
+                case VOD_CHANNEL:
+                    url = addApiToken(mAuthInfo.service.vod_url);
+                    break;
+                case EPG:
+                    url = addApiToken(mAuthInfo.service.epg_url);
+                    break;
+                case UPDATE:
+                    url = addApiToken(mAuthInfo.service.update_url);
+                    break;
+                case MESSAGE:
+                    url = addApiToken(mAuthInfo.service.message_url);
+                    break;
+            }
+            return url;
+        }
+        return "";
+    }
 }
