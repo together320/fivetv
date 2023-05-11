@@ -6,12 +6,15 @@ import android.os.Message;
 import com.alibaba.fastjson.JSON;
 import com.brazvip.fivetv.Constant;
 import com.brazvip.fivetv.beans.AuthInfo;
+import com.brazvip.fivetv.beans.ChannelBean;
 import com.brazvip.fivetv.utils.PrefUtils;
 import com.lzy.okgo.callback.StringCallback;
 import com.lzy.okgo.model.HttpParams;
 import com.lzy.okgo.model.Response;
 import com.lzy.okgo.request.GetRequest;
 import com.lzy.okgo.request.PostRequest;
+
+import java.util.List;
 
 public class ChannelInstance {
     private static Handler mMsgHandler = null;
@@ -53,13 +56,21 @@ public class ChannelInstance {
         ).start();
     }
 
+    public static void parseJson(String text) {
+        List<ChannelBean> result = JSON.parseArray(text, ChannelBean.class);
+    }
+
     private static void asyncParseChannels(String result) {
-        try {
-
-        }
-        catch (Exception e) {
-
-        }
+        new Thread() {
+            @Override
+            public void run() {
+                try {
+                    ChannelInstance.parseJson(result);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        }.start();
     }
 
     private static void onFail() {
