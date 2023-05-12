@@ -58,6 +58,10 @@ public class ChannelInstance {
 
     public static void parseJson(String text) {
         List<ChannelBean> result = JSON.parseArray(text, ChannelBean.class);
+
+        Message msg = new Message();
+        msg.what = Constant.MSG_LOADED;
+        mMsgHandler.sendMessage(msg);
     }
 
     private static void asyncParseChannels(String result) {
