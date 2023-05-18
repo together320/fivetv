@@ -5,8 +5,11 @@ import android.os.Message;
 
 import com.alibaba.fastjson.JSON;
 import com.brazvip.fivetv.Constant;
+import com.brazvip.fivetv.R;
+import com.brazvip.fivetv.SopApplication;
 import com.brazvip.fivetv.beans.AuthInfo;
 import com.brazvip.fivetv.beans.ChannelBean;
+import com.brazvip.fivetv.beans.Group;
 import com.brazvip.fivetv.utils.PrefUtils;
 import com.lzy.okgo.callback.StringCallback;
 import com.lzy.okgo.model.HttpParams;
@@ -14,12 +17,16 @@ import com.lzy.okgo.model.Response;
 import com.lzy.okgo.request.GetRequest;
 import com.lzy.okgo.request.PostRequest;
 
+import java.util.HashMap;
 import java.util.List;
 
 public class ChannelInstance {
     private static Handler mMsgHandler = null;
 
     private static String mCacheKey = "ChannelInstance";
+
+    public static volatile HashMap<Integer, Group> mGroups;
+    public static volatile List<ChannelBean> mChannels;
 
     public static void Refresh(Handler msgHandler) {
         mMsgHandler = msgHandler;
@@ -57,7 +64,35 @@ public class ChannelInstance {
     }
 
     public static void parseJson(String text) {
-        List<ChannelBean> result = JSON.parseArray(text, ChannelBean.class);
+        mGroups = new HashMap<>();
+        mChannels = JSON.parseArray(text, ChannelBean.class);
+
+        Group a = new Group();
+        a.name = SopApplication.getAppContext().getString(R.string.Favorites);
+        a.id = Constant.GROUP_FAVORITE;
+        a.type = 0;
+        mGroups.put(a.id, a);
+
+        a = new Group();
+        a.name = SopApplication.getAppContext().getString(R.string.All_A_Z);
+        a.id = Constant.GROUP_ALL;
+        a.type = 0;
+        mGroups.put(a.id, a);
+
+        for (ChannelBean channel : mChannels) {
+            List<ChannelBean.TagsBean> tags = channel.getTags();
+
+            for (ChannelBean.TagsBean tag : tags) {
+                if (mGroups.get(tag.getId()) == null) {
+                    a = new Group();
+                    a.name = tag.getName().getInit();
+                    a.id = tag.getId();
+                    a.type = tag.getType();
+                    a.restrictedAccess = tag.isRestrictedAccess();
+                    mGroups.put(tag.getId(), a);
+                }
+            }
+        }
 
         Message msg = new Message();
         msg.what = Constant.MSG_LOADED;

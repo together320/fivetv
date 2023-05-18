@@ -12,11 +12,13 @@ import android.widget.Button;
 import android.widget.FrameLayout;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
+import android.widget.RelativeLayout;
 
 import com.brazvip.fivetv.instances.AuthInstance;
 import com.brazvip.fivetv.instances.ChannelInstance;
 import com.brazvip.fivetv.instances.EPGInstance;
 import com.brazvip.fivetv.instances.VodChannelInstance;
+import com.brazvip.fivetv.layouts.MenuLayout;
 import com.brazvip.fivetv.utils.PrefUtils;
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
@@ -40,6 +42,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     private FrameLayout mLoadingLayout;
     private FrameLayout mPlayerLayout;
+    private MenuLayout mMenuLayout;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -49,8 +52,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         initComponents();
         initMessageHandler();
 
-        //EPGInstance.Refresh(mMsgHandler);
-        ChannelInstance.Refresh(mMsgHandler);
+        EPGInstance.Refresh(mMsgHandler);
+        //ChannelInstance.Refresh(mMsgHandler);
         //VodChannelInstance.Refresh(mMsgHandler);
     }
 
@@ -64,6 +67,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         mLoadingLayout = (FrameLayout)findViewById(R.id.loading_layout);
         mPlayerLayout = (FrameLayout)findViewById(R.id.play_layout);
+        mMenuLayout = (MenuLayout) findViewById(R.id.menu_layout);
 
         mRadioDashboard.setOnFocusChangeListener(new View.OnFocusChangeListener() {
             @Override
@@ -112,6 +116,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private void refreshFragment(FRAGMENT frag) {
         mPlayerLayout.setVisibility(View.GONE);
         mLoadingLayout.setVisibility(View.GONE);
+        mMenuLayout.setVisibility(View.GONE);
 
         mRadioGroup.setVisibility(View.VISIBLE);
 
@@ -119,11 +124,13 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             case DASHBOARD:
                 mRadioGroup.check(R.id.rb_dashboard);
                 break;
-            case VOD:
-                mRadioGroup.check(R.id.rb_vod);
-                break;
             case LIVE:
                 mRadioGroup.check(R.id.rb_live);
+                mMenuLayout.setVisibility(View.VISIBLE);
+                mMenuLayout.loadGroup();
+                break;
+            case VOD:
+                mRadioGroup.check(R.id.rb_vod);
                 break;
             case HISTORY:
                 mRadioGroup.check(R.id.rb_history);

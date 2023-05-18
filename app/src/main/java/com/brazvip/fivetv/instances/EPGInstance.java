@@ -25,7 +25,7 @@ import java.util.Locale;
 
 public class EPGInstance {
     private static Handler mMsgHandler = null;
-    public static SimpleDateFormat TIME_FORMAT = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ", Locale.getDefault());
+    public static volatile List<EpgBeans> mEpgs;
 
     private static String mCacheKey = "EPGInstance";
 
@@ -65,7 +65,11 @@ public class EPGInstance {
     }
 
     public static void parseJson(String text) {
-        List<EpgBeans> result = JSON.parseArray(text, EpgBeans.class);
+        mEpgs = JSON.parseArray(text, EpgBeans.class);
+
+        Message msg = new Message();
+        msg.what = Constant.MSG_LOADED;
+        mMsgHandler.sendMessage(msg);
     }
 
     private static void asyncParseEpgs(String result) {

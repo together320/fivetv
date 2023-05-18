@@ -12,4 +12,6 @@
     <string name="username_too_short">Username must include at least %1$d characters or numbers!</string>
     <string name="password_cannot_blank">Password can not be blank!</string>
     <string name="password_too_short">Password must include at least %1$d characters or numbers!</string>
+    <string name="All_A_Z">All: A-Z</string>
+    <string name="Favorites">★ Favorites</string>
 </resources>
