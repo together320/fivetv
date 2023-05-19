@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content">
+
+    <RelativeLayout
+        android:layout_width="600px"
+        android:layout_height="135px"
+        android:gravity="center_vertical">
+
+        <TextView
+            android:id="@+id/epg_item_name"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="30px"
+            android:ellipsize="marquee"
+            android:maxWidth="480px"
+            android:singleLine="true"
+            android:textColor="#fff"
+            android:textSize="40px" />
+
+        <TextView
+            android:id="@+id/epg_item_time"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/epg_item_name"
+            android:layout_marginStart="30px"
+            android:layout_marginTop="7px"
+            android:textColor="@color/channel_epg_sub_txt"
+            android:textSize="32px" />
+    </RelativeLayout>
+
+    <ImageView
+        android:id="@+id/epg_item_icon"
+        android:layout_width="72px"
+        android:layout_height="36px"
+        android:layout_alignParentEnd="true"
+        android:layout_marginTop="24px"
+        android:layout_marginEnd="10px"
+        android:src="@mipmap/live"
+        android:visibility="gone" />
+</RelativeLayout>
