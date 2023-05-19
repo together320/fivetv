@@ -15,7 +15,10 @@
 
         <include layout="@layout/loading_layout" />
 
-        <include layout="@layout/player_layout" />
+        <com.brazvip.fivetv.layouts.PlayerLayout
+            android:id="@+id/player_layout"
+            android:layout_width="wrap_content"
+            android:layout_height="fill_parent" />
 
         <LinearLayout
             android:layout_width="fill_parent"

@@ -5,6 +5,7 @@ import android.os.Message;
 
 import com.alibaba.fastjson.JSON;
 import com.brazvip.fivetv.Constant;
+import com.brazvip.fivetv.MainActivity;
 import com.brazvip.fivetv.R;
 import com.brazvip.fivetv.SopApplication;
 import com.brazvip.fivetv.beans.AuthInfo;
@@ -21,16 +22,13 @@ import java.util.HashMap;
 import java.util.List;
 
 public class ChannelInstance {
-    private static Handler mMsgHandler = null;
 
     private static String mCacheKey = "ChannelInstance";
 
     public static volatile HashMap<Integer, Group> mGroups;
     public static volatile List<ChannelBean> mChannels;
 
-    public static void Refresh(Handler msgHandler) {
-        mMsgHandler = msgHandler;
-
+    public static void Refresh() {
         final String url = AuthInstance.getApiUrl(AuthInstance.API_TYPE.CHANNEL);
 
         new Thread(new Runnable() {
@@ -95,8 +93,8 @@ public class ChannelInstance {
         }
 
         Message msg = new Message();
-        msg.what = Constant.MSG_LOADED;
-        mMsgHandler.sendMessage(msg);
+        msg.what = Constant.MSG_CHANNEL_LOADED;
+        MainActivity.SendMessage(msg);
     }
 
     private static void asyncParseChannels(String result) {

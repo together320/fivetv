@@ -19,6 +19,7 @@ import com.brazvip.fivetv.instances.ChannelInstance;
 import com.brazvip.fivetv.instances.EPGInstance;
 import com.brazvip.fivetv.instances.VodChannelInstance;
 import com.brazvip.fivetv.layouts.MenuLayout;
+import com.brazvip.fivetv.layouts.PlayerLayout;
 import com.brazvip.fivetv.utils.PrefUtils;
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
@@ -29,6 +30,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         HISTORY,
         SETTING,
         LOADING,
+        PLAYER,
         PROFILE
     }
     public static Handler mMsgHandler = null;
@@ -41,8 +43,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private RadioButton mRadioSetting = null;
 
     private FrameLayout mLoadingLayout;
-    private FrameLayout mPlayerLayout;
+    private PlayerLayout mPlayerLayout;
     private MenuLayout mMenuLayout;
+
+    private int mLoaded = 0;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -52,9 +56,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         initComponents();
         initMessageHandler();
 
-        EPGInstance.Refresh(mMsgHandler);
-        //ChannelInstance.Refresh(mMsgHandler);
-        //VodChannelInstance.Refresh(mMsgHandler);
+        EPGInstance.Refresh();
+        ChannelInstance.Refresh();
+        //VodChannelInstance.Refresh();
     }
 
     private void initComponents() {
@@ -66,7 +70,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         mRadioSetting = (RadioButton)findViewById(R.id.rb_setting);
 
         mLoadingLayout = (FrameLayout)findViewById(R.id.loading_layout);
-        mPlayerLayout = (FrameLayout)findViewById(R.id.play_layout);
+        mPlayerLayout = (PlayerLayout)findViewById(R.id.player_layout);
         mMenuLayout = (MenuLayout) findViewById(R.id.menu_layout);
 
         mRadioDashboard.setOnFocusChangeListener(new View.OnFocusChangeListener() {
@@ -89,7 +93,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             @Override
             public void onFocusChange(View v, boolean hasFocus) {
                 if (hasFocus) {
-                    refreshFragment(FRAGMENT.VOD);
+                    //refreshFragment(FRAGMENT.VOD);
+                    refreshFragment(FRAGMENT.PLAYER);
+                    PlayTvBus("tvbus://48oy4PGg4QdmmLuVQWuymx4bnENaUrqMX1BsMKD5E5qB8e9iP1");
                 }
             }
         });
@@ -142,6 +148,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 mRadioGroup.setVisibility(View.GONE);
                 mLoadingLayout.setVisibility(View.VISIBLE);
                 break;
+            case PLAYER:
+                mRadioGroup.setVisibility(View.GONE);
+                mPlayerLayout.setVisibility(View.VISIBLE);
+                break;
             case PROFILE:
                 break;
         }
@@ -152,13 +162,27 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             @Override // android.os.Handler
             public void handleMessage(Message message) {
                 switch (message.what) {
-                    case Constant.MSG_LOADED:
-                        refreshFragment(FRAGMENT.DASHBOARD);
+                    case Constant.MSG_CHANNEL_LOADED:
+                        mLoaded |= 0b001;
+                        checkLoaded();
+                        break;
+                    case Constant.MSG_EPG_LOADED:
+                        mLoaded |= 0b010;
+                        checkLoaded();
+                        break;
+                    case Constant.MSG_PLAYER_LOADED:
+                        mLoaded |= 0b100;
+                        checkLoaded();
                         break;
                 }
                 super.handleMessage(message);
             }
         };
+    }
+
+    private void checkLoaded() {
+        if (mLoaded == 0b111)
+            refreshFragment(FRAGMENT.DASHBOARD);
     }
 
     @Override
@@ -173,4 +197,13 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         startActivity(new Intent(MainActivity.this, LoginActivity.class));
         finish();
     }
+
+    public void PlayTvBus(String url) {
+        mPlayerLayout.startChannel(url);
+    }
+
+    public static void SendMessage(Message msg) {
+        mMsgHandler.sendMessage(msg);
+    }
+
 }

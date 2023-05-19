@@ -6,6 +6,7 @@ import android.os.Message;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONReader;
 import com.brazvip.fivetv.Constant;
+import com.brazvip.fivetv.MainActivity;
 import com.brazvip.fivetv.beans.AuthInfo;
 import com.brazvip.fivetv.beans.ChannelBean;
 import com.brazvip.fivetv.beans.EpgBeans;
@@ -24,14 +25,11 @@ import java.util.List;
 import java.util.Locale;
 
 public class EPGInstance {
-    private static Handler mMsgHandler = null;
     public static volatile List<EpgBeans> mEpgs;
 
     private static String mCacheKey = "EPGInstance";
 
-    public static void Refresh(Handler msgHandler) {
-        mMsgHandler = msgHandler;
-
+    public static void Refresh() {
         final String url = AuthInstance.getApiUrl(AuthInstance.API_TYPE.EPG);
 
         new Thread(new Runnable() {
@@ -68,8 +66,8 @@ public class EPGInstance {
         mEpgs = JSON.parseArray(text, EpgBeans.class);
 
         Message msg = new Message();
-        msg.what = Constant.MSG_LOADED;
-        mMsgHandler.sendMessage(msg);
+        msg.what = Constant.MSG_EPG_LOADED;
+        MainActivity.SendMessage(msg);
     }
 
     private static void asyncParseEpgs(String result) {
