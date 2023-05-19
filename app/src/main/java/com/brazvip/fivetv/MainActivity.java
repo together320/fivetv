@@ -53,7 +53,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         initMessageHandler();
 
         EPGInstance.Refresh(mMsgHandler);
-        //ChannelInstance.Refresh(mMsgHandler);
+        ChannelInstance.Refresh(mMsgHandler);
         //VodChannelInstance.Refresh(mMsgHandler);
     }
 
