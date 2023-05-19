@@ -17,13 +17,10 @@ import com.lzy.okgo.request.PostRequest;
 import java.util.List;
 
 public class VodChannelInstance {
-    private static Handler mMsgHandler = null;
 
     private static String mCacheKey = "VodChannelInstance";
 
-    public static void Refresh(Handler msgHandler) {
-        mMsgHandler = msgHandler;
-
+    public static void Refresh() {
         final String url = AuthInstance.getApiUrl(AuthInstance.API_TYPE.VOD_CHANNEL);
 
         new Thread(new Runnable() {
