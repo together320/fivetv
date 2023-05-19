@@ -16,6 +16,7 @@ import android.widget.ListView;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
 import android.widget.RelativeLayout;
+import android.widget.TextView;
 
 import com.brazvip.fivetv.Constant;
 import com.brazvip.fivetv.MainActivity;
@@ -79,7 +80,6 @@ public class PlayerLayout extends FrameLayout {
 
         initComponents();
         initExoPlayer();
-        initTVCore();
     }
 
     private void initComponents() {
@@ -118,14 +118,21 @@ public class PlayerLayout extends FrameLayout {
         playerView.setPlayer(player);
     }
 
-    private void initTVCore() {
+    public void initTVCore() {
+        if (mTVCore != null)
+            return;
+
         mTVCore = TVCore.getInstance();
         if (mTVCore == null)
             return;
         mTVCore.setMKBroker(AuthInstance.mAuthInfo.service.mk_broker);
         mTVCore.setAuthUrl(AuthInstance.mAuthInfo.service.auth_url_sdk);
-        mTVCore.setUsername(PrefUtils.getPrefString("username", ""));
-        mTVCore.setPassword(PrefUtils.getPrefString("password", ""));
+        String username = PrefUtils.getPrefString("username", "");
+        String password = PrefUtils.getPrefString("password", "");
+        if (!username.contains("@"))
+            username += Constant.DEFAULT_MAIL_SUFFIX;
+        mTVCore.setUsername(username);
+        mTVCore.setPassword(password);
 
         mTVCore.setTVListener(new TVListener() {
             @Override

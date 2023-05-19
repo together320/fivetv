@@ -95,7 +95,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 if (hasFocus) {
                     //refreshFragment(FRAGMENT.VOD);
                     refreshFragment(FRAGMENT.PLAYER);
-                    PlayTvBus("tvbus://48oy4PGg4QdmmLuVQWuymx4bnENaUrqMX1BsMKD5E5qB8e9iP1");
+                    PlayTvBus("tvbus://3KyG8wJTw9VYdGUvJ8BcuekdoesMMWmDfKs6ovtTTcxePf74kx");
                 }
             }
         });
@@ -181,7 +181,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
 
     private void checkLoaded() {
-        if (mLoaded == 0b111)
+        if (mLoaded == 0b011)
+            mPlayerLayout.initTVCore();
+        else if (mLoaded == 0b111)
             refreshFragment(FRAGMENT.DASHBOARD);
     }
 
