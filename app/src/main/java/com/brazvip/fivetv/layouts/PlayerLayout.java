@@ -28,6 +28,7 @@ import com.brazvip.fivetv.beans.Group;
 import com.brazvip.fivetv.instances.AuthInstance;
 import com.brazvip.fivetv.instances.ChannelInstance;
 import com.brazvip.fivetv.instances.EPGInstance;
+import com.brazvip.fivetv.utils.BsConf;
 import com.brazvip.fivetv.utils.PrefUtils;
 import com.google.android.exoplayer2.DefaultLoadControl;
 import com.google.android.exoplayer2.LoadControl;
@@ -52,7 +53,13 @@ import java.util.List;
 public class PlayerLayout extends FrameLayout {
     public static TVCore mTVCore = null;
 
+    private TextView mProgramNameText = null;
+    private TextView mCurrentTimeText = null;
+    private TextView mDurationTimeText = null;
+    private TextView mDlRateText = null;
+
     private int mBuffer;
+    private int mDlRate;
     private int mTmPlayerConn;
     private long mMPCheckTime = 0;
     private static String playbackUrl;
@@ -83,7 +90,10 @@ public class PlayerLayout extends FrameLayout {
     }
 
     private void initComponents() {
-
+        mProgramNameText = findViewById(R.id.program_name);
+        mCurrentTimeText = findViewById(R.id.player_current_time);
+        mDurationTimeText = findViewById(R.id.player_duration_time);
+        mDlRateText = findViewById(R.id.dl_rate);
     }
 
     private void initExoPlayer() {
@@ -212,6 +222,14 @@ public class PlayerLayout extends FrameLayout {
             case "onInfo":
                 mTmPlayerConn = jsonObj.optInt("hls_last_conn", 0);
                 mBuffer = jsonObj.optInt("buffer", 0);
+                mDlRate = jsonObj.optInt("download_rate", 0);
+
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        mDlRateText.setText(PrefUtils.m2251a(mDlRate));
+                    }
+                });
 
                 statusMessage = "" + mBuffer + "  "
                         + jsonObj.optInt("download_rate", 0) * 8 / 1000 +"K";
@@ -229,12 +247,29 @@ public class PlayerLayout extends FrameLayout {
         return true;
     }
 
-    public void startChannel(String address) {
+    public void startChannel(String videoUrl, String videoName, BsConf.BS_MODE bsMode) {
         stopPlayback();
         mMPCheckTime = Long.MAX_VALUE;
         mTmPlayerConn = mBuffer = 0;
 
-        mTVCore.start(address);
+        if (bsMode == BsConf.BS_MODE.BSPALYBACK) {
+            mCurrentTimeText.setText("00:00");
+            mDurationTimeText.setText("00:00");
+            videoName = SopApplication.getAppContext().getString(R.string.video_play_back) + ": " + videoName;
+        } else if (bsMode == BsConf.BS_MODE.BSVOD) {
+            mCurrentTimeText.setText("00:00");
+            mDurationTimeText.setText("00:00");
+            videoName = SopApplication.getAppContext().getString(R.string.video_vod) + ": " + videoName;
+        } else if (bsMode == BsConf.BS_MODE.BSLIVE) {
+            mCurrentTimeText.setText(R.string.buffer);
+            mDurationTimeText.setText("0/100");
+            videoName = SopApplication.getAppContext().getString(R.string.video_live) + ": " + videoName;
+        } else if (bsMode == BsConf.BS_MODE.STATIC) {
+            videoName = SopApplication.getAppContext().getString(R.string.video_vod) + ": " + videoName;
+        }
+
+        mTVCore.start(videoUrl);
+        mProgramNameText.setText(videoName);
     }
 
     // player related

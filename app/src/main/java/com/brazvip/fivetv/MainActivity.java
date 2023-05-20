@@ -21,6 +21,7 @@ import com.brazvip.fivetv.instances.EPGInstance;
 import com.brazvip.fivetv.instances.VodChannelInstance;
 import com.brazvip.fivetv.layouts.MenuLayout;
 import com.brazvip.fivetv.layouts.PlayerLayout;
+import com.brazvip.fivetv.utils.BsConf;
 import com.brazvip.fivetv.utils.PrefUtils;
 
 import com.zhy.autolayout.AutoLayoutActivity;
@@ -237,10 +238,10 @@ public class MainActivity extends AutoLayoutActivity implements View.OnClickList
         refreshFragment(FRAGMENT.PLAYER);
 
         String videoURL = bundle.getString("url");
-        //String videoName = bundle.getString("name");
-        //this.mBsMode = BsConf.BS_MODE.valueOf(bundle.getString("type"));
+        String videoName = bundle.getString("name");
+        BsConf.BS_MODE bsMode = BsConf.BS_MODE.valueOf(bundle.getString("type"));
 
-        mPlayerLayout.startChannel(videoURL);
+        mPlayerLayout.startChannel(videoURL, videoName, bsMode);
     }
 
     public static void SendMessage(Message msg) {
