@@ -5,9 +5,9 @@
     android:layout_height="wrap_content">
 
     <RelativeLayout
-        android:layout_width="240px"
-        android:layout_height="80px"
-        android:minHeight="80px"
+        android:layout_width="350px"
+        android:layout_height="134px"
+        android:minHeight="134px"
         app:layout_auto_basewidth="height">
 
         <ImageView
@@ -24,6 +24,6 @@
             android:ellipsize="marquee"
             android:singleLine="true"
             android:textColor="#fff"
-            android:textSize="30px" />
+            android:textSize="40px" />
     </RelativeLayout>
 </RelativeLayout>

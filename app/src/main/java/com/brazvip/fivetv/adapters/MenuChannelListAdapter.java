@@ -19,6 +19,7 @@ import com.brazvip.fivetv.instances.ChannelInstance;
 import com.brazvip.fivetv.instances.EPGInstance;
 import com.brazvip.fivetv.layouts.MenuLayout;
 
+import com.brazvip.fivetv.utils.RestApiUtils;
 import com.zhy.autolayout.attr.Attrs;
 import com.zhy.autolayout.attr.AutoAttr;
 import com.zhy.autolayout.utils.AutoUtils;
@@ -37,19 +38,19 @@ public class MenuChannelListAdapter extends BaseAdapter {
     public static int f13521a;
 
     /* renamed from: b */
-    public int f13522b;
+    public int mID;
 
     /* renamed from: c */
-    public List<ChannelBean> f13523c;
+    public List<ChannelBean> mList;
 
     /* renamed from: d */
-    public List<Integer> f13524d;
+    public List<Integer> mArrayList;
 
     /* renamed from: e */
-    public Context f13525e;
+    public Context mContext;
 
     /* renamed from: f */
-    public ListView f13526f;
+    public ListView mListView;
 
     /* renamed from: g */
     public View.OnTouchListener f13527g = new View.OnTouchListener() { //View$OnTouchListenerC3475d
@@ -62,35 +63,35 @@ public class MenuChannelListAdapter extends BaseAdapter {
     };
 
     public MenuChannelListAdapter(int i, List<ChannelBean> list, Context context, ListView listView) {
-        this.f13522b = i;
-        this.f13523c = list;
+        this.mID = i;
+        this.mList = list;
         if (i == -4) {
-            //String log = "loadChannelData,A_Z sorted, size:" + f13523c.size();
-            Collections.sort(this.f13523c, new Comparator<ChannelBean>() { //C3474c, e.b.a.a.c
+            //String log = "loadChannelData,A_Z sorted, size:" + mList.size();
+            Collections.sort(this.mList, new Comparator<ChannelBean>() { //C3474c, e.b.a.a.c
                 @Override
                 public int compare(ChannelBean o1, ChannelBean o2) {
                     return o1.getName().getInit().compareTo(o2.getName().getInit()) >= 0 ? 1 : -1;
                 }
             });
         }
-        this.f13526f = listView;
-        this.f13524d = new ArrayList<>();
-        this.f13525e = context;
+        this.mListView = listView;
+        this.mArrayList = new ArrayList<>();
+        this.mContext = context;
     }
 
     /* renamed from: a */
     public boolean m2502a(int i) {
-        return f13524d.contains(Integer.valueOf(i));
+        return mArrayList.contains(Integer.valueOf(i));
     }
 
     @Override // android.widget.Adapter
     public int getCount() {
-        return this.f13523c.size();
+        return this.mList.size();
     }
 
     @Override // android.widget.Adapter
     public Object getItem(int position) {
-        return f13523c.get(position);
+        return mList.get(position);
     }
 
     @Override // android.widget.Adapter
@@ -104,32 +105,32 @@ public class MenuChannelListAdapter extends BaseAdapter {
             convertView = View.inflate(parent.getContext(), R.layout.channel_item, null);
             AutoUtils.auto(convertView, Attrs.WIDTH | Attrs.HEIGHT, AutoAttr.BASE_DEFAULT);
         }
-        ChannelBean channel = f13523c.get(position);
+        ChannelBean channel = mList.get(position);
         TextView tvName = (TextView) convertView.findViewById(R.id.channel_name);
         String name = channel.getName().getInit();
-        if (this.f13522b != -4 && channel.getSid() > 0) {
+        if (this.mID != -4 && channel.getSid() > 0) {
             name = channel.getSid() + "." + name;
         }
         TextView tvProgram = (TextView) convertView.findViewById(R.id.program_item);
-        //if (BSChannel.f13643f.contains("" + channel.getChid())) {
-        //    tvName.setText("★ " + name);
-        //} else {
+        if (ChannelInstance.mFavoriteChannels.contains("" + channel.getChid())) {
+            tvName.setText("★ " + name);
+        } else {
             tvName.setText(name);
-        //}
-        //String programId = BSEPG.getNameById(channel.getEpgSameAs() > 0 ? channel.getEpgSameAs() : channel.getChid());
+        }
+        //String programId = EPGInstance.getNameById(channel.getEpgSameAs() > 0 ? channel.getEpgSameAs() : channel.getChid());
         int epg = channel.getEpgSameAs();
         if (epg < 1) epg = channel.getChid();
-//        String programId = BSEPG.getNameById(epg);
-//        if (programId.equals("")) {
-//            tvProgram.setVisibility(View.GONE);
-//        } else {
-//            tvProgram.setVisibility(View.VISIBLE);
-//            tvProgram.setText(programId);
-//        }
-//        convertView.setTag(channel);
-//        if (RestApiUtils.f13760y) {
-//            convertView.setOnTouchListener(f13527g);
-//        }
+        String programId = EPGInstance.getNameById(epg);
+        if (programId.equals("")) {
+            tvProgram.setVisibility(View.GONE);
+        } else {
+            tvProgram.setVisibility(View.VISIBLE);
+            tvProgram.setText(programId);
+        }
+        convertView.setTag(channel);
+        if (RestApiUtils.f13760y) {
+            convertView.setOnTouchListener(f13527g);
+        }
         ImageView ivStarted = (ImageView) convertView.findViewById(R.id.channel_started);
         if (channel.getChid() == f13521a) {
             ivStarted.setVisibility(View.VISIBLE);
