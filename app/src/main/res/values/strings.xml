@@ -28,4 +28,8 @@
     <string name="remove_fav">remove favorites!</string>
     <string name="Fav_channel">Long press channel to favorite it!</string>
     <string name="Favorites_live">★ Favorites</string>
+    <string name="video_live">Live</string>
+    <string name="video_play_back">Playback</string>
+    <string name="video_vod">VOD</string>
+    <string name="buffer">Buffer</string>
 </resources>
