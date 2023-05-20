@@ -40,6 +40,13 @@
             android:screenOrientation="landscape"
             android:theme="@style/ThemeBg" />
 
+        <meta-data
+            android:name="design_width"
+            android:value="1920" />
+        <meta-data
+            android:name="design_height"
+            android:value="1080" />
+
         <service
             android:name="com.tvbus.engine.TVService"
             android:exported="true" />

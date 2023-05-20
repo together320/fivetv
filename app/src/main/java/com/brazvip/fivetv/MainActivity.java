@@ -48,6 +48,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     private int mLoaded = 0;
 
+    public static boolean isRestrictedAccess = false;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);

@@ -14,4 +14,18 @@
     <string name="password_too_short">Password must include at least %1$d characters or numbers!</string>
     <string name="All_A_Z">All: A-Z</string>
     <string name="Favorites">★ Favorites</string>
+    <string name="Results">Results</string>
+    <string name="Retry">Retry</string>
+    <string name="Search">Search</string>
+    <string name="Setup">Setup</string>
+    <string name="Submit">Submit</string>
+    <string name="Yes">Yes</string>
+    <string name="Cancel">Cancel</string>
+    <string name="Please_Input_Password">Please Input Password</string>
+    <string name="password_err">Password error!</string>
+    <string name="password_toggle_description">Show password</string>
+    <string name="favorite_added">Added to Favorites!</string>
+    <string name="remove_fav">remove favorites!</string>
+    <string name="Fav_channel">Long press channel to favorite it!</string>
+    <string name="Favorites_live">★ Favorites</string>
 </resources>

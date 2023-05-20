@@ -24,14 +24,15 @@
 
     <ListView
         android:id="@+id/group_listview"
-        android:layout_width="400.0px"
-        android:layout_height="fill_parent"
+        android:layout_width="360.0px"
+        android:layout_height="match_parent"
         android:layout_below="@id/live_search_root"
         android:layout_toRightOf="@id/group_split_line"
-        android:background="@android:color/transparent"
-        android:divider="@null"
+        android:background="#80000000"
+        android:divider="@drawable/cut_off_line2"
         android:listSelector="@drawable/group_focus_bg"
-        android:scrollbars="none" />
+        android:scrollbars="none"
+        app:layout_auto_basewidth="height" />
 
     <ImageView
         android:id="@+id/channel_split_line"
@@ -42,8 +43,8 @@
 
     <ListView
         android:id="@+id/channel_listview"
-        android:layout_width="550.0px"
-        android:layout_height="fill_parent"
+        android:layout_width="410.0px"
+        android:layout_height="match_parent"
         android:layout_toRightOf="@id/channel_split_line"
         android:background="#ff525b7a"
         android:divider="@null"
@@ -60,9 +61,9 @@
     <ExpandableListView
         android:id="@+id/epg_listview"
         android:layout_width="600.0px"
-        android:layout_height="fill_parent"
+        android:layout_height="match_parent"
         android:layout_toRightOf="@id/epg_split_line"
-        android:background="@android:color/transparent"
+        android:background="#A0000000"
         android:descendantFocusability="afterDescendants"
         android:divider="@null"
         android:groupIndicator="@null"
