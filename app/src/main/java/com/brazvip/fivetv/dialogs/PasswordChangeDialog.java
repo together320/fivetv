@@ -56,7 +56,7 @@ public class PasswordChangeDialog extends Dialog {
 
         /* renamed from: a 2189 */
         public PasswordChangeDialog create() {
-            final PasswordChangeDialog dlg = new PasswordChangeDialog(this.mContext, R.style.MyDialog);
+            final PasswordChangeDialog dlg = new PasswordChangeDialog(this.mContext, R.style.Dialog);
             View content = ((LayoutInflater) this.mContext.getSystemService(Context.LAYOUT_INFLATER_SERVICE))
                                                         .inflate(R.layout.dialog_pwd_layout, (ViewGroup) null);
             AutoUtils.autoSize(content); //auto(content, Attrs.WIDTH | Attrs.HEIGHT, AutoAttr.BASE_DEFAULT);
@@ -64,12 +64,10 @@ public class PasswordChangeDialog extends Dialog {
                                                                ViewGroup.LayoutParams.WRAP_CONTENT)); // -1, -2
             final EditText editText = (EditText) content.findViewById(R.id.et_password);
             final TextView textView = (TextView) content.findViewById(R.id.error);
-            editText.setInputType(EditorInfo.TYPE_NULL);
             editText.setFocusable(true);
             editText.setOnClickListener(new View.OnClickListener() { //new View$OnClickListenerC3628k(this, editText));
                 @Override
                 public void onClick(View v) {
-                    editText.setInputType(EditorInfo.TYPE_NUMBER_VARIATION_PASSWORD); //16
                     InputMethodManager imm = (InputMethodManager) mContext.getSystemService(Context.INPUT_METHOD_SERVICE);
                     if (imm != null)
                         imm.showSoftInput(editText, InputMethodManager.SHOW_FORCED); //2
@@ -78,7 +76,6 @@ public class PasswordChangeDialog extends Dialog {
             editText.setOnLongClickListener(new View.OnLongClickListener() { //new View$OnLongClickListenerC3629l(this, editText)
                 @Override
                 public boolean onLongClick(View v) {
-                    editText.setInputType(EditorInfo.TYPE_NUMBER_VARIATION_PASSWORD); //16
                     InputMethodManager imm = (InputMethodManager) mContext.getSystemService(Context.INPUT_METHOD_SERVICE);
                     if (imm != null) {
                         imm.showSoftInput(editText, InputMethodManager.SHOW_FORCED); //2

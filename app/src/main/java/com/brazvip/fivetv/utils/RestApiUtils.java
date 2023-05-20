@@ -78,7 +78,7 @@ public class RestApiUtils {
     public static boolean f13759x = false;
 
     /* renamed from: y */
-    public static boolean f13760y = false;
+    public static boolean isLoadEPG = false;
 
     /* renamed from: z 13761 */
     public static boolean runTVCarService = true;
@@ -154,7 +154,7 @@ public class RestApiUtils {
         f13757v = "psp.p2five.com";
         f13758w = true;
         f13759x = true;
-        f13760y = true;
+        isLoadEPG = true;
         runTVCarService = true;
         f13717A = true;
         f13719C = true;

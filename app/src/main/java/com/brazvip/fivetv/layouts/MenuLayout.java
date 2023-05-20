@@ -58,38 +58,21 @@ public class MenuLayout extends RelativeLayout {
 
     public HashMap<Integer, Group> mShowGroups;
 
-    public View f13839w;
-    public View f13840x = null;
+    public View mSelectedGroupView;
+    public View mSelectedChannelView = null;
 
-    public View f13842z = null;
+    public View mSelectedEPGView = null;
 
-    public static final int f13815d = 1;
+    public BsConf.CHANNEL_TYPE mChannelType;
+    
+    public static int mSelectedChannelChild = 0;
 
-    /* renamed from: e */
-    public static final int f13816e = 2;
+    public static boolean mTouchFlag = false;
 
-    /* renamed from: f */
-    public static final int f13817f = 3;
-
-    /* renamed from: g */
-    public static int f13818g = 0;
-
-    /* renamed from: h */
-    public static int f13819h = 0;
-
-    /* renamed from: i */
-    public static int f13820i = 0;
-
-    /* renamed from: j */
-    public static boolean f13821j = false;
-
-    /* renamed from: A */
     public boolean f13822A = true;
 
-    /* renamed from: B */
     public boolean f13823B = true;
 
-    /* renamed from: C */
     public boolean f13824C = false;
 
     public MenuLayout(Context context) {
@@ -162,13 +145,13 @@ public class MenuLayout extends RelativeLayout {
             mGroupListView.setAdapter(mGroupListAdapter);
 
             mGroupListView.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
-                /* renamed from: a 13797 */
+
                 public boolean isSelected = true;
 
                 @Override
                 public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
                     if (view != null) {
-                        f13839w = view;
+                        mSelectedGroupView = view;
                         int arg = ((Integer) view.getTag()).intValue();
                         f13822A = true;
                         MenuLayout.mMsgHandler.removeMessages(2);
@@ -193,8 +176,8 @@ public class MenuLayout extends RelativeLayout {
                     //String log = "onGroupItemClick: " + position;
                     mGroupListView.requestFocusFromTouch();
                     mGroupListView.setSelection(position);
-                    //f13838v = BsConf.CHANNEL_TYPE.GROUP;
-                    //f13839w = view;
+                    mChannelType = BsConf.CHANNEL_TYPE.GROUP;
+                    mSelectedGroupView = view;
                     //String log = String.valueOf(view.isSelected()) + "| " + view.getTag();
                     Integer tag = (Integer) view.getTag();
                     if (tag != null) {
@@ -203,7 +186,6 @@ public class MenuLayout extends RelativeLayout {
                             Group group = mShowGroups.get(tag);
                             if ((group != null) && group.restrictedAccess) {
                                 if (MainActivity.isRestrictedAccess) {
-                                    MenuLayout.f13819h = 0;
                                     MainActivity.isRestrictedAccess = false;
                                     mGroupListAdapter.notifyDataSetChanged();
                                     MenuLayout.mMsgHandler.removeMessages(2);
@@ -256,18 +238,12 @@ public class MenuLayout extends RelativeLayout {
         if (channels != null && channels.size() > 0) {
             if (!MainActivity.isRestrictedAccess && group.restrictedAccess) {
                 //String log = "restrictedAccess: " + mShowGroups.get(key).name;
-                //if (!MainActivity.f16805n || mChannelListView.hasFocus() || mEpgListView.hasFocus()) {
-                if (mChannelListView.hasFocus() || mEpgListView.hasFocus()) {
+                if (!MainActivity.f16805n || mChannelListView.hasFocus() || mEpgListView.hasFocus()) {
                     mGroupListView.requestFocus();
-                    //f13838v = BsConf.CHANNEL_TYPE.GROUP;
+                    mChannelType = BsConf.CHANNEL_TYPE.GROUP;
                 }
                 mChannelListView.setVisibility(View.GONE);
                 mEpgListView.setVisibility(View.GONE);
-                if (f13819h < RestApiUtils.f13723G) {
-                    f13819h++;
-                    //MainActivity.showMessageFromResource(R.string.Click_Restricted_Group);
-                    return;
-                }
                 return;
             }
             try {
@@ -286,7 +262,7 @@ public class MenuLayout extends RelativeLayout {
                 @Override
                 public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
                     if (view != null) {
-                        f13840x = view;
+                        mSelectedChannelView = view;
                         MenuLayout.mMsgHandler.removeMessages(3);
                         f13823B = true;
                         ChannelBean channel = (ChannelBean) view.getTag();
@@ -387,10 +363,10 @@ public class MenuLayout extends RelativeLayout {
                 public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                     mChannelListView.requestFocusFromTouch();
                     mChannelListView.setSelection(position);
-                    //String log = "################## onItemClick " + position + " from touch: " + MenuLayout.f13821j;
+                    //String log = "################## onItemClick " + position + " from touch: " + MenuLayout.mTouchFlag;
                     ChannelBean channel = (ChannelBean) view.getTag();
-                    if (MenuLayout.f13821j && MenuLayout.f13820i != channel.getChid()) {
-                        MenuLayout.f13820i = channel.getChid();
+                    if (MenuLayout.mTouchFlag && MenuLayout.mSelectedChannelChild != channel.getChid()) {
+                        MenuLayout.mSelectedChannelChild = channel.getChid();
                         //int epg = channel.getEpgSameAs() > 0 ? channel.getEpgSameAs() : channel.getChid();
                         int epg = channel.getEpgSameAs();
                         if (epg < 1) epg = channel.getChid();
@@ -402,7 +378,7 @@ public class MenuLayout extends RelativeLayout {
                         String address = sources.get(0).getAddress();
                         if (address == null || address.isEmpty())
                             return;
-                        MenuChannelListAdapter.f13521a = channel.getChid();
+                        MenuChannelListAdapter.mChild = channel.getChid();
                         if (mEpgAdapter != null) {
                             EpgAdapter.f13530b = "";
                             mEpgAdapter.notifyDataSetChanged();
@@ -412,11 +388,11 @@ public class MenuLayout extends RelativeLayout {
                             return;
                         }*/
                         startLiveChannel(channel);
-                        //f13838v = BsConf.CHANNEL_TYPE.CHANNEL;
-                        f13840x = view;
+                        mChannelType = BsConf.CHANNEL_TYPE.CHANNEL;
+                        mSelectedChannelView = view;
                     }
                     //cond_6, goto_2
-                    MenuLayout.f13821j = false;
+                    MenuLayout.mTouchFlag = false;
                     mChannelListAdapter.notifyDataSetChanged();
                     view.setBackgroundResource(R.drawable.channel_focus_bg);
                 }
@@ -431,12 +407,11 @@ public class MenuLayout extends RelativeLayout {
             mMsgHandler.sendMessage(message);
             return;
         }
-        //String log2 = "channelListView.hasFocus(), " + mChannelListView.hasFocus();
-        //String str2 = "epgListView.hasFocus(), " + mEpgListView.hasFocus();
-//        if (!MainActivity.f16805n || mChannelListView.hasFocus() || mEpgListView.hasFocus()) {
-//            mGroupListView.requestFocus();
-//            f13838v = BsConf.CHANNEL_TYPE.GROUP;
-//        }
+
+        if (!MainActivity.f16805n || mChannelListView.hasFocus() || mEpgListView.hasFocus()) {
+            mGroupListView.requestFocus();
+            mChannelType = BsConf.CHANNEL_TYPE.GROUP;
+        }
         mChannelListView.setVisibility(View.GONE);
         mEpgListView.setVisibility(View.GONE);
     }
@@ -489,7 +464,7 @@ public class MenuLayout extends RelativeLayout {
                     @Override
                     public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
                         if (view != null) {
-                            f13842z = view;
+                            mSelectedEPGView = view;
                             if (!f13823B) {
                                 view.setBackgroundResource(R.drawable.epg_focus_bg);
                             } else {
@@ -541,13 +516,13 @@ public class MenuLayout extends RelativeLayout {
                                     msg.setData(bundle);
                                     MainActivity.mMsgHandler.sendMessage(msg);
                                     if (mChannelListAdapter != null) {
-                                        MenuChannelListAdapter.f13521a = 0;
+                                        MenuChannelListAdapter.mChild = 0;
                                         mChannelListAdapter.notifyDataSetChanged();
                                     }
                                     EpgAdapter.f13530b = epg.getId();
                                     mEpgAdapter.notifyDataSetChanged();
-                                    //f13838v = BsConf.CHANNEL_TYPE.EPG;
-                                    f13842z = v;
+                                    //mChannelType = BsConf.CHANNEL_TYPE.EPG;
+                                    mSelectedEPGView = v;
                                     return false;
                                 }
                             }

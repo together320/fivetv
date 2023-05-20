@@ -6,8 +6,8 @@
 
     <RelativeLayout
         android:layout_width="350px"
-        android:layout_height="134px"
-        android:minHeight="134px"
+        android:layout_height="100px"
+        android:minHeight="100px"
         app:layout_auto_basewidth="height">
 
         <ImageView
