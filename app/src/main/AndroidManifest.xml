@@ -33,12 +33,12 @@
             android:name=".MainActivity"
             android:exported="true"
             android:screenOrientation="landscape"
-            android:theme="@style/ThemeBg" />
+            android:theme="@style/ThemeSplash" />
         <activity
             android:name=".LoginActivity"
             android:exported="true"
             android:screenOrientation="landscape"
-            android:theme="@style/ThemeBg" />
+            android:theme="@style/ThemeSplash" />
 
         <meta-data
             android:name="design_width"

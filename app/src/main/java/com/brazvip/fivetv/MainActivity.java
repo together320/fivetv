@@ -7,6 +7,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
+import android.view.KeyEvent;
 import android.view.View;
 import android.widget.Button;
 import android.widget.FrameLayout;
@@ -23,8 +24,12 @@ import com.brazvip.fivetv.layouts.PlayerLayout;
 import com.brazvip.fivetv.utils.BsConf;
 import com.brazvip.fivetv.utils.PrefUtils;
 
-public class MainActivity extends AppCompatActivity implements View.OnClickListener {
+import com.zhy.autolayout.AutoLayoutActivity;
+
+public class MainActivity extends AutoLayoutActivity implements View.OnClickListener, View.OnKeyListener {
+
     public enum FRAGMENT {
+        NONE,
         DASHBOARD,
         LIVE,
         VOD,
@@ -47,9 +52,14 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private PlayerLayout mPlayerLayout;
     private MenuLayout mMenuLayout;
 
+    public FRAGMENT mPrevFragment = FRAGMENT.NONE;
+    public FRAGMENT mCurrFragment = FRAGMENT.NONE;
+
     private int mLoaded = 0;
 
     public static boolean isRestrictedAccess = false;
+
+    public static boolean f16805n = true;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -127,6 +137,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         mRadioGroup.setVisibility(View.VISIBLE);
 
+        if (mPrevFragment != mCurrFragment)
+            mPrevFragment = mCurrFragment;
+        mCurrFragment = frag;
+
         switch (frag) {
             case DASHBOARD:
                 mRadioGroup.check(R.id.rb_dashboard);
@@ -192,14 +206,30 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
 
     @Override
+    public void onBackPressed() {
+        if (mCurrFragment == FRAGMENT.PLAYER) {
+            refreshFragment(mPrevFragment);
+        }
+        else {
+            //PrefUtils.logout(this);
+            super.onBackPressed();
+        }
+    }
+
+    @Override
     public void onClick(View v) {
         int id = v.getId();
 
     }
 
-    private void logout() {
-        AuthInstance.SaveAuthParams("", "");
+    @Override // android.view.View.OnKeyListener
+    public boolean onKey(View view, int keyCode, KeyEvent event) {
 
+        return false;
+    }
+
+    private void logout() {
+        //AuthInstance.SaveAuthParams("", "");
         startActivity(new Intent(MainActivity.this, LoginActivity.class));
         finish();
     }

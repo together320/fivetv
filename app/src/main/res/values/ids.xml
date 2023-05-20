@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <item name="dialog_icon" type="id" />
+    <item name="error" type="id" />
+    <item name="negativeButton" type="id" />
+    <item name="positiveButton" type="id" />
+</resources>

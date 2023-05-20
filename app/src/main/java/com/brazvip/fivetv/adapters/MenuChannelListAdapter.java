@@ -19,6 +19,7 @@ import com.brazvip.fivetv.instances.ChannelInstance;
 import com.brazvip.fivetv.instances.EPGInstance;
 import com.brazvip.fivetv.layouts.MenuLayout;
 
+import com.brazvip.fivetv.utils.BsConf;
 import com.brazvip.fivetv.utils.RestApiUtils;
 import com.zhy.autolayout.attr.Attrs;
 import com.zhy.autolayout.attr.AutoAttr;
@@ -34,30 +35,23 @@ import java.util.Set;
 
 public class MenuChannelListAdapter extends BaseAdapter {
 
-    /* renamed from: a */
-    public static int f13521a;
-
-    /* renamed from: b */
     public int mID;
 
-    /* renamed from: c */
     public List<ChannelBean> mList;
 
-    /* renamed from: d */
     public List<Integer> mArrayList;
 
-    /* renamed from: e */
     public Context mContext;
 
-    /* renamed from: f */
     public ListView mListView;
 
-    /* renamed from: g */
-    public View.OnTouchListener f13527g = new View.OnTouchListener() { //View$OnTouchListenerC3475d
+    public static int mChild;
+
+    public View.OnTouchListener mChannelListTouchListener = new View.OnTouchListener() { //View$OnTouchListenerC3475d
         @Override
         public boolean onTouch(View v, MotionEvent event) {
             //String log = "v: " + view.getId();
-            MenuLayout.f13821j = true;
+            MenuLayout.mTouchFlag = true;
             return false;
         }
     };
@@ -108,7 +102,7 @@ public class MenuChannelListAdapter extends BaseAdapter {
         ChannelBean channel = mList.get(position);
         TextView tvName = (TextView) convertView.findViewById(R.id.channel_name);
         String name = channel.getName().getInit();
-        if (this.mID != -4 && channel.getSid() > 0) {
+        if (this.mID != Constant.GROUP_ALL && channel.getSid() > 0) {
             name = channel.getSid() + "." + name;
         }
         TextView tvProgram = (TextView) convertView.findViewById(R.id.program_item);
@@ -128,11 +122,11 @@ public class MenuChannelListAdapter extends BaseAdapter {
             tvProgram.setText(programId);
         }
         convertView.setTag(channel);
-        if (RestApiUtils.f13760y) {
-            convertView.setOnTouchListener(f13527g);
+        if (RestApiUtils.isLoadEPG) {
+            convertView.setOnTouchListener(mChannelListTouchListener);
         }
         ImageView ivStarted = (ImageView) convertView.findViewById(R.id.channel_started);
-        if (channel.getChid() == f13521a) {
+        if (channel.getChid() == mChild) {
             ivStarted.setVisibility(View.VISIBLE);
         } else {
             ivStarted.setVisibility(View.GONE);
