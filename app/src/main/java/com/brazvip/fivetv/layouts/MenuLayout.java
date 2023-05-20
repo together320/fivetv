@@ -533,13 +533,13 @@ public class MenuLayout extends RelativeLayout {
                                 String playbackUrl = epg.getPlaybackUrl();
                                 if ((playbackUrl != null) && !playbackUrl.equals("")) {
                                     Message msg = new Message();
-                                    msg.what = 80;
+                                    msg.what = Constant.MSG_PLAYER_START;
                                     Bundle bundle = new Bundle();
                                     bundle.putString("url", playbackUrl);
                                     bundle.putString("name", epg.getName());
                                     bundle.putString("type", BsConf.BS_MODE.BSPALYBACK.name());
                                     msg.setData(bundle);
-                                    //MainActivity.mMsgHandler.sendMessage(msg);
+                                    MainActivity.mMsgHandler.sendMessage(msg);
                                     if (mChannelListAdapter != null) {
                                         MenuChannelListAdapter.f13521a = 0;
                                         mChannelListAdapter.notifyDataSetChanged();
@@ -598,7 +598,7 @@ public class MenuLayout extends RelativeLayout {
 //            return;
 //        }
         Message msg = new Message();
-        msg.what = 80;
+        msg.what = Constant.MSG_PLAYER_START;
         Bundle params = new Bundle();
         params.putString("url", channel.getSources().get(0).getAddress());
         if (channel.getSid() > 0) {

@@ -95,9 +95,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             @Override
             public void onFocusChange(View v, boolean hasFocus) {
                 if (hasFocus) {
-                    //refreshFragment(FRAGMENT.VOD);
-                    refreshFragment(FRAGMENT.PLAYER);
-                    PlayTvBus("tvbus://3KyG8wJTw9VYdGUvJ8BcuekdoesMMWmDfKs6ovtTTcxePf74kx");
+                    refreshFragment(FRAGMENT.VOD);
                 }
             }
         });
@@ -176,6 +174,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                         mLoaded |= 0b100;
                         checkLoaded();
                         break;
+                    case Constant.MSG_PLAYER_START:
+                        onMsgVideoStart(message.getData());
+                        break;
                 }
                 super.handleMessage(message);
             }
@@ -202,8 +203,14 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         finish();
     }
 
-    public void PlayTvBus(String url) {
-        mPlayerLayout.startChannel(url);
+    public void onMsgVideoStart(Bundle bundle) {
+        refreshFragment(FRAGMENT.PLAYER);
+
+        String videoURL = bundle.getString("url");
+        //String videoName = bundle.getString("name");
+        //this.mBsMode = BsConf.BS_MODE.valueOf(bundle.getString("type"));
+
+        mPlayerLayout.startChannel(videoURL);
     }
 
     public static void SendMessage(Message msg) {
