@@ -37,16 +37,26 @@ public class ChannelInstance {
     public static volatile HashMap<Integer, ChannelBean> f13642e;
 
     public static void Refresh() {
+
         final String url = AuthInstance.getApiUrl(AuthInstance.API_TYPE.CHANNEL);
 
         new Thread(new Runnable() {
             @Override
             public void run() {
+
+                if (Constant.OFFLINE_TEST == true) {
+                    String strInfo = PrefUtils.getPrefString(Constant.PREFS_CHANNEL_INFO, "");
+                    if (strInfo.length() > 0) {
+                        asyncParseChannels(strInfo, false);
+                        return;
+                    }
+                }
+
                 ((GetRequest) ((GetRequest) new GetRequest(url).tag(this)).cacheKey(mCacheKey)).execute(
                         new StringCallback() {
                             @Override
                             public void onCacheSuccess(Response<String> response) {
-                                asyncParseChannels(response.body());
+                                asyncParseChannels(response.body(), true);
                             }
 
                             @Override
@@ -57,7 +67,7 @@ public class ChannelInstance {
                             @Override
                             public void onSuccess(Response<String> response) {
                                 if (response.isSuccessful()) {
-                                    asyncParseChannels(response.body());
+                                    asyncParseChannels(response.body(), true);
                                 } else {
                                     onFail();
                                 }
@@ -105,11 +115,15 @@ public class ChannelInstance {
         MainActivity.SendMessage(msg);
     }
 
-    private static void asyncParseChannels(String result) {
+    private static void asyncParseChannels(String result, boolean savePref) {
         new Thread() {
             @Override
             public void run() {
                 try {
+                    if (savePref == true) {
+                        PrefUtils.setPrefString(Constant.PREFS_CHANNEL_INFO, result);
+                    }
+
                     //ChannelInstance.parseJson(result);
 
                     ChannelInstance.mChannels = JSON.parseArray(result, ChannelBean.class);

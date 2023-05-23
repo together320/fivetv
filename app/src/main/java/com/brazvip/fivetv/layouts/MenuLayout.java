@@ -484,10 +484,10 @@ public class MenuLayout extends RelativeLayout {
                         if (groupPosition == mEpgAdapter.f13535g) {
                             if (parent.isGroupExpanded(mEpgAdapter.f13535g)) {
                                 parent.collapseGroup(mEpgAdapter.f13535g);
-                                mEpgAdapter.f13536h = false;
+                                mEpgAdapter.isExpandGroup = false;
                             } else {
                                 parent.expandGroup(mEpgAdapter.f13535g);
-                                mEpgAdapter.f13536h = true;
+                                mEpgAdapter.isExpandGroup = true;
                             }
                         } else if (parent.isGroupExpanded(groupPosition)) {
                             parent.collapseGroup(groupPosition);

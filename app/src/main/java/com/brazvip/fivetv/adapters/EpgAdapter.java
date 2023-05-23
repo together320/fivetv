@@ -46,13 +46,13 @@ public class EpgAdapter extends BaseExpandableListAdapter {
     public static String f13530b = "";
 
     /* renamed from: c */
-    public HashMap<Long, List<EpgBeans.EpgBean>> f13531c;
+    public HashMap<Long, List<EpgBeans.EpgBean>> mEpgListHashMap;
 
     /* renamed from: d */
     public ExpandableListView f13532d;
 
     /* renamed from: e */
-    public List<Long> f13533e;
+    public List<Long> mEpgBlocks;
 
     /* renamed from: f */
     public String[] f13534f;
@@ -61,7 +61,7 @@ public class EpgAdapter extends BaseExpandableListAdapter {
     public int f13535g;
 
     /* renamed from: h */
-    public boolean f13536h;
+    public boolean isExpandGroup;
 
     /* renamed from: i */
     public int f13537i;
@@ -96,8 +96,8 @@ public class EpgAdapter extends BaseExpandableListAdapter {
         this.f13541m = 0;
         this.f13537i = progress;
         this.f13532d = listView;
-        this.f13536h = z;
-        this.f13531c = hashMap;
+        this.isExpandGroup = z;
+        this.mEpgListHashMap = hashMap;
         ArrayList<Long> needRemoveBlocks = new ArrayList<>(hashMap.keySet());
         long time = new Date().getTime() + PrefUtils.f14035a;
         f13540l = PrefUtils.getDateOfTime(time);
@@ -125,17 +125,17 @@ public class EpgAdapter extends BaseExpandableListAdapter {
                 }
             }
         }
-        f13533e = needRemoveBlocks;
+        mEpgBlocks = needRemoveBlocks;
         int count = needRemoveBlocks.size();
         f13534f = new String[count];
         for (int i = 0; i < count; i++) {
-            f13534f[i] = f13538j.format(f13533e.get(i));
+            f13534f[i] = f13538j.format(mEpgBlocks.get(i));
         }
     }
 
     @Override // android.widget.ExpandableListAdapter
     public Object getChild(int position, int childPosition) {
-        return f13531c.get(f13533e.get(position)).get(childPosition);
+        return mEpgListHashMap.get(mEpgBlocks.get(position)).get(childPosition);
     }
 
     @Override // android.widget.ExpandableListAdapter
@@ -147,9 +147,9 @@ public class EpgAdapter extends BaseExpandableListAdapter {
     @Override // android.widget.ExpandableListAdapter
     public View getChildView(int groupPosition, int childPosition, boolean isLastChild, View convertView, ViewGroup parent) {
         int targetPos = childPosition + f13541m;
-        List<EpgBeans.EpgBean> list = this.f13531c.get(this.f13533e.get(groupPosition));
+        List<EpgBeans.EpgBean> list = this.mEpgListHashMap.get(this.mEpgBlocks.get(groupPosition));
         if (convertView == null) {
-            if (f13537i == 100) {
+            if (f13537i == 104) {
                 convertView = View.inflate(parent.getContext(), R.layout.epg_item_1line, null);
             } else {
                 convertView = View.inflate(parent.getContext(), R.layout.epg_item, null);
@@ -160,7 +160,7 @@ public class EpgAdapter extends BaseExpandableListAdapter {
         TextView tvTime = (TextView) convertView.findViewById(R.id.epg_item_time);
         ImageView ivIcon = (ImageView) convertView.findViewById(R.id.epg_item_icon);
         if (list != null && list.size() > 0) {
-            if (f13537i == 100) {
+            if (f13537i == 104) {
                 tvName.setTextColor(SopApplication.getAppContext().getResources().getColor(R.color.channel_epg_no_addr_txt));
                 tvName.setText(PrefUtils.m2249a(list.get(targetPos).getTime()) + " " + list.get(targetPos).getName());
             } else {
@@ -190,7 +190,7 @@ public class EpgAdapter extends BaseExpandableListAdapter {
 
     @Override // android.widget.ExpandableListAdapter
     public int getChildrenCount(int groupPosition) {
-        List<EpgBeans.EpgBean> list = f13531c.get(f13533e.get(groupPosition));
+        List<EpgBeans.EpgBean> list = mEpgListHashMap.get(mEpgBlocks.get(groupPosition));
         if (list == null || list.size() <= 0) {
             return 0;
         }
@@ -199,12 +199,12 @@ public class EpgAdapter extends BaseExpandableListAdapter {
 
     @Override // android.widget.ExpandableListAdapter
     public Object getGroup(int i) {
-        return f13533e.get(i);
+        return mEpgBlocks.get(i);
     }
 
     @Override // android.widget.ExpandableListAdapter
     public int getGroupCount() {
-        return Math.max(f13533e.size(), 0);
+        return Math.max(mEpgBlocks.size(), 0);
     }
 
     @Override // android.widget.ExpandableListAdapter
@@ -213,31 +213,31 @@ public class EpgAdapter extends BaseExpandableListAdapter {
     }
 
     @Override // android.widget.ExpandableListAdapter
-    public View getGroupView(int groupPosition, boolean isExpanded, View convertView, ViewGroup parent) {
+    public View getGroupView(int groupPosition, boolean isExpandGrouped, View convertView, ViewGroup parent) {
         if (convertView == null) {
             convertView = View.inflate(parent.getContext(), R.layout.epg_day_item, null);
             AutoUtils.auto(convertView, Attrs.WIDTH | Attrs.HEIGHT, AutoAttr.BASE_DEFAULT);
         }
         TextView dayText = (TextView) convertView.findViewById(R.id.epg_day_text);
-        if (this.f13533e.get(groupPosition) != null && this.f13533e.size() > 0) {
+        if (this.mEpgBlocks.get(groupPosition) != null && this.mEpgBlocks.size() > 0) {
             dayText.setText(this.f13534f[groupPosition]);
             ImageView imageView = (ImageView) convertView.findViewById(R.id.epg_group_arrow);
-            if (isExpanded) {
+            if (isExpandGrouped) {
                 imageView.setImageResource(R.mipmap.down);
             } else {
                 imageView.setImageResource(R.mipmap.up);
             }
             if (RestApiUtils.f13742g) {
-                if (this.f13540l == this.f13533e.get(groupPosition).longValue() && this.f13537i == 100) {
-                    if (this.f13536h) {
+                if (this.f13540l == this.mEpgBlocks.get(groupPosition).longValue() && this.f13537i == 100) {
+                    if (this.isExpandGroup) {
                         this.f13532d.expandGroup(groupPosition);
                     } else {
                         this.f13532d.collapseGroup(groupPosition);
                     }
                     this.f13535g = groupPosition;
                 }
-            } else if (this.f13540l == this.f13533e.get(groupPosition).longValue()) {
-                if (this.f13536h) {
+            } else if (this.f13540l == this.mEpgBlocks.get(groupPosition).longValue()) {
+                if (this.isExpandGroup) {
                     this.f13532d.expandGroup(groupPosition);
                 } else {
                     this.f13532d.collapseGroup(groupPosition);

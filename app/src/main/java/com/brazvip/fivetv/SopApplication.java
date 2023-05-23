@@ -10,6 +10,7 @@ import android.os.Environment;
 import android.os.StrictMode;
 import android.util.Base64;
 
+import com.brazvip.fivetv.utils.RestApiUtils;
 import com.lzy.okgo.OkGo;
 import com.lzy.okgo.cache.CacheMode;
 import com.lzy.okgo.https.HttpsUtils;
@@ -174,6 +175,7 @@ public class SopApplication extends Application implements InvocationHandler {
         instance = this;
         //CrashReport.initCrashReport(getApplicationContext(), AppConfig.BUGLY_APP_ID, false);
         //CrashReport.setAppChannel(getApplicationContext(), RestApiUtils.BUGLY_APP_CHANNEL);
+        RestApiUtils.initValues();
         initInterceptor();
         initHttpClient(getApplicationContext());
         Seq.setContext((Object) this);
