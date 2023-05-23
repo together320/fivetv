@@ -4,8 +4,8 @@ version = "1.4.5"
 
 android {
     namespace 'com.zhy.autolayout'
+    compileSdk 28
 
-    compileSdkVersion 29
     buildToolsVersion "30.0.3"
 
     defaultConfig {
