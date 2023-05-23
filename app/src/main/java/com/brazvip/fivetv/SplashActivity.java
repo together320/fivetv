@@ -9,6 +9,7 @@ import android.os.Looper;
 import android.os.Message;
 
 import com.brazvip.fivetv.instances.AuthInstance;
+import com.brazvip.fivetv.utils.PrefUtils;
 
 public class SplashActivity extends AppCompatActivity {
     public static Handler mMsgHandler = null;

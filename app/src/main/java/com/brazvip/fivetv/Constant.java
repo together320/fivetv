@@ -3,6 +3,11 @@ package com.brazvip.fivetv;
 public class Constant {
     public static final String PREFS_NAME = "bsprefer";
 
+    public static final boolean OFFLINE_TEST = true;
+
+    public static final String PREFS_CHANNEL_INFO = "ftv_pref_channel_info";
+    public static final String PREFS_EPG_INFO = "ftv_epg_channel_info";
+
     public static final String LOGIN_URL = "https://auth1.braz.vip/api/v2/auth";
     public static final String REGISTER_URL = "https://auth1.braz.vip/api/v2/register";
     public static final String DEFAULT_MAIL_SUFFIX = "@p2five.com";

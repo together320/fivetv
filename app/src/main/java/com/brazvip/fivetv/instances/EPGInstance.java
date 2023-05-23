@@ -59,10 +59,15 @@ public class EPGInstance {
     /* renamed from: h */
     public SimpleDateFormat f13657h = new SimpleDateFormat("EEE, MM-dd", Locale.getDefault());
 
-    public static void parseEPG(final String text) {
+    public static void parseEPG(final String text, boolean savePref) {
         new Thread() {
             @Override
             public void run() {
+
+                if (savePref == true) {
+                    PrefUtils.setPrefString(Constant.PREFS_EPG_INFO, text);
+                }
+
                 long totalMemory = Runtime.getRuntime().totalMemory();
                 int cacheSize = (int) (totalMemory / 8);
                 //String log = "=============totalMemory: " + totalMemory + " cacheSize: " + cacheSize;
@@ -152,16 +157,26 @@ public class EPGInstance {
     }
 
     public static void Refresh() {
+
         final String url = AuthInstance.getApiUrl(AuthInstance.API_TYPE.EPG);
 
         new Thread(new Runnable() {
             @Override
             public void run() {
+
+                if (Constant.OFFLINE_TEST == true) {
+                    String strInfo = PrefUtils.getPrefString(Constant.PREFS_EPG_INFO, "");
+                    if (strInfo.length() > 0) {
+                        parseEPG(strInfo, false);
+                        return;
+                    }
+                }
+
                 ((GetRequest) ((GetRequest) new GetRequest(url).tag(this)).cacheKey(mCacheKey)).execute(
                         new StringCallback() {
                             @Override
                             public void onCacheSuccess(Response<String> response) {
-                                parseEPG(response.body());
+                                parseEPG(response.body(), true);
                             }
 
                             @Override
@@ -172,7 +187,7 @@ public class EPGInstance {
                             @Override
                             public void onSuccess(Response<String> response) {
                                 if (response.isSuccessful()) {
-                                    parseEPG(response.body());
+                                    parseEPG(response.body(), true);
                                 } else {
                                     onFail();
                                 }

@@ -69,8 +69,8 @@ public class MainActivity extends AutoLayoutActivity implements View.OnClickList
         initComponents();
         initMessageHandler();
 
-        EPGInstance.Refresh();
         ChannelInstance.Refresh();
+        EPGInstance.Refresh();
         //VodChannelInstance.Refresh();
     }
 

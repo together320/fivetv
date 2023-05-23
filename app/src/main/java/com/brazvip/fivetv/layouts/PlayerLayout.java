@@ -129,6 +129,13 @@ public class PlayerLayout extends FrameLayout {
     }
 
     public void initTVCore() {
+        if (Constant.OFFLINE_TEST == true) {
+            Message msg = new Message();
+            msg.what = Constant.MSG_PLAYER_LOADED;
+            MainActivity.SendMessage(msg);
+            return;
+        }
+
         if (mTVCore != null)
             return;
 
@@ -248,6 +255,11 @@ public class PlayerLayout extends FrameLayout {
     }
 
     public void startChannel(String videoUrl, String videoName, BsConf.BS_MODE bsMode) {
+
+        if (Constant.OFFLINE_TEST == true) {
+            return;
+        }
+
         stopPlayback();
         mMPCheckTime = Long.MAX_VALUE;
         mTmPlayerConn = mBuffer = 0;
