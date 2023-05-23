@@ -19,6 +19,7 @@ import com.qiniu.android.dns.DnsManager;
 import com.qiniu.android.dns.IResolver;
 import com.qiniu.android.dns.NetworkInfo;
 import com.qiniu.android.dns.local.Resolver;
+import com.zhy.autolayout.config.AutoLayoutConifg;
 
 import com.brazvip.fivetv.utils.PrefUtils;
 
@@ -169,7 +170,7 @@ public class SopApplication extends Application implements InvocationHandler {
     @Override // android.app.Application
     public void onCreate() {
         super.onCreate();
-        //AutoLayoutConifg.getInstance().useDeviceSize();
+        AutoLayoutConifg.getInstance().useDeviceSize();
         instance = this;
         //CrashReport.initCrashReport(getApplicationContext(), AppConfig.BUGLY_APP_ID, false);
         //CrashReport.setAppChannel(getApplicationContext(), RestApiUtils.BUGLY_APP_CHANNEL);
@@ -229,7 +230,6 @@ public class SopApplication extends Application implements InvocationHandler {
             rootDir.mkdirs();
         okhttp3.Cache cache = new okhttp3.Cache(rootDir, 52428800L); //r3
         return new OkHttpClient.Builder()
-                .sslSocketFactory(sslContext.getSocketFactory())
                 .hostnameVerifier(verifier)
                 .connectTimeout(20, TimeUnit.SECONDS)
                 .writeTimeout(20, TimeUnit.SECONDS)
@@ -254,8 +254,8 @@ public class SopApplication extends Application implements InvocationHandler {
     public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
         if ("getPackageInfo".equals(method.getName())) {
             String pkgName = (String) args[0];
-            Integer flag = (Integer) args[1];
-            if ((flag.intValue() & PackageManager.GET_SIGNATURES) != 0 && appPkgName.equals(pkgName)) {
+            int flag = Integer.parseInt(args[1].toString());
+            if ((flag & PackageManager.GET_SIGNATURES) != 0 && appPkgName.equals(pkgName)) {
                 PackageInfo info = (PackageInfo) method.invoke(this.base, args);
                 if (info != null) {
                     info.signatures = new Signature[this.sign.length];

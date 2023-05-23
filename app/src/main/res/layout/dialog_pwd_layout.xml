@@ -1,15 +1,86 @@
 <?xml version="1.0" encoding="utf-8"?>
-<com.zhy.autolayout.AutoLinearLayout android:orientation="vertical" android:clickable="true" android:layout_width="fill_parent" android:layout_height="fill_parent"
-  xmlns:android="http://schemas.android.com/apk/res/android">
-    <LinearLayout android:layout_gravity="center" android:orientation="vertical" android:background="@mipmap/dialog_bg" android:layout_width="764.0px" android:layout_height="550.0px" android:weightSum="1.0">
-        <RelativeLayout android:layout_gravity="center_horizontal" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="40.0px">
-            <ImageView android:id="@id/dialog_icon" android:layout_width="100.0px" android:layout_height="100.0px" android:src="@mipmap/locked" android:layout_centerInParent="true" />
+<com.zhy.autolayout.AutoLinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
+    android:clickable="true"
+    android:orientation="vertical">
+
+    <LinearLayout
+        android:layout_width="764.0px"
+        android:layout_height="550.0px"
+        android:layout_gravity="center"
+        android:background="@mipmap/dialog_bg"
+        android:orientation="vertical"
+        android:weightSum="1.0">
+
+        <RelativeLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal"
+            android:layout_marginTop="40.0px">
+
+            <ImageView
+                android:id="@id/dialog_icon"
+                android:layout_width="100.0px"
+                android:layout_height="100.0px"
+                android:layout_centerInParent="true"
+                android:src="@mipmap/locked" />
         </RelativeLayout>
-        <TextView android:textSize="40.0px" android:textStyle="bold" android:textColor="@color/dialog_title" android:gravity="center" android:layout_gravity="center_horizontal" android:id="@id/title" android:visibility="gone" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="30.0px" android:text="" />
-        <RelativeLayout android:id="@id/content" android:layout_width="fill_parent" android:layout_height="wrap_content" android:layout_marginLeft="114.0px" android:layout_marginTop="45.0px" android:layout_marginRight="84.0px" android:layout_marginBottom="30.0px">
-            <TextView android:textSize="24.0px" android:textColor="@color/dialog_message" android:id="@id/message" android:layout_width="wrap_content" android:layout_height="20.0dip" android:text="@string/Please_Input_Password" />
-            <EditText android:textSize="36.0px" android:textColor="@color/et_text_color" android:id="@id/et_password" android:focusable="true" android:layout_width="280.0px" android:layout_height="100.0px" android:layout_below="@id/message" android:layout_alignParentLeft="true" android:layout_centerVertical="true" android:inputType="textPassword" android:textCursorDrawable="@drawable/edittext_cursor" android:layout_alignParentStart="true" />
-            <TextView android:textSize="24.0px" android:textColor="@android:color/holo_red_light" android:id="@id/error" android:visibility="invisible" android:layout_width="fill_parent" android:layout_height="wrap_content" android:layout_marginTop="15.0px" android:text="error" android:layout_below="@id/et_password" />
+
+        <TextView
+            android:id="@id/title"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal"
+            android:layout_marginTop="30.0px"
+            android:gravity="center"
+            android:text=""
+            android:textColor="@color/dialog_title"
+            android:textSize="40.0px"
+            android:textStyle="bold"
+            android:visibility="gone" />
+
+        <RelativeLayout
+            android:id="@id/content"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="114.0px"
+            android:layout_marginTop="45.0px"
+            android:layout_marginRight="84.0px"
+            android:layout_marginBottom="30.0px">
+
+            <TextView
+                android:id="@id/message"
+                android:layout_width="wrap_content"
+                android:layout_height="20.0dip"
+                android:text="@string/Please_Input_Password"
+                android:textColor="@color/dialog_message"
+                android:textSize="24.0px" />
+
+            <EditText
+                android:id="@id/et_password"
+                android:layout_width="280.0px"
+                android:layout_height="100.0px"
+                android:layout_below="@id/message"
+                android:layout_alignParentStart="true"
+                android:layout_alignParentLeft="true"
+                android:layout_centerVertical="true"
+                android:focusable="true"
+                android:inputType="textPassword"
+                android:textColor="@color/et_text_color"
+                android:textCursorDrawable="@drawable/edittext_cursor"
+                android:textSize="36.0px" />
+
+            <TextView
+                android:id="@id/error"
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:layout_below="@id/et_password"
+                android:layout_marginTop="15.0px"
+                android:text="error"
+                android:textColor="@android:color/holo_red_light"
+                android:textSize="24.0px"
+                android:visibility="invisible" />
         </RelativeLayout>
 
         <LinearLayout
