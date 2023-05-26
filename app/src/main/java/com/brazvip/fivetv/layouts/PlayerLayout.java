@@ -29,7 +29,7 @@ import com.brazvip.fivetv.R;
 import com.brazvip.fivetv.SopApplication;
 import com.brazvip.fivetv.TVCarService;
 import com.brazvip.fivetv.instances.AuthInstance;
-import com.brazvip.fivetv.utils.BsConf;
+import com.brazvip.fivetv.Config;
 import com.brazvip.fivetv.utils.PrefUtils;
 import com.google.android.exoplayer2.DefaultLoadControl;
 import com.google.android.exoplayer2.DefaultRenderersFactory;
@@ -95,7 +95,7 @@ public class PlayerLayout extends FrameLayout {
     public static final long MP_START_CHECK_INTERVAL = 8000000000L;
     public static boolean mIsEnded = true;
     public static int vod_ecode = 0;
-    public BsConf.BS_MODE mBsMode = BsConf.BS_MODE.BSLIVE;
+    public Config.BS_MODE mBsMode = Config.BS_MODE.BSLIVE;
     public int mPlayerCurrentPos;
     public int mPlayerDuration;
     public int mPlayerSeekPos;
@@ -238,10 +238,10 @@ public class PlayerLayout extends FrameLayout {
                 //String log = "exoPlayer onPlayerStateChanged playWhenReady: " + playWhenReady + " playbackState:" + playbackState;
                 if (playbackState == Player.STATE_ENDED) { //4
                     mMPCheckTime = System.nanoTime();
-                    if (mBsMode == BsConf.BS_MODE.BSLIVE) {
+                    if (mBsMode == Config.BS_MODE.BSLIVE) {
                         mMPCheckTime = System.nanoTime();
-                    } else if ((mBsMode == BsConf.BS_MODE.BSPALYBACK) ||
-                            (mBsMode == BsConf.BS_MODE.BSVOD)) { //cond_1
+                    } else if ((mBsMode == Config.BS_MODE.BSPALYBACK) ||
+                            (mBsMode == Config.BS_MODE.BSVOD)) { //cond_1
                     }
                 }
                 //cond_2
@@ -479,7 +479,7 @@ public class PlayerLayout extends FrameLayout {
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onMessageEvent(TVCarService.InfoEvent event) {
         vod_ecode = event.errno;
-        if (mBsMode == BsConf.BS_MODE.BSPALYBACK || mBsMode == BsConf.BS_MODE.BSVOD) {
+        if (mBsMode == Config.BS_MODE.BSPALYBACK || mBsMode == Config.BS_MODE.BSVOD) {
             mMsgHandler.sendEmptyMessage(Constant.MSG_PLAYER_CHECKPLAYER);
             SetDownloadRate(PrefUtils.m2251a(event.download_rate));
             if (mPlayerMode == 1 && mExoPlayer.getPlayWhenReady()) {
@@ -504,34 +504,34 @@ public class PlayerLayout extends FrameLayout {
         Log.e(TAG, log);
     }
 
-    public void startChannel(String videoURL, String videoName, BsConf.BS_MODE bsMode) {
+    public void startChannel(String videoURL, String videoName, Config.BS_MODE bsMode) {
         this.mBsMode = bsMode;
         if (videoURL == null || videoURL.equals("")) {
             return;
         }
-        if (mBsMode == BsConf.BS_MODE.BSLIVE) {
+        if (mBsMode == Config.BS_MODE.BSLIVE) {
             //String log5 = "mTVCore.start " + videoURL;
-            if (vod_ecode == BsConf.ErrorTypes.Err_210.value) {
+            if (vod_ecode == Config.ErrorTypes.Err_210.value) {
                 Message msg = new Message();
                 msg.what = Constant.MSG_PLAYER_STOP;
-                msg.arg1 = BsConf.ErrorTypes.Err_210.value;
+                msg.arg1 = Config.ErrorTypes.Err_210.value;
                 mMsgHandler.sendMessage(msg);
                 return;
             }
             mMPCheckTime = Long.MAX_VALUE;
             mTVCore.start(videoURL);
-        } else if (mBsMode == BsConf.BS_MODE.BSPALYBACK || mBsMode == BsConf.BS_MODE.BSVOD) {
-            if (vod_ecode == BsConf.ErrorTypes.Err_210.value) {
+        } else if (mBsMode == Config.BS_MODE.BSPALYBACK || mBsMode == Config.BS_MODE.BSVOD) {
+            if (vod_ecode == Config.ErrorTypes.Err_210.value) {
                 Message msg = new Message();
                 msg.what = Constant.MSG_PLAYER_STOP;
-                msg.arg1 = BsConf.ErrorTypes.Err_210.value;
+                msg.arg1 = Config.ErrorTypes.Err_210.value;
                 mMsgHandler.sendMessage(msg);
                 return;
             }
             if (mTVCore != null) {
                 mTVCore.stop();
             }
-            int server = PrefUtils.getPrefInt(BsConf.SERVER, 0).intValue();
+            int server = PrefUtils.getPrefInt(Config.SERVER, 0).intValue();
             if (server != 0) {
                 videoURL = videoURL.replaceFirst("\\.", "-b" + server + ".");
                 //String log5_1 = "vidoeURL change -> " + videoURL;
@@ -539,7 +539,7 @@ public class PlayerLayout extends FrameLayout {
             mPlayerCurrentPos = 0;
             mPlayerSeekPos = 0;
             Libtvcar.start(videoURL);
-        } else if (mBsMode != BsConf.BS_MODE.STATIC) {
+        } else if (mBsMode != Config.BS_MODE.STATIC) {
             return;
         } else {
             //String log6 = "STATIC vidoeURL " + videoURL;
@@ -554,19 +554,19 @@ public class PlayerLayout extends FrameLayout {
         stopVideoPlaying();
         showPlayerUI();
         mLoadingProgress.setVisibility(View.VISIBLE);
-        if (mBsMode == BsConf.BS_MODE.BSPALYBACK) {
+        if (mBsMode == Config.BS_MODE.BSPALYBACK) {
             mCurrentTimeText.setText("00:00");
             mDurationTimeText.setText("00:00");
             videoName = SopApplication.getAppContext().getString(R.string.video_play_back) + ": " + videoName;
-        } else if (mBsMode == BsConf.BS_MODE.BSVOD) {
+        } else if (mBsMode == Config.BS_MODE.BSVOD) {
             mCurrentTimeText.setText("00:00");
             mDurationTimeText.setText("00:00");
             videoName = SopApplication.getAppContext().getString(R.string.video_vod) + ": " + videoName;
-        } else if (mBsMode == BsConf.BS_MODE.BSLIVE) {
+        } else if (mBsMode == Config.BS_MODE.BSLIVE) {
             mCurrentTimeText.setText(R.string.buffer);
             mDurationTimeText.setText("0/100");
             videoName = SopApplication.getAppContext().getString(R.string.video_live) + ": " + videoName;
-        } else if (mBsMode == BsConf.BS_MODE.STATIC) {
+        } else if (mBsMode == Config.BS_MODE.STATIC) {
             videoName = SopApplication.getAppContext().getString(R.string.video_vod) + ": " + videoName;
         }
         mProgramNameText.setText(videoName);
@@ -590,7 +590,7 @@ public class PlayerLayout extends FrameLayout {
         if (mIsEnded) {
             return;
         }
-        if (mBsMode == BsConf.BS_MODE.BSLIVE && mTmPlayerConn > 15 && mBuffer > 50) {
+        if (mBsMode == Config.BS_MODE.BSLIVE && mTmPlayerConn > 15 && mBuffer > 50) {
             if (mPlayerMode == 0) {
                 mVideoView.stopPlayback();
             }
@@ -680,12 +680,12 @@ public class PlayerLayout extends FrameLayout {
 
     public void showAuthError(int errorCode) {
         String text;
-        if (errorCode == BsConf.ErrorTypes.Err_104.value) {
+        if (errorCode == Config.ErrorTypes.Err_104.value) {
             text = SopApplication.getAppContext().getString(R.string.channel_offline);
-        } else if (errorCode == BsConf.ErrorTypes.Err_105.value) {
+        } else if (errorCode == Config.ErrorTypes.Err_105.value) {
             text = SopApplication.getAppContext().getString(R.string.user_no_login);
         } else {
-            text = errorCode == BsConf.ErrorTypes.Err_210.value ? SopApplication.getAppContext().getString(R.string.user_repeated_logon) : "";
+            text = errorCode == Config.ErrorTypes.Err_210.value ? SopApplication.getAppContext().getString(R.string.user_repeated_logon) : "";
         }
         if (text.equals("")) {
             return;
