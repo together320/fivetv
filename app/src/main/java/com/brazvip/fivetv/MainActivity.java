@@ -9,11 +9,16 @@ import android.os.Message;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
+import android.widget.Button;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
+import android.widget.RelativeLayout;
+import android.widget.TextView;
 
+import com.brazvip.fivetv.instances.AuthInstance;
 import com.brazvip.fivetv.instances.ChannelInstance;
 import com.brazvip.fivetv.instances.EPGInstance;
 import com.brazvip.fivetv.layouts.MenuLayout;
@@ -52,6 +57,7 @@ public class MainActivity extends AutoLayoutActivity implements View.OnClickList
     private MenuLayout mMenuLayout;
     private ProfileLayout mProfileLayout;
     private SettingLayout mSettingLayout;
+    private RelativeLayout mUserLayout;
 
 
     public FRAGMENT mPrevFragment = FRAGMENT.NONE;
@@ -93,12 +99,41 @@ public class MainActivity extends AutoLayoutActivity implements View.OnClickList
         mMenuLayout = (MenuLayout) findViewById(R.id.menu_layout);
         mProfileLayout = (ProfileLayout) findViewById(R.id.profile_layout);
         mSettingLayout = (SettingLayout) findViewById(R.id.setting_layout);
+        mUserLayout = (RelativeLayout) findViewById(R.id.user_info_root);
+
+        LinearLayout btnChangeProfile = (LinearLayout) findViewById(R.id.btn_change_profile);
+        TextView user_dialog_prof_name = (TextView) findViewById(R.id.user_dialog_prof_name);
+        user_dialog_prof_name.setText(AuthInstance.mAuthInfo.user.user_name.split("@")[0]);
+        Button btnLogout = (Button) findViewById(R.id.btn_logout);
 
         mProfileAvatar.setImageResource(R.drawable.profile_avatar_1);
         mProfileAvatar.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                mUserLayout.setVisibility(View.VISIBLE);
+            }
+        });
+
+        mUserLayout.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                mUserLayout.setVisibility(View.GONE);
+            }
+        });
+
+        btnChangeProfile.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                mUserLayout.setVisibility(View.GONE);
                 refreshFragment(FRAGMENT.PROFILE);
+            }
+        });
+
+        btnLogout.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                mUserLayout.setVisibility(View.GONE);
+                logout();
             }
         });
 
@@ -249,7 +284,7 @@ public class MainActivity extends AutoLayoutActivity implements View.OnClickList
     }
 
     private void logout() {
-        //AuthInstance.SaveAuthParams("", "");
+        AuthInstance.SaveAuthParams("", "");
         startActivity(new Intent(MainActivity.this, LoginActivity.class));
         finish();
     }

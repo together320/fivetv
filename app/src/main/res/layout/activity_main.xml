@@ -146,5 +146,172 @@
                     android:layout_height="fill_parent" />
             </LinearLayout>
         </LinearLayout>
+
+        <RelativeLayout
+            android:id="@+id/user_info_root"
+            android:layout_width="fill_parent"
+            android:layout_height="fill_parent"
+            android:background="#66000000"
+            android:focusable="false"
+            android:visibility="gone">
+
+            <View
+                android:layout_width="fill_parent"
+                android:layout_height="fill_parent"
+                android:layout_alignParentStart="true"
+                android:layout_marginStart="@dimen/main_rb_icon_width"
+                android:background="#33000000"
+                android:focusable="false" />
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="@dimen/main_rb_icon_width"
+                android:layout_marginTop="5.0dip"
+                android:orientation="vertical"
+                android:paddingEnd="22.0dip">
+
+                <androidx.constraintlayout.widget.ConstraintLayout
+                    android:id="@+id/app_toolbar_root"
+                    android:layout_width="fill_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="10.0dip">
+
+                    <LinearLayout
+                        android:id="@+id/settings_toolbar"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="10.0dip"
+                        android:background="@drawable/toolbar_bg_sel"
+                        android:gravity="center_vertical"
+                        android:orientation="horizontal"
+                        android:paddingStart="10.0dip"
+                        android:theme="@style/WhiteOpenSans"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintTop_toTopOf="parent">
+                    </LinearLayout>
+                </androidx.constraintlayout.widget.ConstraintLayout>
+
+                <LinearLayout
+                    android:id="@+id/user_dialog_root"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="end"
+                    android:background="@drawable/user_info_dialog_bg"
+                    android:descendantFocusability="beforeDescendants"
+                    android:orientation="vertical"
+                    android:padding="10.0dip"
+                    android:theme="@style/UserInfoDialog">
+
+                    <LinearLayout
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginBottom="15.0dip"
+                        android:gravity="center_vertical"
+                        android:orientation="horizontal"
+                        android:paddingEnd="10.0dip">
+
+                        <ImageView
+                            android:id="@+id/user_dialog_prof_avatar"
+                            android:layout_width="27.0dip"
+                            android:layout_height="27.0dip"
+                            android:src="@drawable/profile_avatar_1" />
+
+                        <LinearLayout
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="8.0dip"
+                            android:orientation="vertical"
+                            android:paddingTop="5.0dip">
+
+                            <TextView
+                                android:id="@+id/user_dialog_prof_name"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginTop="0.0dip"
+                                android:ellipsize="marquee"
+                                android:fontFamily="@font/open_sans_semibold"
+                                android:maxWidth="159.0dip"
+                                android:singleLine="true"
+                                android:text="current prof name..." />
+                        </LinearLayout>
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:id="@+id/btn_change_profile"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginEnd="4.0dip"
+                        android:background="@drawable/user_info_btns_bg_selector"
+                        android:focusable="true"
+                        android:gravity="center_vertical"
+                        android:orientation="horizontal"
+                        android:paddingTop="5.0dip"
+                        android:paddingEnd="8.0dip"
+                        android:paddingBottom="5.0dip">
+
+                        <ImageView
+                            android:layout_width="24.0dip"
+                            android:layout_height="24.0dip"
+                            android:src="@drawable/exo_icon_shuffle_on" />
+
+                        <TextView
+                            android:layout_width="@dimen/user_dialog_profile_item_width"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="8.0dip"
+                            android:ellipsize="marquee"
+                            android:fontFamily="@font/open_sans_regular"
+                            android:singleLine="true"
+                            android:text="Trocar perfil"
+                            android:textColor="@android:color/white"
+                            android:textSize="12.0sp" />
+                    </LinearLayout>
+
+                    <Button
+                        android:id="@+id/btn_edit_profiles"
+                        android:layout_width="wrap_content"
+                        android:layout_height="24.0dip"
+                        android:layout_marginTop="16.0dip"
+                        android:background="@drawable/user_info_btns_bg_selector"
+                        android:minWidth="@dimen/user_dialog_btns_min_width"
+                        android:paddingStart="10.0dip"
+                        android:paddingEnd="10.0dip"
+                        android:text="Editar perfils"
+                        android:textAlignment="textStart"
+                        android:textAllCaps="false"
+                        android:textColor="@android:color/white"
+                        android:visibility="gone" />
+
+                    <Button
+                        android:id="@+id/btn_account_settings"
+                        android:layout_width="wrap_content"
+                        android:layout_height="24.0dip"
+                        android:layout_marginTop="2.0dip"
+                        android:background="@drawable/user_info_btns_bg_selector"
+                        android:minWidth="@dimen/user_dialog_btns_min_width"
+                        android:paddingStart="10.0dip"
+                        android:paddingEnd="5.0dip"
+                        android:text="Configurações da conta"
+                        android:textAlignment="textStart"
+                        android:textAllCaps="false"
+                        android:textColor="@android:color/white"
+                        android:visibility="gone" />
+
+                    <Button
+                        android:id="@+id/btn_logout"
+                        android:layout_width="wrap_content"
+                        android:layout_height="24.0dip"
+                        android:layout_marginTop="2.0dip"
+                        android:background="@drawable/user_info_btns_bg_selector"
+                        android:minWidth="@dimen/user_dialog_btns_min_width"
+                        android:paddingStart="10.0dip"
+                        android:paddingEnd="10.0dip"
+                        android:text="Sair"
+                        android:textAlignment="textStart"
+                        android:textAllCaps="false"
+                        android:textColor="@android:color/white" />
+                </LinearLayout>
+            </LinearLayout>
+        </RelativeLayout>
     </FrameLayout>
 </LinearLayout>

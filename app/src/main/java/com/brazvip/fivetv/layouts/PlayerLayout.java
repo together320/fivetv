@@ -318,12 +318,6 @@ public class PlayerLayout extends FrameLayout {
     }
 
     public void initTVCore() {
-        if (Constant.OFFLINE_TEST == true) {
-            Message msg = new Message();
-            msg.what = Constant.MSG_PLAYER_LOADED;
-            MainActivity.SendMessage(msg);
-            return;
-        }
         mTVCore = TVCore.getInstance();
         if (mTVCore == null)
             return;
