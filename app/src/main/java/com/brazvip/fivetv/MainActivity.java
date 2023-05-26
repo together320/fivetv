@@ -82,6 +82,12 @@ public class MainActivity extends AutoLayoutActivity implements View.OnClickList
         ChannelInstance.getChannels();
         EPGInstance.Refresh();
         //VodChannelInstance.Refresh();
+
+        if (Constant.OFFLINE_TEST == true) {
+            Message msg = new Message();
+            msg.what = Constant.MSG_PLAYER_LOADED;
+            MainActivity.SendMessage(msg);
+        }
     }
 
     @SuppressLint("UseCompatLoadingForDrawables")

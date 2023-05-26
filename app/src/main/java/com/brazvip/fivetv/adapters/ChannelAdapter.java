@@ -9,6 +9,7 @@ import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
 
+import com.brazvip.fivetv.Config;
 import com.brazvip.fivetv.Constant;
 import com.brazvip.fivetv.R;
 import com.brazvip.fivetv.beans.ChannelBean;
@@ -40,7 +41,7 @@ public class ChannelAdapter extends BaseAdapter {
 
     public static int mChild;
 
-    public View.OnTouchListener mChannelListTouchListener = new View.OnTouchListener() { //View$OnTouchListenerC3475d
+    public View.OnTouchListener mChannelListTouchListener = new View.OnTouchListener() {
         @Override
         public boolean onTouch(View v, MotionEvent event) {
             //String log = "v: " + view.getId();
@@ -52,9 +53,8 @@ public class ChannelAdapter extends BaseAdapter {
     public ChannelAdapter(int i, List<ChannelBean> list, Context context, ListView listView) {
         this.mID = i;
         this.mList = list;
-        if (i == -4) {
-            //String log = "loadChannelData,A_Z sorted, size:" + mList.size();
-            Collections.sort(this.mList, new Comparator<ChannelBean>() { //C3474c, e.b.a.a.c
+        if (i == Constant.GROUP_ALL) {
+            Collections.sort(this.mList, new Comparator<ChannelBean>() {
                 @Override
                 public int compare(ChannelBean o1, ChannelBean o2) {
                     return o1.getName().getInit().compareTo(o2.getName().getInit()) >= 0 ? 1 : -1;
@@ -66,74 +66,59 @@ public class ChannelAdapter extends BaseAdapter {
         this.mContext = context;
     }
 
-    /* renamed from: a */
-    public boolean m2502a(int i) {
-        return mArrayList.contains(Integer.valueOf(i));
-    }
-
-    @Override // android.widget.Adapter
+    @Override
     public int getCount() {
         return this.mList.size();
     }
 
-    @Override // android.widget.Adapter
+    @Override
     public Object getItem(int position) {
         return mList.get(position);
     }
 
-    @Override // android.widget.Adapter
+    @Override
     public long getItemId(int position) {
         return position;
     }
 
-    @Override // android.widget.Adapter
-    public View getView(int position, View convertView, ViewGroup parent) {
-        if (convertView == null) {
-            convertView = View.inflate(parent.getContext(), R.layout.channel_item, null);
-            AutoUtils.auto(convertView, Attrs.WIDTH | Attrs.HEIGHT, AutoAttr.BASE_DEFAULT);
+    @Override
+    public View getView(int i, View view, ViewGroup viewGroup) {
+        if (view == null) {
+            view = View.inflate(viewGroup.getContext(), R.layout.channel_item, null);
+            AutoUtils.auto(view, 3, 3);
         }
-        ChannelBean channel = mList.get(position);
-        TextView tvName = (TextView) convertView.findViewById(R.id.channel_name);
-        String name = channel.getName().getInit();
-        if (this.mID != Constant.GROUP_ALL && channel.getSid() > 0) {
-            name = channel.getSid() + "." + name;
+        TextView textView = (TextView) view.findViewById(R.id.channel_name);
+        String init = mList.get(i).getName().getInit();
+        if (mID != -3 && mList.get(i).getSid() > 0) {
+            init = mList.get(i).getSid() + "." + init;
         }
-        TextView tvProgram = (TextView) convertView.findViewById(R.id.program_item);
-        if (ChannelInstance.favoriteLiveChannels.contains("" + channel.getChid())) {
-            tvName.setText("★ " + name);
+        textView.setText(init);
+        TextView textView2 = (TextView) view.findViewById(R.id.program_item);
+        String strEpgName = EPGInstance.getNameById(mList.get(i).getEpgSameAs() > 0 ? mList.get(i).getEpgSameAs() : mList.get(i).getChid());
+        if (strEpgName.equals("")) {
+            textView2.setVisibility(View.GONE);
         } else {
-            tvName.setText(name);
+            textView2.setVisibility(View.VISIBLE);
+            textView2.setText(strEpgName);
         }
-        //String programId = EPGInstance.getNameById(channel.getEpgSameAs() > 0 ? channel.getEpgSameAs() : channel.getChid());
-        int epg = channel.getEpgSameAs();
-        if (epg < 1) epg = channel.getChid();
-        String programId = EPGInstance.getNameById(epg);
-        if (programId.equals("")) {
-            tvProgram.setVisibility(View.GONE);
+        view.setTag(mList.get(i));
+        if (Config.f8924v) {
+            view.setOnTouchListener(mChannelListTouchListener);
+        }
+        ImageView imageView = (ImageView) view.findViewById(R.id.channel_started);
+        ImageView imageView2 = (ImageView) view.findViewById(R.id.channel_type_icon);
+        if (mList.get(i).getChid() == mChild) {
+            imageView.setVisibility(View.VISIBLE);
         } else {
-            tvProgram.setVisibility(View.VISIBLE);
-            tvProgram.setText(programId);
+            imageView.setVisibility(View.GONE);
         }
-        convertView.setTag(channel);
-        if (RestApiUtils.isLoadEPG) {
-            convertView.setOnTouchListener(mChannelListTouchListener);
-        }
-        ImageView ivStarted = (ImageView) convertView.findViewById(R.id.channel_started);
-        if (channel.getChid() == mChild) {
-            ivStarted.setVisibility(View.VISIBLE);
+        StringBuilder sb = new StringBuilder();
+        sb.append(mList.get(i).getChid());
+        if (ChannelInstance.favoriteLiveChannels.contains(sb.toString())) {
+            imageView2.setVisibility(View.VISIBLE);
         } else {
-            ivStarted.setVisibility(View.GONE);
+            imageView2.setVisibility(View.GONE);
         }
-        return convertView;
-    }
-
-    /* renamed from: a */
-    public void m2501a(ListView listView, int position) {
-        int firstVisiblePosition = listView.getFirstVisiblePosition();
-        int lastVisiblePosition = listView.getLastVisiblePosition();
-        if (position < firstVisiblePosition || position > lastVisiblePosition) {
-            return;
-        }
-        getView(position, listView.getChildAt(position - firstVisiblePosition), listView);
+        return view;
     }
 }

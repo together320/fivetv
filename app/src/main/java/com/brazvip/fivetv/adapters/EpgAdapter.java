@@ -1,6 +1,7 @@
 package com.brazvip.fivetv.adapters;
 
 import android.annotation.SuppressLint;
+import android.content.Context;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
@@ -9,18 +10,14 @@ import android.widget.ExpandableListView;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import com.brazvip.fivetv.Constant;
-import com.brazvip.fivetv.MainActivity;
+import com.brazvip.fivetv.Config;
 import com.brazvip.fivetv.R;
 import com.brazvip.fivetv.SopApplication;
-import com.brazvip.fivetv.beans.ChannelBean;
 import com.brazvip.fivetv.beans.EpgBeans;
-import com.brazvip.fivetv.beans.Group;
 import com.brazvip.fivetv.instances.ChannelInstance;
-import com.brazvip.fivetv.instances.EPGInstance;
-import com.brazvip.fivetv.utils.PrefUtils;
 import com.brazvip.fivetv.utils.RestApiUtils;
 
+import com.brazvip.fivetv.utils.Utils;
 import com.zhy.autolayout.attr.Attrs;
 import com.zhy.autolayout.attr.AutoAttr;
 import com.zhy.autolayout.utils.AutoUtils;
@@ -39,46 +36,31 @@ import java.util.Locale;
 /* loaded from: classes.dex */
 public class EpgAdapter extends BaseExpandableListAdapter {
 
-    /* renamed from: a 13529 */
     public static final String TAG = "EpgAdapter";
 
-    /* renamed from: b */
-    public static String f13530b = "";
+    public static String selectedChildId = "";
 
-    /* renamed from: c */
-    public HashMap<Long, List<EpgBeans.EpgBean>> mEpgListHashMap;
+    public HashMap<Long, List<EpgBeans.EpgBean>> epgList;
 
-    /* renamed from: d */
-    public ExpandableListView f13532d;
+    public ExpandableListView expandableListView;
 
-    /* renamed from: e */
-    public List<Long> mEpgBlocks;
+    public List<Long> epgListKeys;
 
-    /* renamed from: f */
-    public String[] f13534f;
+    public HashMap<Long, ArrayList<Integer>> f8732k;
 
-    /* renamed from: g */
-    public int f13535g;
+    public String[] formattedDates;
+    public int epgSelectedGroupPosition;
 
-    /* renamed from: h */
     public boolean isExpandGroup;
 
-    /* renamed from: i */
-    public int f13537i;
+    public int liveChannelId;
 
-    /* renamed from: l */
-    public long f13540l;
+    public long dayWithZeroTime;
 
-    /* renamed from: m */
     public int f13541m;
 
-    /* renamed from: j */
-    public SimpleDateFormat f13538j = new SimpleDateFormat("EEE, MM-dd", Locale.getDefault());
+    public SimpleDateFormat dateFormat = new SimpleDateFormat("EEE, MM-dd", Locale.getDefault());
 
-    /* renamed from: k */
-    public SimpleDateFormat f13539k = new SimpleDateFormat("EEE MM-dd-hh-mm", Locale.getDefault());
-
-    /* renamed from: n 13542 */
     public View.OnTouchListener mTouchListener = new View.OnTouchListener() { //View$OnTouchListenerC3477f
         @Override
         public boolean onTouch(View view, MotionEvent event) {
@@ -92,168 +74,170 @@ public class EpgAdapter extends BaseExpandableListAdapter {
         }
     };
 
-    public EpgAdapter(HashMap<Long, List<EpgBeans.EpgBean>> hashMap, ExpandableListView listView, boolean z, int progress) {
+    public EpgAdapter(HashMap<Long, List<EpgBeans.EpgBean>> hashMap, ExpandableListView expandableListView, boolean z, int channelId) {
         this.f13541m = 0;
-        this.f13537i = progress;
-        this.f13532d = listView;
+        this.liveChannelId = channelId;
+        this.expandableListView = expandableListView;
         this.isExpandGroup = z;
-        this.mEpgListHashMap = hashMap;
+        this.epgList = hashMap;
         ArrayList<Long> needRemoveBlocks = new ArrayList<>(hashMap.keySet());
-        long time = new Date().getTime() + PrefUtils.f14035a;
-        f13540l = PrefUtils.getDateOfTime(time);
-        if (RestApiUtils.f13740e) {
+        long time = new Date().getTime() + Utils.DELTA_TIME;
+        dayWithZeroTime = Utils.getDayWithZeroTime(time);
+        if (Config.isEpgReverseOrder) {
             Collections.sort(needRemoveBlocks, Collections.reverseOrder());
         } else {
             Collections.sort(needRemoveBlocks);
         }
-        if (RestApiUtils.f13742g && progress == 100) {
-            Iterator<Long> it = needRemoveBlocks.iterator();
+
+        ArrayList arrayList = new ArrayList(hashMap.keySet());
+        HashMap<Long, ArrayList<Integer>> hashMap2 = new HashMap<>();
+        if (ChannelInstance.liveChannels == null || ChannelInstance.liveChannels.get(Integer.valueOf(liveChannelId)) == null ||
+                !ChannelInstance.liveChannels.get(Integer.valueOf(liveChannelId)).isHasPlayBack()) {
+            Iterator it = arrayList.iterator();
             while (it.hasNext()) {
-                long pos = it.next().longValue();
-                if (pos < f13540l) {
+                long longValue = ((Long) it.next()).longValue();
+                if (longValue < this.dayWithZeroTime) {
                     it.remove();
                 } else {
-                    List<EpgBeans.EpgBean> list = hashMap.get(Long.valueOf(pos));
-                    if (list != null) {
-                        for (int i = 0; i < list.size(); i++) {
-                            if (list.get(i).getEndTime().longValue() >= time) {
-                                f13541m = i;
-                                break;
-                            }
+                    List<EpgBeans.EpgBean> list = hashMap.get(Long.valueOf(longValue));
+                    ArrayList<Integer> arrayList2 = new ArrayList<>();
+                    for (int i2 = 0; i2 < list.size(); i2++) {
+                        if (list.get(i2).getTime().longValue() < time) {
+                            arrayList2.add(Integer.valueOf(i2));
                         }
                     }
+                    hashMap2.put(Long.valueOf(longValue), arrayList2);
                 }
             }
         }
-        mEpgBlocks = needRemoveBlocks;
-        int count = needRemoveBlocks.size();
-        f13534f = new String[count];
-        for (int i = 0; i < count; i++) {
-            f13534f[i] = f13538j.format(mEpgBlocks.get(i));
+        this.epgListKeys = arrayList;
+        this.formattedDates = new String[arrayList.size()];
+        for (int i3 = 0; i3 < arrayList.size(); i3++) {
+            this.formattedDates[i3] = this.dateFormat.format(this.epgListKeys.get(i3));
         }
+        this.f8732k = hashMap2;
     }
 
-    @Override // android.widget.ExpandableListAdapter
+    @Override
     public Object getChild(int position, int childPosition) {
-        return mEpgListHashMap.get(mEpgBlocks.get(position)).get(childPosition);
+        return epgList.get(epgListKeys.get(position)).get(childPosition);
     }
 
-    @Override // android.widget.ExpandableListAdapter
+    @Override
     public long getChildId(int position, int childPosition) {
         return childPosition;
     }
 
     @SuppressLint("SetTextI18n")
-    @Override // android.widget.ExpandableListAdapter
-    public View getChildView(int groupPosition, int childPosition, boolean isLastChild, View convertView, ViewGroup parent) {
-        int targetPos = childPosition + f13541m;
-        List<EpgBeans.EpgBean> list = this.mEpgListHashMap.get(this.mEpgBlocks.get(groupPosition));
-        if (convertView == null) {
-            if (f13537i == 104) {
-                convertView = View.inflate(parent.getContext(), R.layout.epg_item_1line, null);
-            } else {
-                convertView = View.inflate(parent.getContext(), R.layout.epg_item, null);
-            }
-            AutoUtils.auto(convertView, Attrs.WIDTH | Attrs.HEIGHT, AutoAttr.BASE_DEFAULT);
-        }
-        TextView tvName = (TextView) convertView.findViewById(R.id.epg_item_name);
-        TextView tvTime = (TextView) convertView.findViewById(R.id.epg_item_time);
-        ImageView ivIcon = (ImageView) convertView.findViewById(R.id.epg_item_icon);
-        if (list != null && list.size() > 0) {
-            if (f13537i == 104) {
-                tvName.setTextColor(SopApplication.getAppContext().getResources().getColor(R.color.channel_epg_no_addr_txt));
-                tvName.setText(PrefUtils.m2249a(list.get(targetPos).getTime()) + " " + list.get(targetPos).getName());
-            } else {
-                tvName.setText(list.get(targetPos).getName());
-                String playbackUrl = list.get(targetPos).getPlaybackUrl();
-                if (playbackUrl != null && !playbackUrl.equals("")) {
-                    ivIcon.setVisibility(View.VISIBLE);
-                    tvName.setTextColor(SopApplication.getAppContext().getResources().getColor(R.color.white));
-                    tvTime.setTextColor(SopApplication.getAppContext().getResources().getColor(R.color.channel_epg_sub_txt));
-                    ImageView imageView2 = (ImageView) convertView.findViewById(R.id.epg_item_icon);
-                    if (list.get(targetPos).getId().equals(f13530b)) {
-                        imageView2.setImageResource(R.mipmap.live_play);
-                    } else {
-                        imageView2.setImageResource(R.mipmap.live);
-                    }
-                } else {
-                    ivIcon.setVisibility(View.GONE);
-                    tvName.setTextColor(SopApplication.getAppContext().getResources().getColor(R.color.channel_epg_no_addr_txt));
-                    tvTime.setTextColor(SopApplication.getAppContext().getResources().getColor(R.color.channel_epg_no_addr_txt));
+    @Override
+    //public View getChildView(int groupPosition, int childPosition, boolean isLastChild, View convertView, ViewGroup parent) {
+    public View getChildView(int i, int j, boolean z, View view, ViewGroup viewGroup) {
+        Context context;
+        int i3;
+        if (this.epgListKeys.get(i) != null && this.f8732k.get(this.epgListKeys.get(i)) != null) {
+            Iterator<Integer> it = this.f8732k.get(this.epgListKeys.get(i)).iterator();
+            while (it.hasNext()) {
+                if (it.next().intValue() <= j) {
+                    j++;
                 }
-                tvTime.setText(PrefUtils.m2249a(list.get(targetPos).getTime()) + "-" + PrefUtils.m2249a(list.get(targetPos).getEndTime()));
-                convertView.setTag(list.get(targetPos));
             }
         }
-        return convertView;
+        List<EpgBeans.EpgBean> list = this.epgList.get(this.epgListKeys.get(i));
+        String playbackUrl = list.get(j).getPlaybackUrl();
+        if (view == null) {
+            if (ChannelInstance.liveChannels == null || ChannelInstance.liveChannels.get(Integer.valueOf(this.liveChannelId)) == null ||
+                    !ChannelInstance.liveChannels.get(Integer.valueOf(this.liveChannelId)).isHasPlayBack()) {
+                context = viewGroup.getContext();
+                i3 = R.layout.epg_item_1line;
+            } else {
+                context = viewGroup.getContext();
+                i3 = R.layout.epg_item;
+            }
+            view = View.inflate(context, i3, null);
+            AutoUtils.auto(view, 3, 3);
+        }
+        TextView textView = (TextView) view.findViewById(R.id.epg_item_name);
+        TextView textView2 = (TextView) view.findViewById(R.id.epg_item_time);
+        ImageView imageView = (ImageView) view.findViewById(R.id.epg_item_icon);
+        if (list.size() > 0) {
+            if (ChannelInstance.liveChannels == null || ChannelInstance.liveChannels.get(Integer.valueOf(this.liveChannelId)) == null ||
+                    ChannelInstance.liveChannels.get(Integer.valueOf(this.liveChannelId)).isHasPlayBack()) {
+                textView.setText(list.get(j).getName());
+                if (playbackUrl == null || playbackUrl.equals("")) {
+                    imageView.setVisibility(View.GONE);
+                    textView.setTextColor(SopApplication.getSopContext().getResources().getColor(R.color.channel_epg_no_addr_txt));
+                    textView2.setTextColor(SopApplication.getSopContext().getResources().getColor(R.color.channel_epg_no_addr_txt));
+                } else {
+                    imageView.setVisibility(View.VISIBLE);
+                    textView.setTextColor(SopApplication.getSopContext().getResources().getColor(R.color.white));
+                    textView2.setTextColor(SopApplication.getSopContext().getResources().getColor(R.color.channel_epg_sub_txt));
+                    ((ImageView) view.findViewById(R.id.epg_item_icon)).setImageResource(list.get(j).getId().equals(selectedChildId) ? R.mipmap.live_play : R.mipmap.live);
+                }
+                String millisToHoursAndMinutes = Utils.millisToHoursAndMinutes(list.get(j).getTime());
+                String millisToHoursAndMinutes2 = Utils.millisToHoursAndMinutes(list.get(j).getEndTime());
+                textView2.setText(millisToHoursAndMinutes + "-" + millisToHoursAndMinutes2);
+                view.setTag(list.get(j));
+            } else {
+                textView.setTextColor(SopApplication.getSopContext().getResources().getColor(R.color.channel_epg_no_addr_txt));
+                textView.setText(Utils.millisToHoursAndMinutes(list.get(j).getTime()) + " " + list.get(j).getName());
+            }
+            view.setTag(R.id.chid, String.valueOf(this.liveChannelId));
+        }
+        return view;
     }
 
-    @Override // android.widget.ExpandableListAdapter
-    public int getChildrenCount(int groupPosition) {
-        List<EpgBeans.EpgBean> list = mEpgListHashMap.get(mEpgBlocks.get(groupPosition));
-        if (list == null || list.size() <= 0) {
+    @Override
+    public int getChildrenCount(int i) {
+        List<EpgBeans.EpgBean> list = epgList.get(epgListKeys.get(i));
+        if (list == null || list.size() == 0) {
             return 0;
         }
-        return list.size() - f13541m;
+        return list.size() - (this.f8732k.get(this.epgListKeys.get(i)) != null ? this.f8732k.get(this.epgListKeys.get(i)).size() : 0);
     }
 
-    @Override // android.widget.ExpandableListAdapter
+    @Override
     public Object getGroup(int i) {
-        return mEpgBlocks.get(i);
+        return epgListKeys.get(i);
     }
 
-    @Override // android.widget.ExpandableListAdapter
+    @Override
     public int getGroupCount() {
-        return Math.max(mEpgBlocks.size(), 0);
+        return Math.max(epgListKeys.size(), 0);
     }
 
-    @Override // android.widget.ExpandableListAdapter
+    @Override
     public long getGroupId(int i) {
         return i;
     }
 
-    @Override // android.widget.ExpandableListAdapter
-    public View getGroupView(int groupPosition, boolean isExpandGrouped, View convertView, ViewGroup parent) {
-        if (convertView == null) {
-            convertView = View.inflate(parent.getContext(), R.layout.epg_day_item, null);
-            AutoUtils.auto(convertView, Attrs.WIDTH | Attrs.HEIGHT, AutoAttr.BASE_DEFAULT);
+    @Override
+    public View getGroupView(int i, boolean z, View view, ViewGroup viewGroup) {
+        if (view == null) {
+            view = View.inflate(viewGroup.getContext(), R.layout.epg_day_item, null);
+            AutoUtils.auto(view, 3, 3);
         }
-        TextView dayText = (TextView) convertView.findViewById(R.id.epg_day_text);
-        if (this.mEpgBlocks.get(groupPosition) != null && this.mEpgBlocks.size() > 0) {
-            dayText.setText(this.f13534f[groupPosition]);
-            ImageView imageView = (ImageView) convertView.findViewById(R.id.epg_group_arrow);
-            if (isExpandGrouped) {
-                imageView.setImageResource(R.mipmap.down);
-            } else {
-                imageView.setImageResource(R.mipmap.up);
-            }
-            if (RestApiUtils.f13742g) {
-                if (this.f13540l == this.mEpgBlocks.get(groupPosition).longValue() && this.f13537i == 100) {
-                    if (this.isExpandGroup) {
-                        this.f13532d.expandGroup(groupPosition);
-                    } else {
-                        this.f13532d.collapseGroup(groupPosition);
-                    }
-                    this.f13535g = groupPosition;
-                }
-            } else if (this.f13540l == this.mEpgBlocks.get(groupPosition).longValue()) {
+        TextView textView = (TextView) view.findViewById(R.id.epg_day_text);
+        if (this.epgListKeys.get(i) != null && this.epgListKeys.size() > 0) {
+            textView.setText(this.formattedDates[i]);
+            ((ImageView) view.findViewById(R.id.epg_group_arrow)).setImageResource(z ? R.mipmap.up : R.mipmap.down);
+            if (dayWithZeroTime == this.epgListKeys.get(i).longValue()) {
                 if (this.isExpandGroup) {
-                    this.f13532d.expandGroup(groupPosition);
+                    this.expandableListView.expandGroup(i);
                 } else {
-                    this.f13532d.collapseGroup(groupPosition);
+                    this.expandableListView.collapseGroup(i);
                 }
-                this.f13535g = groupPosition;
+                this.epgSelectedGroupPosition = i;
             }
         }
-        return convertView;
+        return view;
     }
 
-    @Override // android.widget.ExpandableListAdapter
+    @Override
     public boolean hasStableIds() {
         return false;
     }
 
-    @Override // android.widget.ExpandableListAdapter
+    @Override
     public boolean isChildSelectable(int i, int i2) {
         return true;
     }

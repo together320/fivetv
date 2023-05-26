@@ -125,8 +125,10 @@ public class PlayerLayout extends FrameLayout {
         initExoPlayer();
         initMessageHandler();
 
-        initTVCore();
-        initTVCarService();
+        if (Constant.OFFLINE_TEST == false) {
+            initTVCore();
+            initTVCarService();
+        }
     }
 
     private void initMessageHandler() {
