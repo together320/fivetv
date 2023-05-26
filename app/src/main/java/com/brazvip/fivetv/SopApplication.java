@@ -56,7 +56,6 @@ import okhttp3.Dns;
 import okhttp3.Interceptor;
 import okhttp3.OkHttpClient;
 import okhttp3.Response;
-import okhttp3.internal.io.FileSystem;
 
 /* compiled from: MyApplication */
 /* loaded from: classes.dex */
@@ -68,6 +67,11 @@ public class SopApplication extends Application implements InvocationHandler {
     /* renamed from: b 16777 */
     public static SopApplication instance;
 
+    public static String packageName = "";
+    public static String strAppName = null;
+    public static String strAppVersion = "";
+    public static int appVersionCode = 1;
+    public static String strUserAgent = "";
 
     /* renamed from: org.sopcast.android.SopApplication$a 4741 */
     public static class SopHttpInterceptor implements Interceptor {
@@ -173,6 +177,21 @@ public class SopApplication extends Application implements InvocationHandler {
         super.onCreate();
         AutoLayoutConifg.getInstance().useDeviceSize();
         instance = this;
+
+        strAppName = this.getString(R.string.app_name);
+        packageName = this.getPackageName();
+        try {
+            strAppVersion = this.getPackageManager().getPackageInfo(packageName, 0).versionName;
+        } catch (PackageManager.NameNotFoundException e) {
+            e.printStackTrace();
+        }
+        try {
+            appVersionCode = this.getPackageManager().getPackageInfo(packageName, 0).versionCode;
+        } catch (PackageManager.NameNotFoundException e2) {
+            e2.printStackTrace();
+        }
+        strUserAgent = String.format("Apache-HttpClient/Null (%s %s; Android %s; %s)", strAppName, strAppVersion, Build.VERSION.RELEASE, Build.MODEL);
+
         //CrashReport.initCrashReport(getApplicationContext(), AppConfig.BUGLY_APP_ID, false);
         //CrashReport.setAppChannel(getApplicationContext(), RestApiUtils.BUGLY_APP_CHANNEL);
         RestApiUtils.initValues();
@@ -184,6 +203,10 @@ public class SopApplication extends Application implements InvocationHandler {
         if (Build.VERSION.SDK_INT >= 18) {
             builder.detectFileUriExposure();
         }
+    }
+
+    public static Context getSopContext() {
+        return instance.getApplicationContext();
     }
 
     /* renamed from: a */

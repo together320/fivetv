@@ -10,30 +10,23 @@ import android.widget.ListView;
 import android.widget.TextView;
 
 import com.brazvip.fivetv.Constant;
-import com.brazvip.fivetv.MainActivity;
 import com.brazvip.fivetv.R;
 import com.brazvip.fivetv.beans.ChannelBean;
-import com.brazvip.fivetv.beans.EpgBeans;
-import com.brazvip.fivetv.beans.Group;
 import com.brazvip.fivetv.instances.ChannelInstance;
 import com.brazvip.fivetv.instances.EPGInstance;
 import com.brazvip.fivetv.layouts.MenuLayout;
 
-import com.brazvip.fivetv.utils.BsConf;
 import com.brazvip.fivetv.utils.RestApiUtils;
 import com.zhy.autolayout.attr.Attrs;
 import com.zhy.autolayout.attr.AutoAttr;
 import com.zhy.autolayout.utils.AutoUtils;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
 
-public class MenuChannelListAdapter extends BaseAdapter {
+public class ChannelAdapter extends BaseAdapter {
 
     public int mID;
 
@@ -56,7 +49,7 @@ public class MenuChannelListAdapter extends BaseAdapter {
         }
     };
 
-    public MenuChannelListAdapter(int i, List<ChannelBean> list, Context context, ListView listView) {
+    public ChannelAdapter(int i, List<ChannelBean> list, Context context, ListView listView) {
         this.mID = i;
         this.mList = list;
         if (i == -4) {
@@ -106,7 +99,7 @@ public class MenuChannelListAdapter extends BaseAdapter {
             name = channel.getSid() + "." + name;
         }
         TextView tvProgram = (TextView) convertView.findViewById(R.id.program_item);
-        if (ChannelInstance.mFavoriteChannels.contains("" + channel.getChid())) {
+        if (ChannelInstance.favoriteLiveChannels.contains("" + channel.getChid())) {
             tvName.setText("★ " + name);
         } else {
             tvName.setText(name);

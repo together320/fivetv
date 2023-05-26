@@ -14,8 +14,8 @@ import android.widget.Toast;
 
 import androidx.core.app.ActivityCompat;
 
-import com.brazvip.fivetv.Constant;
 import com.brazvip.fivetv.SopApplication;
+import com.brazvip.fivetv.Config;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
@@ -50,13 +50,17 @@ public class PrefUtils {
     /* renamed from: e */
     public static Formatter f14039e = new Formatter(f14038d, Locale.getDefault());
 
+    public static void Toast(int i) {
+        Toast(SopApplication.getAppContext().getString(i));
+    }
+
     public static void Toast(String text) {
         Toast.makeText(SopApplication.getAppContext(), text, 2000).show();
     }
 
     /* renamed from: a 2246 */
     public static void setPrefLong(String key, long time) {
-//        SharedPreferences.Editor edit = SopApplication.getAppContext().getSharedPreferences(BsConf.PREFS_NAME, 0).edit();
+//        SharedPreferences.Editor edit = SopApplication.getAppContext().getSharedPreferences(Config.PREFS_NAME, 0).edit();
 //        edit.putLong(key, time);
 //        edit.apply(); //commit();
     }
@@ -93,7 +97,7 @@ public class PrefUtils {
 
     /* renamed from: b */
     public static void setPrefInt(String key, int value) {
-        SharedPreferences.Editor edit = SopApplication.getAppContext().getSharedPreferences(BsConf.PREFS_NAME, 0).edit();
+        SharedPreferences.Editor edit = SopApplication.getAppContext().getSharedPreferences(Config.PREFS_NAME, 0).edit();
         edit.putInt(key, value);
         edit.apply();
     }
@@ -137,7 +141,7 @@ public class PrefUtils {
 
     /* renamed from: d */
     public static void setPrefString(String key, String value) {
-        SharedPreferences.Editor edit = SopApplication.getAppContext().getSharedPreferences(BsConf.PREFS_NAME, 0).edit();
+        SharedPreferences.Editor edit = SopApplication.getAppContext().getSharedPreferences(Config.PREFS_NAME, 0).edit();
         edit.putString(key, value);
         edit.apply();
     }
@@ -218,7 +222,7 @@ public class PrefUtils {
 
     /* renamed from: h */
     public static void removePrefItem(String key) {
-        SharedPreferences.Editor edit = SopApplication.getAppContext().getSharedPreferences(BsConf.PREFS_NAME, 0).edit();
+        SharedPreferences.Editor edit = SopApplication.getAppContext().getSharedPreferences(Config.PREFS_NAME, 0).edit();
         edit.remove(key);
         edit.apply();
     }
@@ -250,12 +254,12 @@ public class PrefUtils {
 
     /* renamed from: a */
     public static Integer getPrefInt(String keyName, int defValue) {
-        return Integer.valueOf(SopApplication.getAppContext().getSharedPreferences(BsConf.PREFS_NAME, 0).getInt(keyName, defValue));
+        return Integer.valueOf(SopApplication.getAppContext().getSharedPreferences(Config.PREFS_NAME, 0).getInt(keyName, defValue));
     }
 
     /* renamed from: b */
     public static void setPrefBool(String key, boolean value) {
-        SharedPreferences.Editor edit = SopApplication.getAppContext().getSharedPreferences(BsConf.PREFS_NAME, 0).edit();
+        SharedPreferences.Editor edit = SopApplication.getAppContext().getSharedPreferences(Config.PREFS_NAME, 0).edit();
         edit.putBoolean(key, value);
         edit.apply();
     }
@@ -287,17 +291,17 @@ public class PrefUtils {
 
     /* renamed from: a */
     public static Boolean getPrefBool(String keyName, boolean defValue) {
-        return SopApplication.getAppContext().getSharedPreferences(BsConf.PREFS_NAME, 0).getBoolean(keyName, defValue);
+        return SopApplication.getAppContext().getSharedPreferences(Config.PREFS_NAME, 0).getBoolean(keyName, defValue);
     }
 
     /* renamed from: a */
     public static String getPrefString(String keyName, String defValue) {
-        return SopApplication.getAppContext().getSharedPreferences(BsConf.PREFS_NAME, 0).getString(keyName, defValue);
+        return SopApplication.getAppContext().getSharedPreferences(Config.PREFS_NAME, 0).getString(keyName, defValue);
     }
 
     /* renamed from: b */
     public static void setPrefStringSet(String key, Set<String> value) {
-        SharedPreferences.Editor edit = SopApplication.getAppContext().getSharedPreferences(BsConf.PREFS_NAME, 0).edit();
+        SharedPreferences.Editor edit = SopApplication.getAppContext().getSharedPreferences(Config.PREFS_NAME, 0).edit();
         edit.putStringSet(key, value);
         //String m9114a = "#########" + key + value.toString();
         edit.apply();
@@ -305,7 +309,7 @@ public class PrefUtils {
 
     /* renamed from: a */
     public static Set<String> getPrefStringSet(String key, Set<String> value) {
-        return SopApplication.getAppContext().getSharedPreferences(BsConf.PREFS_NAME, 0).getStringSet(key, value);
+        return SopApplication.getAppContext().getSharedPreferences(Config.PREFS_NAME, 0).getStringSet(key, value);
     }
 
     /* renamed from: d */
@@ -340,7 +344,7 @@ public class PrefUtils {
     /* renamed from: a 2254 */
     public static void clearPreferences() {
         SharedPreferences.Editor edit = SopApplication.getAppContext()
-                .getSharedPreferences(BsConf.PREFS_NAME, 0).edit();
+                .getSharedPreferences(Config.PREFS_NAME, 0).edit();
         edit.clear();
         edit.apply();
     }

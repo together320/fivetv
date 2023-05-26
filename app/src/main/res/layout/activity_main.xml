@@ -136,6 +136,14 @@
                     android:id="@+id/menu_layout"
                     android:layout_width="wrap_content"
                     android:layout_height="fill_parent" />
+                <com.brazvip.fivetv.layouts.ProfileLayout
+                    android:id="@+id/profile_layout"
+                    android:layout_width="wrap_content"
+                    android:layout_height="fill_parent" />
+                <com.brazvip.fivetv.layouts.SettingLayout
+                    android:id="@+id/setting_layout"
+                    android:layout_width="wrap_content"
+                    android:layout_height="fill_parent" />
             </LinearLayout>
         </LinearLayout>
     </FrameLayout>

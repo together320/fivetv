@@ -1,11 +1,16 @@
-package com.brazvip.fivetv.utils;
+package com.brazvip.fivetv;
 
 import java.util.HashMap;
 
-/* compiled from: MyApplication */
-/* renamed from: e.b.a.a 3455 */
-/* loaded from: classes.dex */
-public class BsConf {
+public class Config {
+
+    public static boolean isPlayback = true;
+
+    public static boolean f8896P = true;
+    public static boolean FLAG_PLAYBACK_ENABLE = true;
+    public static boolean FLAG_FAVORITE_INIT = true;
+
+    public static String crashReportAppChannel = "official";
 
     /* renamed from: A */
     public static final int f13314A = 81;

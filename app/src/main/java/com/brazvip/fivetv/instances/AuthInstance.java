@@ -2,6 +2,7 @@ package com.brazvip.fivetv.instances;
 
 import android.os.Handler;
 import android.os.Message;
+import android.util.Log;
 
 import com.alibaba.fastjson.JSON;
 import com.brazvip.fivetv.Constant;
@@ -80,6 +81,7 @@ public class AuthInstance {
 
     private static void onLoginSuccess(String result) {
         try {
+            Log.d("AuthInstance", result);
             mAuthInfo = JSON.parseObject(result, AuthInfo.class);
 
             if (mAuthInfo.code != 0 && mAuthInfo.code != -12) {

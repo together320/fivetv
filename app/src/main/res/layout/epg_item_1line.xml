@@ -16,6 +16,7 @@
             android:ellipsize="marquee"
             android:maxWidth="520px"
             android:singleLine="true"
+            android:fontFamily="@font/open_sans_bold"
             android:textColor="@color/channel_epg_no_addr_txt"
             android:textSize="40px" />
     </RelativeLayout>

@@ -8,35 +8,29 @@ import android.os.Looper;
 import android.os.Message;
 import android.util.AttributeSet;
 import android.view.LayoutInflater;
-import android.view.Menu;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ExpandableListView;
-import android.widget.FrameLayout;
 import android.widget.ListAdapter;
 import android.widget.ListView;
-import android.widget.RadioButton;
-import android.widget.RadioGroup;
 import android.widget.RelativeLayout;
 import android.widget.Toast;
 
 import com.brazvip.fivetv.Constant;
 import com.brazvip.fivetv.MainActivity;
+import com.brazvip.fivetv.Config;
 import com.brazvip.fivetv.R;
+import com.brazvip.fivetv.adapters.GroupAdapter;
+import com.brazvip.fivetv.adapters.ChannelAdapter;
 import com.brazvip.fivetv.adapters.EpgAdapter;
-import com.brazvip.fivetv.adapters.MenuChannelListAdapter;
+import com.brazvip.fivetv.beans.Group;
 import com.brazvip.fivetv.beans.ChannelBean;
 import com.brazvip.fivetv.beans.EpgBeans;
-import com.brazvip.fivetv.beans.Group;
 import com.brazvip.fivetv.dialogs.PasswordChangeDialog;
 import com.brazvip.fivetv.instances.ChannelInstance;
 import com.brazvip.fivetv.instances.EPGInstance;
-import com.brazvip.fivetv.adapters.MenuGroupListAdapter;
-import com.brazvip.fivetv.utils.BsConf;
 import com.brazvip.fivetv.utils.PrefUtils;
-import com.brazvip.fivetv.utils.RestApiUtils;
 
-import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -48,28 +42,28 @@ public class MenuLayout extends RelativeLayout {
     public ListView mChannelListView;
     public ExpandableListView mEpgListView;
 
-    public MenuGroupListAdapter mGroupListAdapter;
+    public GroupAdapter mGroupListAdapter;
 
-    public MenuChannelListAdapter mChannelListAdapter;
+    public ChannelAdapter mChannelListAdapter;
 
     public EpgAdapter mEpgAdapter;
 
     public static Handler mMsgHandler = null;
 
-    public HashMap<Integer, Group> mShowGroups;
+    public HashMap<Integer, Group> mGroupMap;
 
     public View mSelectedGroupView;
     public View mSelectedChannelView = null;
 
     public View mSelectedEPGView = null;
 
-    public BsConf.CHANNEL_TYPE mChannelType;
+    public Config.CHANNEL_TYPE mChannelType;
     
     public static int mSelectedChannelChild = 0;
 
     public static boolean mTouchFlag = false;
 
-    public boolean f13822A = true;
+    public boolean isItemSelected = true;
 
     public boolean f13823B = true;
 
@@ -139,9 +133,9 @@ public class MenuLayout extends RelativeLayout {
 
     public void loadGroupData() {
         try {
-            mShowGroups = ChannelInstance.mGroups;
+            mGroupMap = ChannelInstance.groupChannelMap;
 
-            mGroupListAdapter = new MenuGroupListAdapter(getContext(), mShowGroups, mGroupListView);
+            mGroupListAdapter = new GroupAdapter(getContext(), mGroupMap, mGroupListView);
             mGroupListView.setAdapter(mGroupListAdapter);
 
             mGroupListView.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
@@ -152,14 +146,16 @@ public class MenuLayout extends RelativeLayout {
                 public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
                     if (view != null) {
                         mSelectedGroupView = view;
+                        isItemSelected = true;
+
                         int arg = ((Integer) view.getTag()).intValue();
-                        f13822A = true;
                         MenuLayout.mMsgHandler.removeMessages(2);
                         MenuLayout.mMsgHandler.sendMessage(Message.obtain(MenuLayout.mMsgHandler, 2, arg, 0));
-                        if (!isSelected) {
-                            view.setBackgroundResource(R.drawable.group_focus_bg);
-                        } else {
+
+                        if (isSelected) {
                             isSelected = false;
+                        } else {
+                            view.setBackgroundResource(R.drawable.group_focus_bg);
                         }
                     }
                 }
@@ -170,20 +166,19 @@ public class MenuLayout extends RelativeLayout {
                 }
             });
 
-            mGroupListView.setOnItemClickListener(new AdapterView.OnItemClickListener() { //C3545h, e.b.a.d.h
+            mGroupListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
                 @Override
                 public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                    //String log = "onGroupItemClick: " + position;
                     mGroupListView.requestFocusFromTouch();
                     mGroupListView.setSelection(position);
-                    mChannelType = BsConf.CHANNEL_TYPE.GROUP;
+                    mChannelType = Config.CHANNEL_TYPE.GROUP;
                     mSelectedGroupView = view;
-                    //String log = String.valueOf(view.isSelected()) + "| " + view.getTag();
+
                     Integer tag = (Integer) view.getTag();
                     if (tag != null) {
                         int index = tag.intValue();
-                        if (mShowGroups != null) {
-                            Group group = mShowGroups.get(tag);
+                        if (mGroupMap != null) {
+                            Group group = mGroupMap.get(tag);
                             if ((group != null) && group.restrictedAccess) {
                                 if (MainActivity.isRestrictedAccess) {
                                     MainActivity.isRestrictedAccess = false;
@@ -216,7 +211,7 @@ public class MenuLayout extends RelativeLayout {
                 }
             });
             mGroupListView.setVerticalScrollBarEnabled(false);
-            Set<Integer> ks = mShowGroups.keySet();
+            Set<Integer> ks = mGroupMap.keySet();
             Integer[] indices = (Integer[]) ks.toArray(new Integer[ks.size()]);
             Arrays.sort(indices);
             int arg = indices[0].intValue();
@@ -228,26 +223,23 @@ public class MenuLayout extends RelativeLayout {
     }
 
     public void loadChannelData(int key) {
-        //String log = "loadChannelData, " + key;
-        if (mChannelListView == null) {
+        if (mChannelListView == null)
             return;
-        }
-
-        Group group = mShowGroups.get(key);
+        Group group = mGroupMap.get(key);
         List<ChannelBean> channels = loadChannelByGroup(key);
         if (channels != null && channels.size() > 0) {
             if (!MainActivity.isRestrictedAccess && group.restrictedAccess) {
                 //String log = "restrictedAccess: " + mShowGroups.get(key).name;
                 if (!MainActivity.f16805n || mChannelListView.hasFocus() || mEpgListView.hasFocus()) {
                     mGroupListView.requestFocus();
-                    mChannelType = BsConf.CHANNEL_TYPE.GROUP;
+                    mChannelType = Config.CHANNEL_TYPE.GROUP;
                 }
                 mChannelListView.setVisibility(View.GONE);
                 mEpgListView.setVisibility(View.GONE);
                 return;
             }
             try {
-                mChannelListAdapter = new MenuChannelListAdapter(key, channels, getContext(), mChannelListView);
+                mChannelListAdapter = new ChannelAdapter(key, channels, getContext(), mChannelListView);
             } catch (Exception e) {
                 e.printStackTrace();
             }
@@ -274,11 +266,12 @@ public class MenuLayout extends RelativeLayout {
                             msg.what = 3;
                             msg.arg1 = epg;
                             MenuLayout.mMsgHandler.sendMessage(msg);
-                            if (f13822A) {
-                                f13822A = false;
+                            if (isItemSelected) {
+                                isItemSelected = false;
                                 view.clearFocus();
-                            } else
+                            } else {
                                 view.setBackgroundResource(R.drawable.channel_focus_bg);
+                            }
                         }
                     }
                 }
@@ -289,12 +282,12 @@ public class MenuLayout extends RelativeLayout {
                 }
             });
 
-            mChannelListView.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() { //C3547j(this, key) e.b.a.d.j
+            mChannelListView.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
                 @Override
                 public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
                     mChannelListView.requestFocusFromTouch();
                     mChannelListView.setSelection(position);
-                    //String log = "################## onItemLongClick" + key;
+
                     ChannelBean channel = (ChannelBean) view.getTag();
                     if (channel != null) {
 //                        List<ChannelBean.SourcesBean> sources = channel.getSources();
@@ -308,24 +301,15 @@ public class MenuLayout extends RelativeLayout {
                             EpgAdapter.f13530b = "";
                             mEpgAdapter.notifyDataSetChanged();
                         }
-                        int chid = channel.getChid();
-                        if (ChannelInstance.mFavoriteChannels.contains("" + chid)) {
+                        int child = channel.getChid();
+                        if (ChannelInstance.favoriteLiveChannels.contains("" + child)) {
                             Toast.makeText(getContext(), channel.getName().getInit() + " " +
                                     getContext().getString(R.string.remove_fav), Toast.LENGTH_SHORT).show();
-                            ChannelInstance.mFavoriteChannels.remove("" + chid);
-                            PrefUtils.setPrefStringSet(BsConf.SP_FAV_LIVE_CHANNEL, ChannelInstance.mFavoriteChannels);
-                            ChannelInstance.parseChannels();
-                            if (key == -5) {
-//                                if (MainActivity.mGroupType == 104) {
-//                                    List<ChannelBean> list = ChannelInstance.f13641d.get(-5).channnels;
-//                                    if ((list != null) && (list.size() > 0)) {
-//                                        mChannelListAdapter.f13523c = list;
-//                                        mChannelListAdapter.notifyDataSetChanged();
-//                                    } else
-//                                        MainActivity.mMsgHandler.sendEmptyMessage(112);
-//                                    return true;
-//                                }
-                                List<ChannelBean> list2 = ChannelInstance.mGroups.get(-5).channnels;
+                            ChannelInstance.favoriteLiveChannels.remove("" + child);
+                            PrefUtils.setPrefStringSet(Config.SP_FAV_LIVE_CHANNEL, ChannelInstance.favoriteLiveChannels);
+                            ChannelInstance.channelGrouping();
+                            if (key == Constant.GROUP_FAVORITE) {
+                                List<ChannelBean> list2 = ChannelInstance.groupChannelMap.get(Constant.GROUP_FAVORITE).channnels;
                                 if (list2 != null && list2.size() > 0) {
                                     mChannelListAdapter.mList = list2;
                                     mChannelListAdapter.notifyDataSetChanged();
@@ -338,17 +322,11 @@ public class MenuLayout extends RelativeLayout {
                         }
                         Toast.makeText(getContext(), channel.getName().getInit() + " " +
                                 getContext().getString(R.string.favorite_added), Toast.LENGTH_SHORT).show();
-                        ChannelInstance.mFavoriteChannels.add("" + chid);
-                        PrefUtils.setPrefStringSet(BsConf.SP_FAV_LIVE_CHANNEL, ChannelInstance.mFavoriteChannels);
-                        ChannelInstance.parseChannels();
-                        //mShowGroups = new HashMap<>();
-//                        if (MainActivity.mGroupType == 100) {
-//                            mShowGroups = ChannelInstance.f13640c;
-//                        } else {
-//                            mShowGroups = ChannelInstance.f13641d;
-//                        }
-                        if ((mShowGroups != null) && (mShowGroups.size() > 0)) {
-                            mGroupListAdapter.mGroupData = mShowGroups;
+                        ChannelInstance.favoriteLiveChannels.add("" + child);
+                        PrefUtils.setPrefStringSet(Config.SP_FAV_LIVE_CHANNEL, ChannelInstance.favoriteLiveChannels);
+                        ChannelInstance.channelGrouping();
+                        if ((mGroupMap != null) && (mGroupMap.size() > 0)) {
+                            mGroupListAdapter.mGroupData = mGroupMap;
                             mGroupListAdapter.notifyDataSetChanged();
                             return true;
                         }
@@ -378,7 +356,7 @@ public class MenuLayout extends RelativeLayout {
                         String address = sources.get(0).getAddress();
                         if (address == null || address.isEmpty())
                             return;
-                        MenuChannelListAdapter.mChild = channel.getChid();
+                        ChannelAdapter.mChild = channel.getChid();
                         if (mEpgAdapter != null) {
                             EpgAdapter.f13530b = "";
                             mEpgAdapter.notifyDataSetChanged();
@@ -388,7 +366,7 @@ public class MenuLayout extends RelativeLayout {
                             return;
                         }*/
                         startLiveChannel(channel);
-                        mChannelType = BsConf.CHANNEL_TYPE.CHANNEL;
+                        mChannelType = Config.CHANNEL_TYPE.CHANNEL;
                         mSelectedChannelView = view;
                     }
                     //cond_6, goto_2
@@ -410,7 +388,7 @@ public class MenuLayout extends RelativeLayout {
 
         if (!MainActivity.f16805n || mChannelListView.hasFocus() || mEpgListView.hasFocus()) {
             mGroupListView.requestFocus();
-            mChannelType = BsConf.CHANNEL_TYPE.GROUP;
+            mChannelType = Config.CHANNEL_TYPE.GROUP;
         }
         mChannelListView.setVisibility(View.GONE);
         mEpgListView.setVisibility(View.GONE);
@@ -418,14 +396,19 @@ public class MenuLayout extends RelativeLayout {
 
     public List<ChannelBean> loadChannelByGroup(int groupId) {
         List<ChannelBean> channels = new ArrayList<>();
-        for (ChannelBean channel : ChannelInstance.mChannels) {
+        for (ChannelBean channel : ChannelInstance.channelList) {
             if (groupId == Constant.GROUP_FAVORITE) {
-                if (ChannelInstance.mFavoriteChannels.contains("" + channel.getChid())) {
+                if (ChannelInstance.favoriteLiveChannels.contains("" + channel.getChid())) {
                     channels.add(channel);
                 }
             }
             else if (groupId == Constant.GROUP_ALL) {
-                if (channel.getLevel() == 18)
+                if (channel.getLevel() >= 18)
+                    continue;
+                channels.add(channel);
+            }
+            else if (groupId == Constant.GROUP_PLAYBACK) {
+                if (channel.getLevel() >= 18)
                     continue;
                 channels.add(channel);
             }
@@ -512,16 +495,16 @@ public class MenuLayout extends RelativeLayout {
                                     Bundle bundle = new Bundle();
                                     bundle.putString("url", playbackUrl);
                                     bundle.putString("name", epg.getName());
-                                    bundle.putString("type", BsConf.BS_MODE.BSPALYBACK.name());
+                                    bundle.putString("type", Config.BS_MODE.BSPALYBACK.name());
                                     msg.setData(bundle);
                                     MainActivity.mMsgHandler.sendMessage(msg);
                                     if (mChannelListAdapter != null) {
-                                        MenuChannelListAdapter.mChild = 0;
+                                        ChannelAdapter.mChild = 0;
                                         mChannelListAdapter.notifyDataSetChanged();
                                     }
                                     EpgAdapter.f13530b = epg.getId();
                                     mEpgAdapter.notifyDataSetChanged();
-                                    //mChannelType = BsConf.CHANNEL_TYPE.EPG;
+                                    //mChannelType = Config.CHANNEL_TYPE.EPG;
                                     mSelectedEPGView = v;
                                     return false;
                                 }
@@ -581,7 +564,7 @@ public class MenuLayout extends RelativeLayout {
         } else {
             params.putString("name", channel.getName().getInit());
         }
-        params.putString("type", BsConf.BS_MODE.BSLIVE.name());
+        params.putString("type", Config.BS_MODE.BSLIVE.name());
         msg.setData(params);
         MainActivity.mMsgHandler.sendMessage(msg);
     }
