@@ -16,10 +16,9 @@ import android.widget.EditText;
 import android.widget.TextView;
 
 import com.brazvip.fivetv.R;
-import com.zhy.autolayout.utils.AutoUtils;
-
 import com.brazvip.fivetv.utils.PrefUtils;
-import com.brazvip.fivetv.utils.BsConf;
+
+import com.zhy.autolayout.utils.AutoUtils;
 
 
 public class PasswordChangeDialog extends Dialog {

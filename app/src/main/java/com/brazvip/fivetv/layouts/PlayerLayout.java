@@ -22,13 +22,13 @@ import com.brazvip.fivetv.Constant;
 import com.brazvip.fivetv.MainActivity;
 import com.brazvip.fivetv.R;
 import com.brazvip.fivetv.SopApplication;
+import com.brazvip.fivetv.Config;
 import com.brazvip.fivetv.beans.ChannelBean;
 import com.brazvip.fivetv.beans.EpgBeans;
 import com.brazvip.fivetv.beans.Group;
 import com.brazvip.fivetv.instances.AuthInstance;
 import com.brazvip.fivetv.instances.ChannelInstance;
 import com.brazvip.fivetv.instances.EPGInstance;
-import com.brazvip.fivetv.utils.BsConf;
 import com.brazvip.fivetv.utils.PrefUtils;
 import com.google.android.exoplayer2.DefaultLoadControl;
 import com.google.android.exoplayer2.LoadControl;
@@ -254,7 +254,7 @@ public class PlayerLayout extends FrameLayout {
         return true;
     }
 
-    public void startChannel(String videoUrl, String videoName, BsConf.BS_MODE bsMode) {
+    public void startChannel(String videoUrl, String videoName, Config.BS_MODE bsMode) {
 
         if (Constant.OFFLINE_TEST == true) {
             return;
@@ -264,19 +264,19 @@ public class PlayerLayout extends FrameLayout {
         mMPCheckTime = Long.MAX_VALUE;
         mTmPlayerConn = mBuffer = 0;
 
-        if (bsMode == BsConf.BS_MODE.BSPALYBACK) {
+        if (bsMode == Config.BS_MODE.BSPALYBACK) {
             mCurrentTimeText.setText("00:00");
             mDurationTimeText.setText("00:00");
             videoName = SopApplication.getAppContext().getString(R.string.video_play_back) + ": " + videoName;
-        } else if (bsMode == BsConf.BS_MODE.BSVOD) {
+        } else if (bsMode == Config.BS_MODE.BSVOD) {
             mCurrentTimeText.setText("00:00");
             mDurationTimeText.setText("00:00");
             videoName = SopApplication.getAppContext().getString(R.string.video_vod) + ": " + videoName;
-        } else if (bsMode == BsConf.BS_MODE.BSLIVE) {
+        } else if (bsMode == Config.BS_MODE.BSLIVE) {
             mCurrentTimeText.setText(R.string.buffer);
             mDurationTimeText.setText("0/100");
             videoName = SopApplication.getAppContext().getString(R.string.video_live) + ": " + videoName;
-        } else if (bsMode == BsConf.BS_MODE.STATIC) {
+        } else if (bsMode == Config.BS_MODE.STATIC) {
             videoName = SopApplication.getAppContext().getString(R.string.video_vod) + ": " + videoName;
         }
 

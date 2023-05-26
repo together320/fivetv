@@ -19,6 +19,7 @@ public class Constant {
     public static final int MSG_PLAYER_LOADED = 5;
     public static final int MSG_PLAYER_START = 80;
 
-    public static final int GROUP_FAVORITE = -3;
-    public static final int GROUP_ALL = -2;
+    public static final int GROUP_FAVORITE = -5;
+    public static final int GROUP_PLAYBACK = -4;
+    public static final int GROUP_ALL = -3;
 }

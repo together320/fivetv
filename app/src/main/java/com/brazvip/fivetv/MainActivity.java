@@ -1,29 +1,26 @@
 package com.brazvip.fivetv;
 
-import androidx.appcompat.app.AppCompatActivity;
-
+import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
+import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
-import android.widget.Button;
 import android.widget.FrameLayout;
+import android.widget.ImageView;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
-import android.widget.RelativeLayout;
 
-import com.brazvip.fivetv.instances.AuthInstance;
 import com.brazvip.fivetv.instances.ChannelInstance;
 import com.brazvip.fivetv.instances.EPGInstance;
-import com.brazvip.fivetv.instances.VodChannelInstance;
 import com.brazvip.fivetv.layouts.MenuLayout;
 import com.brazvip.fivetv.layouts.PlayerLayout;
-import com.brazvip.fivetv.utils.BsConf;
-import com.brazvip.fivetv.utils.PrefUtils;
 
+import com.brazvip.fivetv.layouts.ProfileLayout;
+import com.brazvip.fivetv.layouts.SettingLayout;
 import com.zhy.autolayout.AutoLayoutActivity;
 
 public class MainActivity extends AutoLayoutActivity implements View.OnClickListener, View.OnKeyListener {
@@ -39,9 +36,11 @@ public class MainActivity extends AutoLayoutActivity implements View.OnClickList
         PLAYER,
         PROFILE
     }
+
     public static Handler mMsgHandler = null;
 
     private RadioGroup mRadioGroup = null;
+    private ImageView mProfileAvatar = null;
     private RadioButton mRadioDashboard = null;
     private RadioButton mRadioLive = null;
     private RadioButton mRadioVod = null;
@@ -51,6 +50,9 @@ public class MainActivity extends AutoLayoutActivity implements View.OnClickList
     private FrameLayout mLoadingLayout;
     private PlayerLayout mPlayerLayout;
     private MenuLayout mMenuLayout;
+    private ProfileLayout mProfileLayout;
+    private SettingLayout mSettingLayout;
+
 
     public FRAGMENT mPrevFragment = FRAGMENT.NONE;
     public FRAGMENT mCurrFragment = FRAGMENT.NONE;
@@ -58,6 +60,8 @@ public class MainActivity extends AutoLayoutActivity implements View.OnClickList
     private int mLoaded = 0;
 
     public static boolean isRestrictedAccess = false;
+
+    public static boolean isUpdating = false;
 
     public static boolean f16805n = true;
 
@@ -69,22 +73,34 @@ public class MainActivity extends AutoLayoutActivity implements View.OnClickList
         initComponents();
         initMessageHandler();
 
-        ChannelInstance.Refresh();
+        ChannelInstance.getChannels();
         EPGInstance.Refresh();
         //VodChannelInstance.Refresh();
     }
 
+    @SuppressLint("UseCompatLoadingForDrawables")
     private void initComponents() {
-        mRadioGroup = (RadioGroup)findViewById(R.id.main_rb);
-        mRadioDashboard = (RadioButton)findViewById(R.id.rb_dashboard);
-        mRadioLive = (RadioButton)findViewById(R.id.rb_live);
-        mRadioVod = (RadioButton)findViewById(R.id.rb_vod);
-        mRadioHistory = (RadioButton)findViewById(R.id.rb_history);
-        mRadioSetting = (RadioButton)findViewById(R.id.rb_setting);
+        mRadioGroup = (RadioGroup) findViewById(R.id.main_rb);
+        mProfileAvatar = (ImageView) findViewById(R.id.main_rb_profile_avatar);
+        mRadioDashboard = (RadioButton) findViewById(R.id.rb_dashboard);
+        mRadioLive = (RadioButton) findViewById(R.id.rb_live);
+        mRadioVod = (RadioButton) findViewById(R.id.rb_vod);
+        mRadioHistory = (RadioButton) findViewById(R.id.rb_history);
+        mRadioSetting = (RadioButton) findViewById(R.id.rb_setting);
 
-        mLoadingLayout = (FrameLayout)findViewById(R.id.loading_layout);
-        mPlayerLayout = (PlayerLayout)findViewById(R.id.player_layout);
+        mLoadingLayout = (FrameLayout) findViewById(R.id.loading_layout);
+        mPlayerLayout = (PlayerLayout) findViewById(R.id.player_layout);
         mMenuLayout = (MenuLayout) findViewById(R.id.menu_layout);
+        mProfileLayout = (ProfileLayout) findViewById(R.id.profile_layout);
+        mSettingLayout = (SettingLayout) findViewById(R.id.setting_layout);
+
+        mProfileAvatar.setImageResource(R.drawable.profile_avatar_1);
+        mProfileAvatar.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                refreshFragment(FRAGMENT.PROFILE);
+            }
+        });
 
         mRadioDashboard.setOnFocusChangeListener(new View.OnFocusChangeListener() {
             @Override
@@ -134,6 +150,8 @@ public class MainActivity extends AutoLayoutActivity implements View.OnClickList
         mPlayerLayout.setVisibility(View.GONE);
         mLoadingLayout.setVisibility(View.GONE);
         mMenuLayout.setVisibility(View.GONE);
+        mProfileLayout.setVisibility(View.GONE);
+        mSettingLayout.setVisibility(View.GONE);
 
         mRadioGroup.setVisibility(View.VISIBLE);
 
@@ -158,6 +176,7 @@ public class MainActivity extends AutoLayoutActivity implements View.OnClickList
                 break;
             case SETTING:
                 mRadioGroup.check(R.id.rb_setting);
+                mSettingLayout.setVisibility(View.VISIBLE);
                 break;
             case LOADING:
                 mRadioGroup.setVisibility(View.GONE);
@@ -168,6 +187,8 @@ public class MainActivity extends AutoLayoutActivity implements View.OnClickList
                 mPlayerLayout.setVisibility(View.VISIBLE);
                 break;
             case PROFILE:
+                mRadioGroup.setVisibility(View.GONE);
+                mProfileLayout.setVisibility(View.VISIBLE);
                 break;
         }
     }
@@ -207,10 +228,11 @@ public class MainActivity extends AutoLayoutActivity implements View.OnClickList
 
     @Override
     public void onBackPressed() {
-        if (mCurrFragment == FRAGMENT.PLAYER) {
+        if (mCurrFragment == FRAGMENT.PROFILE) {
+            refreshFragment(FRAGMENT.DASHBOARD);
+        } else if (mCurrFragment == FRAGMENT.PLAYER) {
             refreshFragment(mPrevFragment);
-        }
-        else {
+        } else {
             //PrefUtils.logout(this);
             super.onBackPressed();
         }
@@ -239,12 +261,19 @@ public class MainActivity extends AutoLayoutActivity implements View.OnClickList
 
         String videoURL = bundle.getString("url");
         String videoName = bundle.getString("name");
-        BsConf.BS_MODE bsMode = BsConf.BS_MODE.valueOf(bundle.getString("type"));
+        Config.BS_MODE bsMode = Config.BS_MODE.valueOf(bundle.getString("type"));
 
         mPlayerLayout.startChannel(videoURL, videoName, bsMode);
     }
 
     public static void SendMessage(Message msg) {
+        mMsgHandler.sendMessage(msg);
+    }
+
+    public static void SendMessage(int what) {
+        Message msg = new Message();
+        msg.what = what;
+        msg.arg1 = 0;
         mMsgHandler.sendMessage(msg);
     }
 
