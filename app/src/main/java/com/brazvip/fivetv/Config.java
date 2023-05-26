@@ -12,6 +12,15 @@ public class Config {
 
     public static String crashReportAppChannel = "official";
 
+    public static boolean isEPGAssendingSort = false;
+
+    public static boolean f8909g = false;
+
+    public static boolean f8924v = true;
+
+    public static boolean isEpgReverseOrder = false;
+
+
     /* renamed from: A */
     public static final int f13314A = 81;
 

@@ -33,6 +33,7 @@ import com.brazvip.fivetv.utils.PrefUtils;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Set;
@@ -96,7 +97,7 @@ public class MenuLayout extends RelativeLayout {
                 } else if (code == 2) {
                     loadChannelData(message.arg1);
                 } else if (code == 3) {
-                    loadEpgList4Channel(message.arg1);
+                    loadEpgListChannel(message.arg1);
                 }
                 super.handleMessage(message);
             }
@@ -134,9 +135,15 @@ public class MenuLayout extends RelativeLayout {
     public void loadGroupData() {
         try {
             mGroupMap = ChannelInstance.groupChannelMap;
+            if (mGroupMap == null || mGroupMap.size() == 0) {
+                return;
+            }
 
             mGroupListAdapter = new GroupAdapter(getContext(), mGroupMap, mGroupListView);
             mGroupListView.setAdapter(mGroupListAdapter);
+            if (this.mGroupListView.getVisibility() == View.GONE) {
+                this.mGroupListView.setVisibility(View.VISIBLE);
+            }
 
             mGroupListView.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
 
@@ -211,12 +218,33 @@ public class MenuLayout extends RelativeLayout {
                 }
             });
             mGroupListView.setVerticalScrollBarEnabled(false);
-            Set<Integer> ks = mGroupMap.keySet();
-            Integer[] indices = (Integer[]) ks.toArray(new Integer[ks.size()]);
-            Arrays.sort(indices);
-            int arg = indices[0].intValue();
-            mMsgHandler.removeMessages(2);
-            mMsgHandler.sendMessage(Message.obtain(mMsgHandler, 2, arg, 0));
+
+            Integer[] numArr = (Integer[]) this.mGroupMap.keySet().toArray(new Integer[0]);
+            if (numArr == null || numArr.length <= 0) {
+                return;
+            }
+            Arrays.sort(numArr, new Comparator<Integer>() {
+                @Override
+                public int compare(Integer num, Integer num2) {
+                    if (num == null && num2 == null) {
+                        return 0;
+                    }
+                    if (num == null) {
+                        return -1;
+                    }
+                    if (num2 == null) {
+                        return 1;
+                    }
+                    return num.compareTo(num2);
+                }
+            });
+            Integer num = numArr[0];
+            if (num == null) {
+                return;
+            }
+            int arg = num.intValue();
+            MenuLayout.mMsgHandler.removeMessages(2);
+            MenuLayout.mMsgHandler.sendMessage(Message.obtain(MenuLayout.mMsgHandler, 2, arg, 0));
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -298,7 +326,7 @@ public class MenuLayout extends RelativeLayout {
 //                            return false;
                         mChannelListAdapter.notifyDataSetChanged();
                         if (mEpgAdapter != null) {
-                            EpgAdapter.f13530b = "";
+                            EpgAdapter.selectedChildId = "";
                             mEpgAdapter.notifyDataSetChanged();
                         }
                         int child = channel.getChid();
@@ -358,7 +386,7 @@ public class MenuLayout extends RelativeLayout {
                             return;
                         ChannelAdapter.mChild = channel.getChid();
                         if (mEpgAdapter != null) {
-                            EpgAdapter.f13530b = "";
+                            EpgAdapter.selectedChildId = "";
                             mEpgAdapter.notifyDataSetChanged();
                         }
                         /*address = channel.getSources().get(0).getAddress();
@@ -396,128 +424,115 @@ public class MenuLayout extends RelativeLayout {
 
     public List<ChannelBean> loadChannelByGroup(int groupId) {
         List<ChannelBean> channels = new ArrayList<>();
-        for (ChannelBean channel : ChannelInstance.channelList) {
-            if (groupId == Constant.GROUP_FAVORITE) {
+
+        if (groupId == Constant.GROUP_FAVORITE) {
+            for (ChannelBean channel : ChannelInstance.channelList) {
                 if (ChannelInstance.favoriteLiveChannels.contains("" + channel.getChid())) {
                     channels.add(channel);
                 }
             }
-            else if (groupId == Constant.GROUP_ALL) {
-                if (channel.getLevel() >= 18)
-                    continue;
-                channels.add(channel);
-            }
-            else if (groupId == Constant.GROUP_PLAYBACK) {
-                if (channel.getLevel() >= 18)
-                    continue;
-                channels.add(channel);
-            }
-            else {
-                List<ChannelBean.TagsBean> tags = channel.getTags();
-                for (ChannelBean.TagsBean tag : tags) {
-                    if (tag.getId() == groupId) {
-                        channels.add(channel);
-                        break;
-                    }
-                }
-            }
+        } else {
+            channels = mGroupMap.get(groupId).channnels;
         }
 
         return channels;
     }
 
-    public void loadEpgList4Channel(int position) {
-        if (mEpgListView != null && EPGInstance.mEpgCacheMap != null) {
-            HashMap<Long, List<EpgBeans.EpgBean>> map = EPGInstance.mEpgCacheMap.get(Integer.valueOf(position));
-            if (map != null && map.size() > 0) {
-                try {
-                    mEpgAdapter = new EpgAdapter(map, mEpgListView, true, 100);
-                } catch (Exception e) {
-                  e.printStackTrace();
-                }
-                if (mEpgAdapter == null) {
-                    return;
-                }
-                mEpgListView.setAdapter(mEpgAdapter);
-                if (mEpgListView.getVisibility() == View.GONE) {
-                    mEpgListView.setVisibility(View.VISIBLE);
-                }
-                mEpgListView.setGroupIndicator(null);
-                mEpgListView.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() { //C3551n
-                    @Override
-                    public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                        if (view != null) {
-                            mSelectedEPGView = view;
-                            if (!f13823B) {
-                                view.setBackgroundResource(R.drawable.epg_focus_bg);
-                            } else {
-                                f13823B = false;
-                            }
-                        }
-                    }
+    public void loadEpgListChannel(int index) {
+        if (mEpgListView == null ||
+            EPGInstance.liveEpgsMap == null ||
+            EPGInstance.liveEpgsMap.get(Integer.valueOf(index)) == null ||
+            ((HashMap) EPGInstance.liveEpgsMap.get(Integer.valueOf(index))).size() == 0) {
 
-                    @Override
-                    public void onNothingSelected(AdapterView<?> parent) {
-
-                    }
-                });
-                mEpgListView.setOnGroupClickListener(new ExpandableListView.OnGroupClickListener() { //C3540c
-                    @Override
-                    public boolean onGroupClick(ExpandableListView parent, View v, int groupPosition, long id) {
-                        if (groupPosition == mEpgAdapter.f13535g) {
-                            if (parent.isGroupExpanded(mEpgAdapter.f13535g)) {
-                                parent.collapseGroup(mEpgAdapter.f13535g);
-                                mEpgAdapter.isExpandGroup = false;
-                            } else {
-                                parent.expandGroup(mEpgAdapter.f13535g);
-                                mEpgAdapter.isExpandGroup = true;
-                            }
-                        } else if (parent.isGroupExpanded(groupPosition)) {
-                            parent.collapseGroup(groupPosition);
-                        } else {
-                            parent.expandGroup(groupPosition);
-                        }
-                        return true;
-                    }
-                });
-                mEpgListView.setOnChildClickListener(new ExpandableListView.OnChildClickListener() { //C3541d
-                    @Override
-                    public boolean onChildClick(ExpandableListView parent, View v, int groupPosition, int childPosition, long id) {
-                        if (mEpgListView != null && v != null) {
-                            mEpgListView.requestFocusFromTouch();
-                            mEpgListView.setSelectedChild(groupPosition, childPosition, true);
-                            EpgBeans.EpgBean epg = (EpgBeans.EpgBean) v.getTag();
-                            if (epg != null) {
-                                String playbackUrl = epg.getPlaybackUrl();
-                                if ((playbackUrl != null) && !playbackUrl.equals("")) {
-                                    Message msg = new Message();
-                                    msg.what = Constant.MSG_PLAYER_START;
-                                    Bundle bundle = new Bundle();
-                                    bundle.putString("url", playbackUrl);
-                                    bundle.putString("name", epg.getName());
-                                    bundle.putString("type", Config.BS_MODE.BSPALYBACK.name());
-                                    msg.setData(bundle);
-                                    MainActivity.mMsgHandler.sendMessage(msg);
-                                    if (mChannelListAdapter != null) {
-                                        ChannelAdapter.mChild = 0;
-                                        mChannelListAdapter.notifyDataSetChanged();
-                                    }
-                                    EpgAdapter.f13530b = epg.getId();
-                                    mEpgAdapter.notifyDataSetChanged();
-                                    //mChannelType = Config.CHANNEL_TYPE.EPG;
-                                    mSelectedEPGView = v;
-                                    return false;
-                                }
-                            }
-                        }
-                        return true;
-                    }
-                });
+            ExpandableListView expandableListView = mEpgListView;
+            if (expandableListView != null) {
+                expandableListView.setVisibility(View.GONE);
                 return;
             }
+            return;
         }
+        try {
+            mEpgAdapter = new EpgAdapter((HashMap) EPGInstance.liveEpgsMap.get(Integer.valueOf(index)), mEpgListView, true, index);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        if (mEpgAdapter == null)
+            return;
 
-        mEpgListView.setVisibility(View.GONE);
+        mEpgListView.setAdapter(mEpgAdapter);
+        if (mEpgListView.getVisibility() == View.GONE)
+            mEpgListView.setVisibility(View.VISIBLE);
+        mEpgListView.setGroupIndicator(null);
+        mEpgListView.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() { //C3551n
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                if (view != null) {
+                    mSelectedEPGView = view;
+                    if (!f13823B) {
+                        view.setBackgroundResource(R.drawable.epg_focus_bg);
+                    } else {
+                        f13823B = false;
+                    }
+                }
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> parent) {
+
+            }
+        });
+        mEpgListView.setOnGroupClickListener(new ExpandableListView.OnGroupClickListener() { //C3540c
+            @Override
+            public boolean onGroupClick(ExpandableListView parent, View v, int groupPosition, long id) {
+                if (groupPosition == mEpgAdapter.epgSelectedGroupPosition) {
+                    if (parent.isGroupExpanded(mEpgAdapter.epgSelectedGroupPosition)) {
+                        parent.collapseGroup(mEpgAdapter.epgSelectedGroupPosition);
+                        mEpgAdapter.isExpandGroup = false;
+                    } else {
+                        parent.expandGroup(mEpgAdapter.epgSelectedGroupPosition);
+                        mEpgAdapter.isExpandGroup = true;
+                    }
+                } else if (parent.isGroupExpanded(groupPosition)) {
+                    parent.collapseGroup(groupPosition);
+                } else {
+                    parent.expandGroup(groupPosition);
+                }
+                return true;
+            }
+        });
+        mEpgListView.setOnChildClickListener(new ExpandableListView.OnChildClickListener() { //C3541d
+            @Override
+            public boolean onChildClick(ExpandableListView parent, View v, int groupPosition, int childPosition, long id) {
+                if (mEpgListView != null && v != null) {
+                    mEpgListView.requestFocusFromTouch();
+                    mEpgListView.setSelectedChild(groupPosition, childPosition, true);
+                    EpgBeans.EpgBean epg = (EpgBeans.EpgBean) v.getTag();
+                    if (epg != null) {
+                        String playbackUrl = epg.getPlaybackUrl();
+                        if ((playbackUrl != null) && !playbackUrl.equals("")) {
+                            Message msg = new Message();
+                            msg.what = Constant.MSG_PLAYER_START;
+                            Bundle bundle = new Bundle();
+                            bundle.putString("url", playbackUrl);
+                            bundle.putString("name", epg.getName());
+                            bundle.putString("type", Config.BS_MODE.BSPALYBACK.name());
+                            msg.setData(bundle);
+                            MainActivity.mMsgHandler.sendMessage(msg);
+                            if (mChannelListAdapter != null) {
+                                ChannelAdapter.mChild = 0;
+                                mChannelListAdapter.notifyDataSetChanged();
+                            }
+                            EpgAdapter.selectedChildId = epg.getId();
+                            mEpgAdapter.notifyDataSetChanged();
+                            //mChannelType = Config.CHANNEL_TYPE.EPG;
+                            mSelectedEPGView = v;
+                            return false;
+                        }
+                    }
+                }
+                return true;
+            }
+        });
     }
 
     public List<EpgBeans> loadEpgById(int id) {
