@@ -199,9 +199,7 @@ public class MainActivity extends AutoLayoutActivity implements View.OnClickList
     }
 
     private void checkLoaded() {
-        if (mLoaded == 0b011)
-            mPlayerLayout.initTVCore();
-        else if (mLoaded == 0b111)
+        if (mLoaded == 0b111)
             refreshFragment(FRAGMENT.DASHBOARD);
     }
 

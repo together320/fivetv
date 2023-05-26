@@ -6,66 +6,100 @@ import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
 import android.os.Message;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
-import android.widget.ExpandableListView;
 import android.widget.FrameLayout;
-import android.widget.ListView;
-import android.widget.RadioButton;
-import android.widget.RadioGroup;
+import android.widget.ImageView;
+import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
+import android.widget.SeekBar;
 import android.widget.TextView;
+import android.widget.VideoView;
+
+import androidx.annotation.Nullable;
 
 import com.brazvip.fivetv.Constant;
 import com.brazvip.fivetv.MainActivity;
 import com.brazvip.fivetv.R;
 import com.brazvip.fivetv.SopApplication;
-import com.brazvip.fivetv.beans.ChannelBean;
-import com.brazvip.fivetv.beans.EpgBeans;
-import com.brazvip.fivetv.beans.Group;
+import com.brazvip.fivetv.TVCarService;
 import com.brazvip.fivetv.instances.AuthInstance;
-import com.brazvip.fivetv.instances.ChannelInstance;
-import com.brazvip.fivetv.instances.EPGInstance;
 import com.brazvip.fivetv.utils.BsConf;
 import com.brazvip.fivetv.utils.PrefUtils;
 import com.google.android.exoplayer2.DefaultLoadControl;
+import com.google.android.exoplayer2.DefaultRenderersFactory;
+import com.google.android.exoplayer2.ExoPlaybackException;
 import com.google.android.exoplayer2.LoadControl;
+import com.google.android.exoplayer2.PlaybackParameters;
 import com.google.android.exoplayer2.Player;
 import com.google.android.exoplayer2.SimpleExoPlayer;
+import com.google.android.exoplayer2.Timeline;
+import com.google.android.exoplayer2.analytics.AnalyticsCollector;
 import com.google.android.exoplayer2.extractor.ts.TsExtractor;
+import com.google.android.exoplayer2.source.ExtractorMediaSource;
 import com.google.android.exoplayer2.source.MediaSource;
 import com.google.android.exoplayer2.source.ProgressiveMediaSource;
+import com.google.android.exoplayer2.source.TrackGroupArray;
+import com.google.android.exoplayer2.source.hls.HlsMediaSource;
+import com.google.android.exoplayer2.trackselection.DefaultTrackSelector;
+import com.google.android.exoplayer2.trackselection.TrackSelectionArray;
+import com.google.android.exoplayer2.ui.AspectRatioFrameLayout;
 import com.google.android.exoplayer2.ui.PlayerView;
 import com.google.android.exoplayer2.upstream.DataSource;
+import com.google.android.exoplayer2.upstream.DefaultBandwidthMeter;
 import com.google.android.exoplayer2.upstream.DefaultDataSourceFactory;
+import com.google.android.exoplayer2.upstream.TransferListener;
+import com.google.android.exoplayer2.util.Clock;
+import com.google.android.exoplayer2.video.VideoListener;
 import com.tvbus.engine.TVCore;
 import com.tvbus.engine.TVListener;
 import com.tvbus.engine.TVService;
 
+import org.greenrobot.eventbus.EventBus;
+import org.greenrobot.eventbus.Subscribe;
+import org.greenrobot.eventbus.ThreadMode;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.util.ArrayList;
-import java.util.List;
+import io.binstream.libtvcar.Libtvcar;
 
 public class PlayerLayout extends FrameLayout {
+    public static final String TAG = "PlayerLayout";
     public static TVCore mTVCore = null;
+    public static PlayerView mPlayerView = null;
+    public static VideoView mVideoView = null;
+    public static Handler mMsgHandler = null;
+    public static SimpleExoPlayer mExoPlayer = null;
 
     private TextView mProgramNameText = null;
     private TextView mCurrentTimeText = null;
     private TextView mDurationTimeText = null;
     private TextView mDlRateText = null;
+    public SeekBar mPlayerSeekBar;
+    public RelativeLayout mDlLayout;
+    public RelativeLayout mPlayerProcessBar;
+    public ProgressBar mLoadingProgress;
+    public ImageView mPlayerStatusImage;
 
+    public static int mPlayerMode = 1;   //0 - Android Media Player, 1 - ExoPlayer
     private int mBuffer;
     private int mDlRate;
     private int mTmPlayerConn;
     private long mMPCheckTime = 0;
     private static String playbackUrl;
-    private final static long MP_START_CHECK_INTERVAL = 10 * 1000 * 1000 * 1000L; // 10 second
-
-    private SimpleExoPlayer player;
+    public static final long MP_START_CHECK_INTERVAL = 8000000000L;
+    public static boolean mIsEnded = true;
+    public static int vod_ecode = 0;
+    public BsConf.BS_MODE mBsMode = BsConf.BS_MODE.BSLIVE;
+    public int mPlayerCurrentPos;
+    public int mPlayerDuration;
+    public int mPlayerSeekPos;
+    public String mCurrentVideoPath = "";
 
     public PlayerLayout(Context context) {
         super(context);
@@ -85,37 +119,91 @@ public class PlayerLayout extends FrameLayout {
     private void init(Context context) {
         LayoutInflater.from(context).inflate(R.layout.player_layout, this, true);
 
+        EventBus.getDefault().register(this);
+
         initComponents();
         initExoPlayer();
+        initMessageHandler();
+
+        initTVCore();
+        initTVCarService();
+    }
+
+    private void initMessageHandler() {
+        mMsgHandler = new Handler(Looper.getMainLooper()) {
+            @Override // android.os.Handler
+            public void handleMessage(Message message) {
+                switch (message.what) {
+                    case Constant.MSG_PLAYER_REFRESHINFO:
+                        mPlayerSeekBar.setProgress(mBuffer);
+                        mDurationTimeText.setText(mBuffer + "/100");
+                        SetDownloadRate(PrefUtils.m2251a(mDlRate));
+                        break;
+                    case Constant.MSG_PLAYER_PLAY:
+                        mCurrentVideoPath = message.getData().getString("videoPath");
+                        startPlaying(mCurrentVideoPath);
+                        break;
+                    case Constant.MSG_PLAYER_HIDEPROCESSBAR:
+                        mPlayerProcessBar.setVisibility(View.GONE);
+                        break;
+                    case Constant.MSG_PLAYER_CHECKPLAYER:
+                        checkPlayer();
+                        break;
+                    case Constant.MSG_PLAYER_RESUME:
+                        mMPCheckTime = System.nanoTime() + 4000000000L;
+                        resumePlayer();
+                        break;
+                    case Constant.MSG_PLAYER_STOP:
+                        showAuthError(message.arg1);
+                        break;
+                }
+                super.handleMessage(message);
+            }
+        };
     }
 
     private void initComponents() {
-        mProgramNameText = findViewById(R.id.program_name);
-        mCurrentTimeText = findViewById(R.id.player_current_time);
-        mDurationTimeText = findViewById(R.id.player_duration_time);
-        mDlRateText = findViewById(R.id.dl_rate);
+        this.mProgramNameText = (TextView) findViewById(R.id.program_name);
+        this.mDlLayout = (RelativeLayout) findViewById(R.id.dl_layout);
+        this.mDlRateText = (TextView) findViewById(R.id.dl_rate);
+        this.mDlLayout.setVisibility(View.GONE);
+        this.mLoadingProgress = (ProgressBar) findViewById(R.id.loading_progress);
+        this.mPlayerProcessBar = (RelativeLayout) findViewById(R.id.player_process_bar);
+        this.mPlayerProcessBar.setVisibility(View.GONE);
+        this.mCurrentTimeText = (TextView) findViewById(R.id.player_current_time);
+        this.mDurationTimeText = (TextView) findViewById(R.id.player_duration_time);
+        this.mPlayerSeekBar = (SeekBar) findViewById(R.id.player_seekbar);
+        this.mPlayerStatusImage = (ImageView) findViewById(R.id.player_status);
     }
 
     private void initExoPlayer() {
-        PlayerView playerView = findViewById(R.id.exoPlayerView);
-        playerView.requestFocus();
-        playerView.setControllerAutoShow(false);
-        playerView.setUseController(false);
-        playerView.setKeepScreenOn(true);
-
-        DefaultLoadControl.Builder builder = new DefaultLoadControl.Builder();
-        builder.setBufferDurationsMs(
-                2000,
-                15000,
-                500,
-                0
-        );
-        LoadControl loadControl = builder.createDefaultLoadControl();
-
-        player = new SimpleExoPlayer.Builder(SopApplication.getAppContext()).setLoadControl(loadControl).build();
-        player.addVideoListener(new com.google.android.exoplayer2.video.VideoListener() {
+        mPlayerView = findViewById(R.id.exoPlayerView);
+        //mPlayerView.setOnKeyListener(this);
+        //mPlayerView.setOnClickListener(this);
+        //mPlayerView.setOnTouchListener(this);
+        mPlayerView.setClickable(true);
+        mPlayerView.setFocusable(true);
+        mPlayerView.setControllerAutoShow(false);
+        mPlayerView.setUseController(false);
+        mPlayerView.setKeepScreenOn(true);
+        //ExoPlayer 2.11.3
+        DefaultBandwidthMeter bandwidthMeter = new DefaultBandwidthMeter.Builder(SopApplication.getAppContext()).build();
+        DefaultTrackSelector defaultTrackSelector = new DefaultTrackSelector(SopApplication.getAppContext());
+        LoadControl loadControl = new DefaultLoadControl.Builder().createDefaultLoadControl();
+        DefaultRenderersFactory renderersFactory = new DefaultRenderersFactory(SopApplication.getAppContext());
+        //renderersFactory.setExtensionRendererMode(DefaultRenderersFactory.EXTENSION_RENDERER_MODE_ON);
+        Looper looper = PrefUtils.getLooper();
+        AnalyticsCollector analyticsCollector = new AnalyticsCollector(Clock.DEFAULT);
+        mExoPlayer = new SimpleExoPlayer.Builder(SopApplication.getAppContext(), renderersFactory, defaultTrackSelector,
+                loadControl, bandwidthMeter, looper, analyticsCollector, true, Clock.DEFAULT).build();
+        mExoPlayer.addVideoListener(new VideoListener() { //C2498p in 4.92
             @Override
             public void onVideoSizeChanged(int width, int height, int unappliedRotationDegrees, float pixelWidthHeightRatio) {
+
+            }
+
+            @Override
+            public void onSurfaceSizeChanged(int width, int height) {
 
             }
 
@@ -124,8 +212,109 @@ public class PlayerLayout extends FrameLayout {
                 mMPCheckTime = System.nanoTime();
             }
         });
+        mExoPlayer.addListener(new Player.EventListener() { //C2500r in 4.92
+            @Override
+            public void onTimelineChanged(Timeline timeline, int reason) {
 
-        playerView.setPlayer(player);
+            }
+
+            @Override
+            public void onTimelineChanged(Timeline timeline, @Nullable Object manifest, int reason) {
+
+            }
+
+            @Override
+            public void onTracksChanged(TrackGroupArray trackGroups, TrackSelectionArray trackSelections) {
+
+            }
+
+            @Override
+            public void onLoadingChanged(boolean isLoading) {
+
+            }
+
+            @Override
+            public void onPlayerStateChanged(boolean playWhenReady, int playbackState) {
+                //String log = "exoPlayer onPlayerStateChanged playWhenReady: " + playWhenReady + " playbackState:" + playbackState;
+                if (playbackState == Player.STATE_ENDED) { //4
+                    mMPCheckTime = System.nanoTime();
+                    if (mBsMode == BsConf.BS_MODE.BSLIVE) {
+                        mMPCheckTime = System.nanoTime();
+                    } else if ((mBsMode == BsConf.BS_MODE.BSPALYBACK) ||
+                            (mBsMode == BsConf.BS_MODE.BSVOD)) { //cond_1
+                    }
+                }
+                //cond_2
+                if (playWhenReady) {
+                    hideProcessBarWithDelay(5000);
+                    mLoadingProgress.setVisibility(View.GONE);
+                }
+            }
+
+            @Override
+            public void onPlaybackSuppressionReasonChanged(int playbackSuppressionReason) {
+
+            }
+
+            @Override
+            public void onIsPlayingChanged(boolean isPlaying) {
+
+            }
+
+            @Override
+            public void onRepeatModeChanged(int repeatMode) {
+
+            }
+
+            @Override
+            public void onShuffleModeEnabledChanged(boolean shuffleModeEnabled) {
+
+            }
+
+            @Override
+            public void onPlayerError(ExoPlaybackException error) {
+                //String log = "exoPlayer onPlayerError:" + error;
+                mExoPlayer.stop(false);
+                mMPCheckTime = System.nanoTime();
+            }
+
+            @Override
+            public void onPositionDiscontinuity(int reason) {
+
+            }
+
+            @Override
+            public void onPlaybackParametersChanged(PlaybackParameters playbackParameters) {
+
+            }
+
+            @Override
+            public void onSeekProcessed() {
+
+            }
+        });
+
+        mPlayerView.setPlayer(mExoPlayer);
+        mPlayerView.setResizeMode(AspectRatioFrameLayout.RESIZE_MODE_FILL);
+    }
+
+    public void hideProcessBarWithDelay(int delay) {
+        this.mPlayerProcessBar.setVisibility(View.VISIBLE);
+        if (delay > 0) {
+            mMsgHandler.removeMessages(Constant.MSG_PLAYER_HIDEPROCESSBAR);
+            mMsgHandler.sendEmptyMessageDelayed(Constant.MSG_PLAYER_HIDEPROCESSBAR, delay);
+        }
+    }
+
+    public void initTVCarService() {
+        Libtvcar.setAuthURL(AuthInstance.mAuthInfo.service.auth_url_sdk);
+        String username = PrefUtils.getPrefString("username", "");
+        String password = PrefUtils.getPrefString("password", "");
+        if (!username.contains("@"))
+            username += Constant.DEFAULT_MAIL_SUFFIX;
+        Libtvcar.setUsername(username);
+        Libtvcar.setPassword(password);
+        TVCarService.runServiceWithInit();
     }
 
     public void initTVCore() {
@@ -135,10 +324,6 @@ public class PlayerLayout extends FrameLayout {
             MainActivity.SendMessage(msg);
             return;
         }
-
-        if (mTVCore != null)
-            return;
-
         mTVCore = TVCore.getInstance();
         if (mTVCore == null)
             return;
@@ -151,183 +336,359 @@ public class PlayerLayout extends FrameLayout {
         mTVCore.setUsername(username);
         mTVCore.setPassword(password);
 
-        mTVCore.setTVListener(new TVListener() {
-            @Override
+        mTVCore.setTVListener(new TVListener() { //C3647k
+            @Override // com.tvbus.engine.TVListener
+            public void onInfo(String result) {
+                boolean isOk = onTVCoreEvent("onInfo", result);
+                if (isOk) {
+                    //text = "TVCore onInfo ... " + result;
+                    mMsgHandler.sendEmptyMessage(Constant.MSG_PLAYER_REFRESHINFO);
+                }
+                mMsgHandler.sendEmptyMessage(Constant.MSG_PLAYER_CHECKPLAYER);
+            }
+
+            @Override // com.tvbus.engine.TVListener
             public void onInited(String result) {
-                parseCallbackInfo("onInited", result);
-            }
+                boolean isOk = onTVCoreEvent("onInited", result);
 
-            @Override
-            public void onStart(String result) {
-                parseCallbackInfo("onStart", result);
-            }
-
-            @Override
-            public void onPrepared(String result) {
-                if(parseCallbackInfo("onPrepared", result)) {
-                    startPlayback();
+                if (isOk) {
+                    Message msg = new Message();
+                    msg.what = Constant.MSG_PLAYER_LOADED;
+                    MainActivity.SendMessage(msg);
                 }
             }
 
-            @Override
-            public void onInfo(String result) {
-                parseCallbackInfo("onInfo", result);
-                checkPlayer();
+            @Override // com.tvbus.engine.TVListener
+            public void onPrepared(String result) {
+                boolean isOk = onTVCoreEvent("onPrepared", result);
+                if (isOk) {
+                    Message msg = new Message();
+                    Bundle params = new Bundle();
+                    params.putString("videoPath", playbackUrl);
+
+                    msg.what = Constant.MSG_PLAYER_PLAY;
+                    msg.setData(params);
+                    mMsgHandler.sendMessage(msg);
+                    mIsEnded = false;
+                }
+                //text = "TVCore onPrepared ... " + text;
             }
 
-            @Override
-            public void onStop(String result) {
-                parseCallbackInfo("onStop", result);
-            }
-
-            @Override
+            @Override // com.tvbus.engine.TVListener
             public void onQuit(String result) {
-                parseCallbackInfo("onQuit", result);
+                //text = "TVCore onQuit ... " + text;
+            }
+
+            @Override // com.tvbus.engine.TVListener
+            public void onStart(String result) {
+                onTVCoreEvent("onStart", result);
+                //text = "TVCore onStart ... " + text;
+            }
+
+            @Override // com.tvbus.engine.TVListener
+            public void onStop(String result) {
+                onTVCoreEvent("onStop", result);
+                //text = "TVCore onStop ... " + text;
             }
         });
 
         SopApplication.getAppContext().startService(new Intent(SopApplication.getAppContext(), TVService.class));
     }
 
-    private boolean parseCallbackInfo(String event, String result) {
-        JSONObject jsonObj = null;
-        String statusMessage = null;
-
+    public boolean onTVCoreEvent(String key, String result) {
+        JSONObject obj;
         try {
-            jsonObj = new JSONObject(result);
+            obj = new JSONObject(result);
         } catch (JSONException e) {
             e.printStackTrace();
+            obj = null;
         }
-
-        if(jsonObj == null) {
+        if (obj == null)
             return false;
+        int code = key.hashCode();
+        if (key.equals("onInited") && code == 1214334062) { //0 cond_b
+            int tvcore = obj.optInt("tvcore", 1);
+            return tvcore != 1;
+        } else if (key.equals("onStart") && code == -1336895037) { //1 cond_a
+            return true;
+        } else if (key.equals("onPrepared") && code == 1490401084) { //2 cond_6
+            String url = obj.optString("http", "");
+            if (!url.isEmpty()) {
+                playbackUrl = url;
+                return true;
+            }
+            return false;
+        } else if (key.equals("onInfo") && code == -1013260499) { //3
+            this.mBuffer  = obj.optInt("buffer", 0);
+            this.mDlRate = obj.optInt("download_rate", 0);
+            this.mTmPlayerConn = obj.optInt("hls_last_conn", 0);
+            return true;
+        } else if (key.equals("onStop") && code == -1012956543) { //4
+            int errno = obj.optInt("errno", 0);
+            if (errno != 0) {
+                Message msg = new Message();
+                msg.what = Constant.MSG_PLAYER_STOP;
+                msg.arg1 = errno;
+                mMsgHandler.sendMessage(msg);
+                return true;
+            }
+            return false;
+        } else if (key.equals("onQut") && code == 105869425) { //5
+            return true;
         }
-        switch (event) {
-            case "onInited":
-                if ((jsonObj.optInt("tvcore", 1)) == 0) {
-                    Message msg = new Message();
-                    msg.what = Constant.MSG_PLAYER_LOADED;
-                    MainActivity.SendMessage(msg);
-
-                    statusMessage = "Ready to go!";
-                }
-                else {
-                    statusMessage = "Init error!";
-                }
-                break;
-
-            case "onStart":
-                break;
-
-            case "onPrepared": // use http-mpegts as source
-                if(jsonObj.optString("http", null) != null) {
-                    playbackUrl = jsonObj.optString("http", null);
-                    break;
-                }
-
-                return false;
-            case "onInfo":
-                mTmPlayerConn = jsonObj.optInt("hls_last_conn", 0);
-                mBuffer = jsonObj.optInt("buffer", 0);
-                mDlRate = jsonObj.optInt("download_rate", 0);
-
-                runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        mDlRateText.setText(PrefUtils.m2251a(mDlRate));
-                    }
-                });
-
-                statusMessage = "" + mBuffer + "  "
-                        + jsonObj.optInt("download_rate", 0) * 8 / 1000 +"K";
-                break;
-
-            case "onStop":
-                if(jsonObj.optInt("errno", 1) < 0) {
-                    statusMessage = "stop: " + jsonObj.optInt("errno", 1);
-                }
-                break;
-
-            case "onQuit":
-                break;
-        }
-        return true;
+        return false;
     }
 
-    public void startChannel(String videoUrl, String videoName, BsConf.BS_MODE bsMode) {
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void onMessageEvent(TVCarService.InitedEvent event) {
+        vod_ecode = event.errno;
+        //String msg = "##### initMsg:" + event.errno;
+    }
 
-        if (Constant.OFFLINE_TEST == true) {
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void onMessageEvent(TVCarService.StartEvent event) {
+        String log = "##### StartMessage:" + event.errno + " url:" + event.url;
+        Log.e(TAG, log);
+    }
+
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void onMessageEvent(TVCarService.StopEvent event) {
+        String log = "##### StopMessage:" + event.errno + " url:" + event.url;
+        Log.e(TAG, log);
+
+        vod_ecode = event.errno;
+        if (vod_ecode != 0) {
+            Message msg = new Message();
+            msg.what = Constant.MSG_PLAYER_STOP;
+            msg.arg1 = vod_ecode;
+            mMsgHandler.sendMessage(msg);
+        }
+    }
+
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void onMessageEvent(TVCarService.PreparedEvent event) {
+        String url = event.url;
+        Message msg = new Message();
+        Bundle data = new Bundle();
+        data.putString("videoPath", url);
+        msg.what = Constant.MSG_PLAYER_PLAY;
+        msg.setData(data);
+        mMsgHandler.sendMessage(msg);
+    }
+
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void onMessageEvent(TVCarService.InfoEvent event) {
+        vod_ecode = event.errno;
+        if (mBsMode == BsConf.BS_MODE.BSPALYBACK || mBsMode == BsConf.BS_MODE.BSVOD) {
+            mMsgHandler.sendEmptyMessage(Constant.MSG_PLAYER_CHECKPLAYER);
+            SetDownloadRate(PrefUtils.m2251a(event.download_rate));
+            if (mPlayerMode == 1 && mExoPlayer.getPlayWhenReady()) {
+                this.mPlayerCurrentPos = (int) mExoPlayer.getCurrentPosition();
+                this.mPlayerDuration = (int) mExoPlayer.getDuration();
+                int progress = mExoPlayer.getBufferedPercentage();
+                //String log = "EXO_PLAYER currentPosition " + f16889rb + " duration " + f16891sb;
+                if (mPlayerDuration > 0) {
+                    this.mCurrentTimeText.setText(PrefUtils.m2253a(mPlayerCurrentPos / 1000));
+                    this.mDurationTimeText.setText(PrefUtils.m2253a(mPlayerDuration / 1000));
+                    this.mPlayerSeekBar.setProgress((mPlayerCurrentPos * 100) / mPlayerDuration);
+                    this.mPlayerSeekBar.setSecondaryProgress(progress);
+                    //String log = "EXO_PLAYER buffer: " + progress;
+                }
+            }
+        }
+    }
+
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void onMessageEvent(TVCarService.QuitEvent event) {
+        String log = "##### QuitMessage:" + event.errno;
+        Log.e(TAG, log);
+    }
+
+    public void startChannel(String videoURL, String videoName, BsConf.BS_MODE bsMode) {
+        this.mBsMode = bsMode;
+        if (videoURL == null || videoURL.equals("")) {
             return;
         }
-
-        stopPlayback();
-        mMPCheckTime = Long.MAX_VALUE;
-        mTmPlayerConn = mBuffer = 0;
-
-        if (bsMode == BsConf.BS_MODE.BSPALYBACK) {
+        if (mBsMode == BsConf.BS_MODE.BSLIVE) {
+            //String log5 = "mTVCore.start " + videoURL;
+            if (vod_ecode == BsConf.ErrorTypes.Err_210.value) {
+                Message msg = new Message();
+                msg.what = Constant.MSG_PLAYER_STOP;
+                msg.arg1 = BsConf.ErrorTypes.Err_210.value;
+                mMsgHandler.sendMessage(msg);
+                return;
+            }
+            mMPCheckTime = Long.MAX_VALUE;
+            mTVCore.start(videoURL);
+        } else if (mBsMode == BsConf.BS_MODE.BSPALYBACK || mBsMode == BsConf.BS_MODE.BSVOD) {
+            if (vod_ecode == BsConf.ErrorTypes.Err_210.value) {
+                Message msg = new Message();
+                msg.what = Constant.MSG_PLAYER_STOP;
+                msg.arg1 = BsConf.ErrorTypes.Err_210.value;
+                mMsgHandler.sendMessage(msg);
+                return;
+            }
+            if (mTVCore != null) {
+                mTVCore.stop();
+            }
+            int server = PrefUtils.getPrefInt(BsConf.SERVER, 0).intValue();
+            if (server != 0) {
+                videoURL = videoURL.replaceFirst("\\.", "-b" + server + ".");
+                //String log5_1 = "vidoeURL change -> " + videoURL;
+            }
+            mPlayerCurrentPos = 0;
+            mPlayerSeekPos = 0;
+            Libtvcar.start(videoURL);
+        } else if (mBsMode != BsConf.BS_MODE.STATIC) {
+            return;
+        } else {
+            //String log6 = "STATIC vidoeURL " + videoURL;
+            Message msg = new Message();
+            Bundle params = new Bundle();
+            params.putString("videoPath", videoURL);
+            msg.what = Constant.MSG_PLAYER_PLAY;
+            msg.setData(params);
+            mMsgHandler.sendMessage(msg);
+        }
+        mIsEnded = true;
+        stopVideoPlaying();
+        showPlayerUI();
+        mLoadingProgress.setVisibility(View.VISIBLE);
+        if (mBsMode == BsConf.BS_MODE.BSPALYBACK) {
             mCurrentTimeText.setText("00:00");
             mDurationTimeText.setText("00:00");
             videoName = SopApplication.getAppContext().getString(R.string.video_play_back) + ": " + videoName;
-        } else if (bsMode == BsConf.BS_MODE.BSVOD) {
+        } else if (mBsMode == BsConf.BS_MODE.BSVOD) {
             mCurrentTimeText.setText("00:00");
             mDurationTimeText.setText("00:00");
             videoName = SopApplication.getAppContext().getString(R.string.video_vod) + ": " + videoName;
-        } else if (bsMode == BsConf.BS_MODE.BSLIVE) {
+        } else if (mBsMode == BsConf.BS_MODE.BSLIVE) {
             mCurrentTimeText.setText(R.string.buffer);
             mDurationTimeText.setText("0/100");
             videoName = SopApplication.getAppContext().getString(R.string.video_live) + ": " + videoName;
-        } else if (bsMode == BsConf.BS_MODE.STATIC) {
+        } else if (mBsMode == BsConf.BS_MODE.STATIC) {
             videoName = SopApplication.getAppContext().getString(R.string.video_vod) + ": " + videoName;
         }
-
-        mTVCore.start(videoUrl);
         mProgramNameText.setText(videoName);
+        mPlayerSeekBar.setProgress(0);
+        mPlayerSeekBar.setSecondaryProgress(0);
+        SetDownloadRate("0B/S");
+        hideProcessBarWithDelay(0);
+    }
+
+    public static boolean isPlaying() {
+        if (mPlayerMode == 0) {
+            return (mVideoView != null && mVideoView.isPlaying());
+        } else {
+            return mExoPlayer != null && mExoPlayer.getPlayWhenReady() &&
+                    mExoPlayer.getPlaybackState() == Player.STATE_READY; //3
+        }
     }
 
     // player related
     private void checkPlayer() {
-        // Attention
-        // check player playing must run in main thread
-        runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                if(mTmPlayerConn > 20 && mBuffer > 50) {
-                    stopPlayback();
-                }
-
-                if(System.nanoTime() > mMPCheckTime) {
-                    int playbackState = player.getPlaybackState();
-                    if (! (playbackState != Player.STATE_IDLE && playbackState != Player.STATE_ENDED)) {
-                        startPlayback();
-                    }
-                }
+        if (mIsEnded) {
+            return;
+        }
+        if (mBsMode == BsConf.BS_MODE.BSLIVE && mTmPlayerConn > 15 && mBuffer > 50) {
+            if (mPlayerMode == 0) {
+                mVideoView.stopPlayback();
             }
-        });
+            if (mPlayerMode == 1) {
+                mExoPlayer.setPlayWhenReady(false);
+            }
+        }
+        if (System.nanoTime() > mMPCheckTime) {
+            //String log = "MPlayerChecker is running - isPlaying:" + isPlaying() + " playerRestartCount:" + f16810s + " mTmPlayerConn:" + mTmPlayerConn + " isVideoPausedByUser:" + f16859cb;
+            if (isPlaying()) {
+                return;
+            }
+            mMsgHandler.removeMessages(Constant.MSG_PLAYER_RESUME);
+            mMsgHandler.sendEmptyMessage(Constant.MSG_PLAYER_RESUME);
+        }
     }
 
-    private void stopPlayback() {
-        runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                player.stop();
+    public void resumePlayer() {
+        //String text = "resumePlayer isPlaying:" + isPlaying();
+        if (mPlayerMode == 0) {
+            if (mVideoView != null) {
+                if (mVideoView.isPlaying()) {
+                    mVideoView.stopPlayback();
+                }
+                mVideoView.setVideoPath(this.mCurrentVideoPath);
+                mVideoView.start();
+                if (this.mPlayerSeekPos > 0) {
+                    //String text = "resumePlayer seek to:" + mPlayerSeekPos;
+                    mVideoView.seekTo(this.mPlayerSeekPos);
+                }
             }
-        });
+        } else
+            mExoPlayer.setPlayWhenReady(true);
     }
 
-    private void startPlayback() {
-        runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                mMPCheckTime = System.nanoTime() + MP_START_CHECK_INTERVAL;
+    public void SetDownloadRate(String text) {
+        if (this.mDlLayout.getVisibility() == View.GONE) {
+            this.mDlLayout.setVisibility(View.VISIBLE);
+        }
+        this.mDlRateText.setText(text);
+    }
 
-                DataSource.Factory dataSourceFactory =
-                        new DefaultDataSourceFactory(SopApplication.getAppContext(), "TVBUS");
-                MediaSource source = new ProgressiveMediaSource.Factory(dataSourceFactory, TsExtractor.FACTORY)
-                        .createMediaSource(Uri.parse(playbackUrl));
-
-                player.prepare(source);
-                player.setPlayWhenReady(true);
+    public void startPlaying(String url) {
+        //String text1 = "startPlayback playbackTSUrl -> " + url;
+        this.mMPCheckTime = System.nanoTime() + MP_START_CHECK_INTERVAL;
+        if (this.mPlayerStatusImage.getVisibility() == View.VISIBLE) {
+            this.mPlayerStatusImage.setVisibility(View.GONE);
+        }
+        mIsEnded = false;
+        DefaultDataSourceFactory factory = new DefaultDataSourceFactory(SopApplication.getAppContext(), "tvbus", (TransferListener) null);
+        String videoType = "-MPEGTS";
+        String playerType = "EXO";
+        if (mPlayerMode == 1) {
+            if (url.indexOf(".m3u8") >= 0) {
+                mExoPlayer.prepare(new HlsMediaSource.Factory(factory).createMediaSource(Uri.parse(url)));
+                videoType = "-HLS";
+            } else {
+                mExoPlayer.prepare(new ExtractorMediaSource.Factory(factory).createMediaSource(Uri.parse(url)));
             }
-        });
-    };
+            mExoPlayer.setPlayWhenReady(true);
+        } else if (mPlayerMode == 0) {
+            videoType = url.indexOf(".m3u8") >= 0 ? "-HLS" : "-MPEGTS";
+            mVideoView.setVideoURI(Uri.parse(url));
+            playerType = "SYS";
+        }
+    }
+
+    public void stopVideoPlaying() {
+        if (mPlayerMode == 0 && mVideoView != null) {
+            mVideoView.stopPlayback();
+            mVideoView.setVisibility(View.INVISIBLE);
+        } else if (mPlayerView != null) {
+            mExoPlayer.stop(true);
+            mPlayerView.setVisibility(View.INVISIBLE);
+        }
+    }
+
+    private void showPlayerUI() {
+        if (mPlayerMode == 0) {
+            if (mVideoView != null)
+                mVideoView.setVisibility(View.VISIBLE);
+        } else {
+            if (mPlayerView != null)
+                mPlayerView.setVisibility(View.VISIBLE);
+        }
+    }
+
+    public void showAuthError(int errorCode) {
+        String text;
+        if (errorCode == BsConf.ErrorTypes.Err_104.value) {
+            text = SopApplication.getAppContext().getString(R.string.channel_offline);
+        } else if (errorCode == BsConf.ErrorTypes.Err_105.value) {
+            text = SopApplication.getAppContext().getString(R.string.user_no_login);
+        } else {
+            text = errorCode == BsConf.ErrorTypes.Err_210.value ? SopApplication.getAppContext().getString(R.string.user_repeated_logon) : "";
+        }
+        if (text.equals("")) {
+            return;
+        }
+    }
 }

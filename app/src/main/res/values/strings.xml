@@ -32,4 +32,7 @@
     <string name="video_play_back">Playback</string>
     <string name="video_vod">VOD</string>
     <string name="buffer">Buffer</string>
+    <string name="channel_offline">Channel is offline temporarily</string>
+    <string name="user_no_login">User is not logged in</string>
+    <string name="user_repeated_logon">User login repeated</string>
 </resources>
