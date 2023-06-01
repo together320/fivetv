@@ -2111,17 +2111,8 @@
     <style name="TestStyleWithLineHeightAppearance">
         <item name="android:textAppearance">@style/TestStyleWithLineHeight</item>
     </style>
-    <style name="TestStyleWithThemeLineHeightAttribute" parent="@style/TestStyleWithoutLineHeight">
-        <item name="lineHeight">?themeLineHeight</item>
-    </style>
     <style name="TestStyleWithoutLineHeight" parent="@style/TextAppearance.AppCompat.Title">
         <item name="android:textSize">20.0sp</item>
-    </style>
-    <style name="TestThemeWithLineHeight" parent="@style/Theme.AppCompat.Light">
-        <item name="themeLineHeight">@dimen/material_text_view_test_line_height</item>
-    </style>
-    <style name="TestThemeWithLineHeightDisabled" parent="@style/TestThemeWithLineHeight">
-        <item name="textAppearanceLineHeightEnabled">false</item>
     </style>
     <style name="TextAppearance.AppCompat" parent="@style/Base.TextAppearance.AppCompat" />
     <style name="TextAppearance.AppCompat.Body1" parent="@style/Base.TextAppearance.AppCompat.Body1" />

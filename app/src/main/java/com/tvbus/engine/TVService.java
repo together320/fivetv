@@ -13,6 +13,7 @@ import androidx.core.app.NotificationCompat;
 
 import com.brazvip.fivetv.R;
 
+
 public class TVService extends Service {
     public static final String TAG = "TVBusService";
     public static boolean bInited = false;
@@ -25,7 +26,7 @@ public class TVService extends Service {
     /* renamed from: b */
     private void showNotification() {
         if (Build.VERSION.SDK_INT >= 26) {
-            String CHANNEL_ID = "P2Five";
+            String CHANNEL_ID = "FiveTV";
             String appName = getString(R.string.app_name);
             String content = getString(R.string.service_description);
             NotificationChannel channel = new NotificationChannel(CHANNEL_ID, appName,
@@ -42,7 +43,7 @@ public class TVService extends Service {
     @Override // android.app.Service
     public void onCreate() {
         super.onCreate();
-        //showNotification();
+        showNotification();
         Thread thread = new Thread(new TVServer());
         thread.setName("tvcore");
         thread.start();

@@ -34,14 +34,16 @@ import com.brazvip.fivetv.utils.PrefUtils;
 import com.google.android.exoplayer2.DefaultLoadControl;
 import com.google.android.exoplayer2.DefaultRenderersFactory;
 import com.google.android.exoplayer2.ExoPlaybackException;
+import com.google.android.exoplayer2.ExoPlayer;
 import com.google.android.exoplayer2.LoadControl;
+import com.google.android.exoplayer2.MediaItem;
+import com.google.android.exoplayer2.PlaybackException;
 import com.google.android.exoplayer2.PlaybackParameters;
 import com.google.android.exoplayer2.Player;
 import com.google.android.exoplayer2.SimpleExoPlayer;
 import com.google.android.exoplayer2.Timeline;
 import com.google.android.exoplayer2.analytics.AnalyticsCollector;
 import com.google.android.exoplayer2.extractor.ts.TsExtractor;
-import com.google.android.exoplayer2.source.ExtractorMediaSource;
 import com.google.android.exoplayer2.source.MediaSource;
 import com.google.android.exoplayer2.source.ProgressiveMediaSource;
 import com.google.android.exoplayer2.source.TrackGroupArray;
@@ -50,12 +52,15 @@ import com.google.android.exoplayer2.trackselection.DefaultTrackSelector;
 import com.google.android.exoplayer2.trackselection.TrackSelectionArray;
 import com.google.android.exoplayer2.ui.AspectRatioFrameLayout;
 import com.google.android.exoplayer2.ui.PlayerView;
+import com.google.android.exoplayer2.ui.StyledPlayerView;
 import com.google.android.exoplayer2.upstream.DataSource;
 import com.google.android.exoplayer2.upstream.DefaultBandwidthMeter;
+import com.google.android.exoplayer2.upstream.DefaultDataSource;
 import com.google.android.exoplayer2.upstream.DefaultDataSourceFactory;
+import com.google.android.exoplayer2.upstream.DefaultHttpDataSource;
 import com.google.android.exoplayer2.upstream.TransferListener;
 import com.google.android.exoplayer2.util.Clock;
-import com.google.android.exoplayer2.video.VideoListener;
+import com.google.android.exoplayer2.video.VideoSize;
 import com.tvbus.engine.TVCore;
 import com.tvbus.engine.TVListener;
 import com.tvbus.engine.TVService;
@@ -71,10 +76,10 @@ import io.binstream.libtvcar.Libtvcar;
 public class PlayerLayout extends FrameLayout {
     public static final String TAG = "PlayerLayout";
     public static TVCore mTVCore = null;
-    public static PlayerView mPlayerView = null;
+    public static StyledPlayerView mPlayerView = null;
     public static VideoView mVideoView = null;
     public static Handler mMsgHandler = null;
-    public static SimpleExoPlayer mExoPlayer = null;
+    public static ExoPlayer mExoPlayer = null;
 
     private TextView mProgramNameText = null;
     private TextView mCurrentTimeText = null;
@@ -189,18 +194,19 @@ public class PlayerLayout extends FrameLayout {
         mPlayerView.setUseController(false);
         mPlayerView.setKeepScreenOn(true);
         //ExoPlayer 2.11.3
-        DefaultBandwidthMeter bandwidthMeter = new DefaultBandwidthMeter.Builder(SopApplication.getAppContext()).build();
-        DefaultTrackSelector defaultTrackSelector = new DefaultTrackSelector(SopApplication.getAppContext());
-        LoadControl loadControl = new DefaultLoadControl.Builder().createDefaultLoadControl();
-        DefaultRenderersFactory renderersFactory = new DefaultRenderersFactory(SopApplication.getAppContext());
-        //renderersFactory.setExtensionRendererMode(DefaultRenderersFactory.EXTENSION_RENDERER_MODE_ON);
-        Looper looper = PrefUtils.getLooper();
-        AnalyticsCollector analyticsCollector = new AnalyticsCollector(Clock.DEFAULT);
-        mExoPlayer = new SimpleExoPlayer.Builder(SopApplication.getAppContext(), renderersFactory, defaultTrackSelector,
-                loadControl, bandwidthMeter, looper, analyticsCollector, true, Clock.DEFAULT).build();
-        mExoPlayer.addVideoListener(new VideoListener() { //C2498p in 4.92
+//        DefaultBandwidthMeter bandwidthMeter = new DefaultBandwidthMeter.Builder(SopApplication.getAppContext()).build();
+//        DefaultTrackSelector defaultTrackSelector = new DefaultTrackSelector(SopApplication.getAppContext());
+//        LoadControl loadControl = new DefaultLoadControl.Builder().build();
+//        DefaultRenderersFactory renderersFactory = new DefaultRenderersFactory(SopApplication.getAppContext());
+//        //renderersFactory.setExtensionRendererMode(DefaultRenderersFactory.EXTENSION_RENDERER_MODE_ON);
+//        Looper looper = PrefUtils.getLooper();
+//        AnalyticsCollector analyticsCollector = new AnalyticsCollector(Clock.DEFAULT);
+        mExoPlayer = new ExoPlayer.Builder(SopApplication.getAppContext()).build();
+
+        mExoPlayer.addListener(new Player.Listener() {
+
             @Override
-            public void onVideoSizeChanged(int width, int height, int unappliedRotationDegrees, float pixelWidthHeightRatio) {
+            public void onVideoSizeChanged(VideoSize videoSize) {
 
             }
 
@@ -213,40 +219,30 @@ public class PlayerLayout extends FrameLayout {
             public void onRenderedFirstFrame() {
                 mMPCheckTime = System.nanoTime();
             }
-        });
-        mExoPlayer.addListener(new Player.EventListener() { //C2500r in 4.92
+
             @Override
             public void onTimelineChanged(Timeline timeline, int reason) {
 
             }
 
             @Override
-            public void onTimelineChanged(Timeline timeline, @Nullable Object manifest, int reason) {
+            public void onIsLoadingChanged(boolean isLoading) {
 
             }
 
             @Override
-            public void onTracksChanged(TrackGroupArray trackGroups, TrackSelectionArray trackSelections) {
-
-            }
-
-            @Override
-            public void onLoadingChanged(boolean isLoading) {
-
-            }
-
-            @Override
-            public void onPlayerStateChanged(boolean playWhenReady, int playbackState) {
-                //String log = "exoPlayer onPlayerStateChanged playWhenReady: " + playWhenReady + " playbackState:" + playbackState;
-                if (playbackState == Player.STATE_ENDED) { //4
+            public void onPlaybackStateChanged(int playbackState) {
+                if (playbackState == Player.STATE_ENDED) {
                     mMPCheckTime = System.nanoTime();
                     if (mBsMode == Config.BS_MODE.BSLIVE) {
                         mMPCheckTime = System.nanoTime();
-                    } else if ((mBsMode == Config.BS_MODE.BSPALYBACK) ||
-                            (mBsMode == Config.BS_MODE.BSVOD)) { //cond_1
+                    } else if ((mBsMode == Config.BS_MODE.BSPALYBACK) || (mBsMode == Config.BS_MODE.BSVOD)) {
                     }
                 }
-                //cond_2
+            }
+
+            @Override
+            public void onPlayWhenReadyChanged(boolean playWhenReady, int reason) {
                 if (playWhenReady) {
                     hideProcessBarWithDelay(5000);
                     mLoadingProgress.setVisibility(View.GONE);
@@ -274,14 +270,13 @@ public class PlayerLayout extends FrameLayout {
             }
 
             @Override
-            public void onPlayerError(ExoPlaybackException error) {
-                //String log = "exoPlayer onPlayerError:" + error;
-                mExoPlayer.stop(false);
+            public void onPlayerError(PlaybackException error) {
+                mExoPlayer.stop();
                 mMPCheckTime = System.nanoTime();
             }
 
             @Override
-            public void onPositionDiscontinuity(int reason) {
+            public void onPositionDiscontinuity(Player.PositionInfo oldPosition, Player.PositionInfo newPosition, int reason) {
 
             }
 
@@ -289,15 +284,10 @@ public class PlayerLayout extends FrameLayout {
             public void onPlaybackParametersChanged(PlaybackParameters playbackParameters) {
 
             }
-
-            @Override
-            public void onSeekProcessed() {
-
-            }
         });
 
         mPlayerView.setPlayer(mExoPlayer);
-        mPlayerView.setResizeMode(AspectRatioFrameLayout.RESIZE_MODE_FILL);
+        //mPlayerView.setResizeMode(AspectRatioFrameLayout.RESIZE_MODE_FILL);
     }
 
     public void hideProcessBarWithDelay(int delay) {
@@ -630,22 +620,32 @@ public class PlayerLayout extends FrameLayout {
     }
 
     public void startPlaying(String url) {
-        //String text1 = "startPlayback playbackTSUrl -> " + url;
         this.mMPCheckTime = System.nanoTime() + MP_START_CHECK_INTERVAL;
         if (this.mPlayerStatusImage.getVisibility() == View.VISIBLE) {
             this.mPlayerStatusImage.setVisibility(View.GONE);
         }
         mIsEnded = false;
-        DefaultDataSourceFactory factory = new DefaultDataSourceFactory(SopApplication.getAppContext(), "tvbus", (TransferListener) null);
+        //DefaultDataSourceFactory factory = new DefaultDataSourceFactory(SopApplication.getAppContext(), "tvbus", (TransferListener) null);
+        DefaultDataSource.Factory factory = new DefaultDataSource.Factory(SopApplication.getAppContext());
+        factory.setTransferListener(null);
+
         String videoType = "-MPEGTS";
         String playerType = "EXO";
         if (mPlayerMode == 1) {
             if (url.indexOf(".m3u8") >= 0) {
-                mExoPlayer.prepare(new HlsMediaSource.Factory(factory).createMediaSource(Uri.parse(url)));
+                //mExoPlayer.prepare(new HlsMediaSource.Factory(factory).createMediaSource(Uri.parse(url)));
+                mExoPlayer.setMediaSource(new HlsMediaSource.Factory(factory).createMediaSource(MediaItem.fromUri(url)));
                 videoType = "-HLS";
             } else {
-                mExoPlayer.prepare(new ExtractorMediaSource.Factory(factory).createMediaSource(Uri.parse(url)));
+                //mExoPlayer.prepare(new ExtractorMediaSource.Factory(factory).createMediaSource(Uri.parse(url)));
+
+                DefaultHttpDataSource.Factory httpFactory = new DefaultHttpDataSource.Factory();
+                httpFactory.setUserAgent("tvbus");
+                httpFactory.setTransferListener(null);
+
+                mExoPlayer.setMediaSource(new ProgressiveMediaSource.Factory(httpFactory, TsExtractor.FACTORY).createMediaSource(MediaItem.fromUri(url)));
             }
+            mExoPlayer.prepare();
             mExoPlayer.setPlayWhenReady(true);
         } else if (mPlayerMode == 0) {
             videoType = url.indexOf(".m3u8") >= 0 ? "-HLS" : "-MPEGTS";
@@ -659,7 +659,7 @@ public class PlayerLayout extends FrameLayout {
             mVideoView.stopPlayback();
             mVideoView.setVisibility(View.INVISIBLE);
         } else if (mPlayerView != null) {
-            mExoPlayer.stop(true);
+            mExoPlayer.stop();
             mPlayerView.setVisibility(View.INVISIBLE);
         }
     }
