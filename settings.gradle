@@ -14,5 +14,5 @@ dependencyResolutionManagement {
         maven { url 'https://jitpack.io' }
     }
 }
-rootProject.name = "P2Five"
-include ':autolayout', ':BaseRecyclerViewAdapterHelper', ':app'
+rootProject.name = "FiveTV"
+include ':autolayout', ':BaseRecyclerViewAdapterHelper', ':DiscreteScrollView', ':app'

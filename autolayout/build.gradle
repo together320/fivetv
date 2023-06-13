@@ -10,8 +10,6 @@ android {
         minSdkVersion 7
         //noinspection ExpiredTargetSdkVersion
         targetSdkVersion 29
-        versionCode 145
-        versionName "1.4.5"
     }
     buildTypes {
         release {
@@ -19,6 +17,7 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
     }
+    namespace 'com.zhy.autolayout'
 }
 
 

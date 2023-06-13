@@ -1,18 +1,11 @@
 package com.brazvip.fivetv.utils;
 
-import android.Manifest;
 import android.content.Context;
 import android.content.SharedPreferences;
-import android.content.pm.PackageInfo;
-import android.content.pm.PackageManager;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
-import android.os.Looper;
+import android.os.Handler;
 import android.telephony.TelephonyManager;
-import android.util.Log;
-import android.widget.Toast;
-
-import androidx.core.app.ActivityCompat;
 
 import com.brazvip.fivetv.SopApplication;
 import com.brazvip.fivetv.Config;
@@ -22,27 +15,29 @@ import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Formatter;
-import java.util.List;
 import java.util.Locale;
 import java.util.Set;
 import java.util.TimeZone;
 import java.util.UUID;
-import java.util.regex.Pattern;
-
-import okhttp3.internal.ws.RealWebSocket;
 
 public class Utils {
     public static long DELTA_TIME = 0;
-    public static int backPressCount = 0;
+    public static boolean isShowQuitDialog = false;
     public static boolean doubleBackToExitPressedOnce = false;
     public static StringBuilder pattern = new StringBuilder();
     public static Formatter timeFormatter = new Formatter(pattern, Locale.getDefault());
 
     public static void clearAllPreferences() {
         SopApplication.getSopContext().getSharedPreferences(Config.PREFS_NAME, 0).edit().clear().commit();
+    }
+
+    public static void exitApp() {
+        new Handler().postDelayed(() -> {
+            android.os.Process.killProcess(android.os.Process.myPid());
+            System.exit(1);
+        }, 1000L);
     }
 
     public static String formatBandwidth(long j) {

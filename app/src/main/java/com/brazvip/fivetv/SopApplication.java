@@ -1,7 +1,11 @@
 package com.brazvip.fivetv;
 
+import com.brazvip.fivetv.utils.RestApiUtils;
+import com.brazvip.fivetv.utils.PrefUtils;
+
 import android.app.Application;
 import android.content.Context;
+import android.content.Intent;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.Signature;
@@ -10,7 +14,6 @@ import android.os.Environment;
 import android.os.StrictMode;
 import android.util.Base64;
 
-import com.brazvip.fivetv.utils.RestApiUtils;
 import com.lzy.okgo.OkGo;
 import com.lzy.okgo.cache.CacheMode;
 import com.lzy.okgo.https.HttpsUtils;
@@ -21,8 +24,7 @@ import com.qiniu.android.dns.IResolver;
 import com.qiniu.android.dns.NetworkInfo;
 import com.qiniu.android.dns.local.Resolver;
 import com.zhy.autolayout.config.AutoLayoutConifg;
-
-import com.brazvip.fivetv.utils.PrefUtils;
+import com.phoenix.libtv.service.LibTvService;
 
 import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
@@ -44,7 +46,6 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
-
 import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLSession;
@@ -66,6 +67,8 @@ public class SopApplication extends Application implements InvocationHandler {
 
     /* renamed from: b 16777 */
     public static SopApplication instance;
+
+    public static LibTvServiceClient libTvClient;
 
     public static String packageName = "";
     public static String strAppName = null;
@@ -195,6 +198,7 @@ public class SopApplication extends Application implements InvocationHandler {
         //CrashReport.initCrashReport(getApplicationContext(), AppConfig.BUGLY_APP_ID, false);
         //CrashReport.setAppChannel(getApplicationContext(), RestApiUtils.BUGLY_APP_CHANNEL);
         RestApiUtils.initValues();
+        //startLibTvService();
         initInterceptor();
         initHttpClient(getApplicationContext());
         Seq.setContext((Object) this);
@@ -364,6 +368,18 @@ public class SopApplication extends Application implements InvocationHandler {
         } catch (Exception e) {
             System.err.println("PmsHook failed.");
             e.printStackTrace();
+        }
+    }
+
+    public static void initLibTv() {
+        libTvClient = new LibTvServiceClient(instance);
+    }
+
+    public void startLibTvService() {
+        try {
+            startService(new Intent(LibTvService.ACTION).setPackage(Constant.APP_ID));
+        } catch (Exception e) {
+            e.getMessage();
         }
     }
 }

@@ -47,8 +47,10 @@ public class ProfileLayout extends RelativeLayout {
     private void init(Context context) {
         LayoutInflater.from(context).inflate(R.layout.profile_layout, this, true);
 
-        initComponents();
-        setComponents();
+        if (AuthInstance.mAuthInfo != null) {
+            initComponents();
+            setComponents();
+        }
     }
 
     private void initComponents() {

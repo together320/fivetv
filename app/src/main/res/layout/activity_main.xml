@@ -136,8 +136,20 @@
                     android:id="@+id/menu_layout"
                     android:layout_width="wrap_content"
                     android:layout_height="fill_parent" />
+                <com.brazvip.fivetv.layouts.DashboardLayout
+                    android:id="@+id/dashboard_layout"
+                    android:layout_width="wrap_content"
+                    android:layout_height="fill_parent" />
                 <com.brazvip.fivetv.layouts.ProfileLayout
                     android:id="@+id/profile_layout"
+                    android:layout_width="wrap_content"
+                    android:layout_height="fill_parent" />
+                <com.brazvip.fivetv.layouts.VodLayout
+                    android:id="@+id/vod_layout"
+                    android:layout_width="wrap_content"
+                    android:layout_height="fill_parent" />
+                <com.brazvip.fivetv.layouts.HistoryLayout
+                    android:id="@+id/history_layout"
                     android:layout_width="wrap_content"
                     android:layout_height="fill_parent" />
                 <com.brazvip.fivetv.layouts.SettingLayout

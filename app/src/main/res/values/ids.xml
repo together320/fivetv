@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <item type="id" name="dialog_icon" />
-    <item type="id" name="error" />
-    <item type="id" name="negativeButton" />
-    <item type="id" name="positiveButton" />
-    <item type="id" name="chid" />
+    <item name="dialog_icon" type="id" />
+    <item name="error" type="id" />
+    <item name="negativeButton" type="id" />
+    <item name="positiveButton" type="id" />
+    <item name="chid" type="id" />
 </resources>

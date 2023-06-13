@@ -1,6 +1,7 @@
 package com.brazvip.fivetv.instances;
 
 import android.os.Message;
+import android.util.Log;
 
 import com.alibaba.fastjson.JSON;
 import com.brazvip.fivetv.Constant;
@@ -41,6 +42,7 @@ public class ChannelInstance {
             @Override
             public void run() {
 
+                Log.d("ChannelInstance", "URL: " + url);
                 if (Constant.OFFLINE_TEST == true) {
                     String strInfo = PrefUtils.getPrefString(Constant.PREFS_CHANNEL_INFO, "");
                     if (strInfo.length() > 0) {
@@ -53,19 +55,23 @@ public class ChannelInstance {
                     new StringCallback() {
                         @Override
                         public void onCacheSuccess(Response<String> response) {
+                            Log.d("ChannelInstance", "onCacheSuccess");
                             parseChannelData(response.body(), true);
                         }
 
                         @Override
                         public void onError(Response<String> response) {
+                            Log.e("ChannelInstance", "onError");
                             onFail();
                         }
 
                         @Override
                         public void onSuccess(Response<String> response) {
                             if (response.isSuccessful()) {
+                                Log.d("ChannelInstance", "onSuccess - response successful!");
                                 parseChannelData(response.body(), true);
                             } else {
+                                Log.e("ChannelInstance", "onSuccess - response failed!");
                                 onFail();
                             }
                         }
@@ -182,6 +188,6 @@ public class ChannelInstance {
     }
 
     private static void onFail() {
-        PrefUtils.Toast("Failed to get channel list!");
+        PrefUtils.ToastShort("Failed to get channel list!");
     }
 }

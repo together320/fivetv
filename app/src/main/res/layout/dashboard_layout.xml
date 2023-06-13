@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/vod_menu"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
+    android:background="@color/background_v3"
+    android:theme="@style/Vod">
+
+    <View
+        android:id="@+id/group_split_line"
+        android:layout_width="1px"
+        android:layout_height="wrap_content"
+        android:background="@drawable/cut_off_line" />
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_marginTop="10dp"
+        android:layout_marginStart="10dp"
+        android:layout_toEndOf="@+id/group_split_line">
+
+        <RelativeLayout
+            android:id="@+id/dashGroupLayout"
+            android:layout_width="1920dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:layout_marginEnd="30dp"
+            android:gravity="center_horizontal"
+            android:background="@android:color/transparent">
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/dashGroupView"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_centerHorizontal="true"
+                android:layout_centerVertical="true"
+                android:descendantFocusability="beforeDescendants"
+                android:orientation="horizontal"
+                app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager" />
+        </RelativeLayout>
+
+        <com.brazvip.fivetv.layouts.GalleryLayout
+            android:id="@+id/dashChannelView"
+            android:layout_width="wrap_content"
+            android:layout_height="fill_parent"
+            android:layout_below="@+id/dashGroupLayout"
+            android:layout_marginStart="5dp"/>
+    </RelativeLayout>
+
+    <ProgressBar
+        android:id="@+id/dashLoadingProgress"
+        style="@android:style/Widget.ProgressBar.Large"
+        android:layout_width="120dp"
+        android:layout_height="120dp"
+        android:layout_centerInParent="true" />
+</RelativeLayout>

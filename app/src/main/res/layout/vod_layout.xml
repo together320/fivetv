@@ -1,0 +1,240 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/vod_menu"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/background_v3"
+    android:theme="@style/Vod">
+
+    <View
+        android:id="@+id/group_split_line"
+        android:layout_width="1px"
+        android:layout_height="wrap_content"
+        android:background="@drawable/cut_off_line" />
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_marginTop="10px"
+        android:layout_marginStart="10px"
+        android:layout_toEndOf="@+id/group_split_line">
+
+        <RelativeLayout
+            android:id="@+id/l1menu"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="30dp"
+            android:background="@android:color/transparent">
+
+            <RelativeLayout
+                android:id="@+id/search_btn_rl"
+                android:layout_width="wrap_content"
+                android:layout_height="30dp"
+                android:layout_centerVertical="true"
+                android:layout_marginTop="8dp"
+                android:layout_marginEnd="15dp"
+                android:background="@drawable/search_btn_bg"
+                android:clickable="true"
+                android:focusable="true"
+                android:gravity="center"
+                android:minWidth="180px"
+                android:nextFocusRight="@+id/groupL1_rview"
+                android:nextFocusDown="@+id/group_rview"
+                android:paddingLeft="10px"
+                android:paddingRight="10px">
+
+                <ImageView
+                    android:id="@+id/searchBtn"
+                    android:layout_width="30px"
+                    android:layout_height="30px"
+                    android:layout_centerVertical="true"
+                    android:layout_marginTop="10px"
+                    android:layout_marginEnd="5px"
+                    android:clickable="false"
+                    android:focusable="false"
+                    android:nextFocusRight="@+id/groupL1_rview"
+                    android:nextFocusDown="@+id/group_rview"
+                    android:scaleType="fitCenter"
+                    android:src="@drawable/ic_search_7dp" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_centerVertical="true"
+                    android:layout_marginStart="5px"
+                    android:layout_marginEnd="10px"
+                    android:layout_marginBottom="5px"
+                    android:layout_toEndOf="@+id/searchBtn"
+                    android:text="@string/Search"
+                    android:textSize="30px" />
+            </RelativeLayout>
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/groupL1_rview"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_centerVertical="true"
+                android:layout_toRightOf="@+id/search_btn_rl"
+                android:descendantFocusability="beforeDescendants"
+                android:nextFocusLeft="@+id/searchBtn"
+                android:nextFocusUp="@+id/groupL1_rview"
+                android:nextFocusDown="@+id/group_rview"
+                android:orientation="horizontal"
+                app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager" />
+        </RelativeLayout>
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/group_rview"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/l1menu"
+            android:layout_marginTop="15px"
+            android:layout_marginEnd="35dp"
+            android:layout_marginBottom="5px"
+            android:descendantFocusability="beforeDescendants"
+            android:gravity="center"
+            android:nextFocusUp="@+id/groupL1_rview"
+            android:nextFocusDown="@+id/channel_rview"
+            android:orientation="horizontal"
+            app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager" />
+
+        <LinearLayout
+            android:id="@+id/keyboard_layout"
+            android:layout_width="510px"
+            android:layout_height="match_parent"
+            android:layout_below="@+id/group_rview"
+            android:layout_marginTop="20px"
+            android:layout_marginBottom="40px"
+            android:background="#ee413d42"
+            android:nextFocusLeft="@+id/keyboard_layout"
+            android:nextFocusRight="@+id/channel_rview"
+            android:nextFocusUp="@+id/group_rview"
+            android:nextFocusDown="@+id/keyboard_layout"
+            android:orientation="vertical">
+
+            <EditText
+                android:id="@+id/searchET"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@drawable/search_btn_bg_et"
+                android:hint="@string/search_hint"
+                android:inputType="text"
+                android:nextFocusRight="@+id/searchET"
+                android:padding="10dp"
+                android:text=""
+                android:textColor="#eeeeee"
+                android:textColorHint="#aaaaaa"
+                android:textSize="32px" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
+
+                <ImageButton
+                    android:id="@+id/delete_btn"
+                    android:layout_width="match_parent"
+                    android:layout_height="76px"
+                    android:layout_alignParentLeft="true"
+                    android:layout_alignParentBottom="true"
+                    android:layout_weight="1"
+                    android:background="@drawable/search_btn_bg_square"
+                    android:focusable="true"
+                    android:focusableInTouchMode="true"
+                    android:padding="13px"
+                    android:scaleType="fitCenter"
+                    android:src="@mipmap/search_delete_all"
+                    android:text="返回" />
+
+                <ImageButton
+                    android:id="@+id/backspace_btn"
+                    android:layout_width="match_parent"
+                    android:layout_height="76px"
+                    android:layout_alignParentLeft="true"
+                    android:layout_alignParentBottom="true"
+                    android:layout_weight="1"
+                    android:background="@drawable/search_btn_bg_square"
+                    android:focusable="true"
+                    android:focusableInTouchMode="true"
+                    android:padding="12px"
+                    android:scaleType="fitCenter"
+                    android:src="@mipmap/search_backspace"
+                    android:text="退格" />
+            </LinearLayout>
+
+            <com.brazvip.fivetv.keyboard.custom.MyKeyBoardView
+                android:id="@+id/keyboardView"
+                android:layout_width="500px"
+                android:layout_height="wrap_content"
+                android:clickable="true"
+                android:clipToPadding="false"
+                android:focusable="true"
+                android:focusableInTouchMode="true"
+                android:importantForAccessibility="yes"
+                android:nextFocusLeft="@+id/keyboardView"
+                android:nextFocusDown="@+id/keyboardView"
+                app:initNumKeyboard="true"
+                app:isAbcKeyboardShow="false"
+                app:isCharKeyboardShow="false"
+                app:isNumKeyboardShow="false"
+                app:isSystemKeyboardShow="false"
+                app:searchChAppend="@string/search_ch_append" />
+        </LinearLayout>
+
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_below="@+id/group_rview"
+            android:layout_marginLeft="5px"
+            android:layout_marginTop="0px"
+            android:layout_marginRight="10px"
+            android:layout_toRightOf="@+id/keyboard_layout">
+
+            <RelativeLayout
+                android:id="@+id/favorite_hint"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:layout_centerInParent="true"
+                android:gravity="center">
+
+                <ImageView
+                    android:id="@+id/longpress_icon"
+                    android:layout_width="362px"
+                    android:layout_height="309px"
+                    android:layout_centerInParent="true"
+                    android:src="@mipmap/collect_guide" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent"
+                    android:layout_below="@+id/longpress_icon"
+                    android:layout_centerHorizontal="true"
+                    android:layout_marginTop="40px"
+                    android:text="@string/favorite_hint"
+                    android:textSize="36px" />
+            </RelativeLayout>
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/channel_rview"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="0px"
+                android:clipToPadding="false"
+                android:descendantFocusability="beforeDescendants"
+                android:nextFocusLeft="@android:id/keyboardView"
+                android:nextFocusUp="@+id/group_rview"
+                android:paddingRight="10px"
+                android:scrollbarAlwaysDrawVerticalTrack="false"
+                android:scrollbarFadeDuration="2"
+                android:scrollbarStyle="outsideOverlay"
+                android:scrollbars="vertical" />
+        </RelativeLayout>
+    </RelativeLayout>
+
+    <ProgressBar
+        android:id="@+id/loading_progress"
+        style="@android:style/Widget.ProgressBar.Large"
+        android:layout_width="120px"
+        android:layout_height="120px"
+        android:layout_centerInParent="true" />
+</RelativeLayout>

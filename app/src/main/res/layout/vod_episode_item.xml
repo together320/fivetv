@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content">
+
+    <TextView
+        android:id="@+id/episode_name"
+        android:layout_width="167px"
+        android:layout_height="68px"
+        android:layout_centerVertical="true"
+        android:ellipsize="marquee"
+        android:gravity="center"
+        android:singleLine="true"
+        android:text="01"
+        android:textColor="#07ffffff"
+        android:textSize="30px"
+        android:textStyle="bold" />
+</RelativeLayout>

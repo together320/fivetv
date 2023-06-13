@@ -1,6 +1,8 @@
 package com.brazvip.fivetv;
 
 import android.annotation.SuppressLint;
+import android.app.ActivityManager;
+import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
@@ -9,6 +11,7 @@ import android.os.Message;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
+import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
@@ -17,15 +20,24 @@ import android.widget.RadioButton;
 import android.widget.RadioGroup;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
+import com.brazvip.fivetv.cache.CacheManager;
+import com.brazvip.fivetv.dialogs.LogoutDialog;
 import com.brazvip.fivetv.instances.AuthInstance;
 import com.brazvip.fivetv.instances.ChannelInstance;
 import com.brazvip.fivetv.instances.EPGInstance;
+import com.brazvip.fivetv.instances.HistoryInstance;
+import com.brazvip.fivetv.instances.VodChannelInstance;
+import com.brazvip.fivetv.layouts.DashboardLayout;
+import com.brazvip.fivetv.layouts.HistoryLayout;
 import com.brazvip.fivetv.layouts.MenuLayout;
 import com.brazvip.fivetv.layouts.PlayerLayout;
 
 import com.brazvip.fivetv.layouts.ProfileLayout;
 import com.brazvip.fivetv.layouts.SettingLayout;
+import com.brazvip.fivetv.layouts.VodLayout;
+import com.brazvip.fivetv.utils.Utils;
 import com.zhy.autolayout.AutoLayoutActivity;
 
 public class MainActivity extends AutoLayoutActivity implements View.OnClickListener, View.OnKeyListener {
@@ -55,10 +67,17 @@ public class MainActivity extends AutoLayoutActivity implements View.OnClickList
     private FrameLayout mLoadingLayout;
     private PlayerLayout mPlayerLayout;
     private MenuLayout mMenuLayout;
+    private DashboardLayout mDashboardlayout;
     private ProfileLayout mProfileLayout;
     private SettingLayout mSettingLayout;
     private RelativeLayout mUserLayout;
+    private HistoryLayout mHistoryLayout;
+    private VodLayout mVodLayout;
 
+    public static HistoryInstance history;
+
+
+    public static CacheManager cacheManager = null;
 
     public FRAGMENT mPrevFragment = FRAGMENT.NONE;
     public FRAGMENT mCurrFragment = FRAGMENT.NONE;
@@ -69,7 +88,16 @@ public class MainActivity extends AutoLayoutActivity implements View.OnClickList
 
     public static boolean isUpdating = false;
 
+    public static boolean f16802k = false;
     public static boolean f16805n = true;
+
+    public static Toast toastObj = null;
+
+    public static long toastPreTime = 0;
+
+    public static long toastCurTime = 0;
+
+    public static String toastMsg = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -81,7 +109,7 @@ public class MainActivity extends AutoLayoutActivity implements View.OnClickList
 
         ChannelInstance.getChannels();
         EPGInstance.Refresh();
-        //VodChannelInstance.Refresh();
+        VodChannelInstance.Refresh();
 
         if (Constant.OFFLINE_TEST == true) {
             Message msg = new Message();
@@ -103,9 +131,12 @@ public class MainActivity extends AutoLayoutActivity implements View.OnClickList
         mLoadingLayout = (FrameLayout) findViewById(R.id.loading_layout);
         mPlayerLayout = (PlayerLayout) findViewById(R.id.player_layout);
         mMenuLayout = (MenuLayout) findViewById(R.id.menu_layout);
+        mDashboardlayout = (DashboardLayout) findViewById(R.id.dashboard_layout);
         mProfileLayout = (ProfileLayout) findViewById(R.id.profile_layout);
         mSettingLayout = (SettingLayout) findViewById(R.id.setting_layout);
         mUserLayout = (RelativeLayout) findViewById(R.id.user_info_root);
+        mHistoryLayout = (HistoryLayout) findViewById(R.id.history_layout);
+        mVodLayout = (VodLayout) findViewById(R.id.vod_layout);
 
         LinearLayout btnChangeProfile = (LinearLayout) findViewById(R.id.btn_change_profile);
         TextView user_dialog_prof_name = (TextView) findViewById(R.id.user_dialog_prof_name);
@@ -139,7 +170,7 @@ public class MainActivity extends AutoLayoutActivity implements View.OnClickList
             @Override
             public void onClick(View v) {
                 mUserLayout.setVisibility(View.GONE);
-                logout();
+                logOut();
             }
         });
 
@@ -191,8 +222,11 @@ public class MainActivity extends AutoLayoutActivity implements View.OnClickList
         mPlayerLayout.setVisibility(View.GONE);
         mLoadingLayout.setVisibility(View.GONE);
         mMenuLayout.setVisibility(View.GONE);
+        mDashboardlayout.setVisibility(View.GONE);
         mProfileLayout.setVisibility(View.GONE);
         mSettingLayout.setVisibility(View.GONE);
+        mHistoryLayout.setVisibility(View.GONE);
+        mVodLayout.setVisibility(View.GONE);
 
         mRadioGroup.setVisibility(View.VISIBLE);
 
@@ -203,6 +237,8 @@ public class MainActivity extends AutoLayoutActivity implements View.OnClickList
         switch (frag) {
             case DASHBOARD:
                 mRadioGroup.check(R.id.rb_dashboard);
+                mDashboardlayout.setVisibility(View.VISIBLE);
+                mDashboardlayout.mMsgHandler.sendMessage(Message.obtain(this.mMsgHandler, 1, 0, 0));
                 break;
             case LIVE:
                 mRadioGroup.check(R.id.rb_live);
@@ -211,9 +247,12 @@ public class MainActivity extends AutoLayoutActivity implements View.OnClickList
                 break;
             case VOD:
                 mRadioGroup.check(R.id.rb_vod);
+                mVodLayout.setVisibility(View.VISIBLE);
+                mVodLayout.mMsgHandler.sendMessage(Message.obtain(this.mMsgHandler, 1, 0, 0));
                 break;
             case HISTORY:
                 mRadioGroup.check(R.id.rb_history);
+                mHistoryLayout.setVisibility(View.VISIBLE);
                 break;
             case SETTING:
                 mRadioGroup.check(R.id.rb_setting);
@@ -240,19 +279,36 @@ public class MainActivity extends AutoLayoutActivity implements View.OnClickList
             public void handleMessage(Message message) {
                 switch (message.what) {
                     case Constant.MSG_CHANNEL_LOADED:
-                        mLoaded |= 0b001;
+                        mLoaded |= 0b0001;
                         checkLoaded();
                         break;
                     case Constant.MSG_EPG_LOADED:
-                        mLoaded |= 0b010;
+                        mLoaded |= 0b0010;
+                        checkLoaded();
+                        break;
+                    case Constant.MSG_VOD_LOADED:
+                        mLoaded |= 0b0100;
                         checkLoaded();
                         break;
                     case Constant.MSG_PLAYER_LOADED:
-                        mLoaded |= 0b100;
+                        mLoaded |= 0b1000;
                         checkLoaded();
                         break;
                     case Constant.MSG_PLAYER_START:
                         onMsgVideoStart(message.getData());
+                        break;
+
+                    case 250:
+                        Bundle bd = message.getData();
+                        if (bd != null && !bd.getString("text").equals("")) {
+                            showToast(bd.getString("text"), message.arg2);
+                            break;
+                        }
+                        break;
+
+                    case 9999:
+                        finish();
+                        Utils.exitApp();
                         break;
                 }
                 super.handleMessage(message);
@@ -261,7 +317,7 @@ public class MainActivity extends AutoLayoutActivity implements View.OnClickList
     }
 
     private void checkLoaded() {
-        if (mLoaded == 0b111)
+        if (mLoaded == 0b1111)
             refreshFragment(FRAGMENT.DASHBOARD);
     }
 
@@ -273,7 +329,8 @@ public class MainActivity extends AutoLayoutActivity implements View.OnClickList
             refreshFragment(mPrevFragment);
         } else {
             //PrefUtils.logout(this);
-            super.onBackPressed();
+            //super.onBackPressed();
+            showQuitDialog(this);
         }
     }
 
@@ -289,7 +346,10 @@ public class MainActivity extends AutoLayoutActivity implements View.OnClickList
         return false;
     }
 
-    private void logout() {
+    private void logOut() {
+        com.lzy.okgo.db.CacheManager.getInstance().clear();
+        cacheManager.clearCache();
+
         AuthInstance.SaveAuthParams("", "");
         startActivity(new Intent(MainActivity.this, LoginActivity.class));
         finish();
@@ -314,6 +374,84 @@ public class MainActivity extends AutoLayoutActivity implements View.OnClickList
         msg.what = what;
         msg.arg1 = 0;
         mMsgHandler.sendMessage(msg);
+    }
+
+    public static boolean logMemoryStats() {
+        Runtime runtime = Runtime.getRuntime();
+        return (runtime.maxMemory() / 1048576) - ((runtime.totalMemory() - runtime.freeMemory()) / 1048576) < 10;
+    }
+
+    public static boolean isSystemOnLowMemory() {
+        ActivityManager activityManager = (ActivityManager) SopApplication.getSopContext().getSystemService(Context.ACTIVITY_SERVICE);
+        if (activityManager == null) {
+            return true;
+        }
+        ActivityManager.MemoryInfo memoryInfo = new ActivityManager.MemoryInfo();
+        activityManager.getMemoryInfo(memoryInfo);
+        return memoryInfo.lowMemory;
+    }
+
+    public static void showMessageFromResource(int textResId) {
+        showMessage(SopApplication.getAppContext().getString(textResId), 0);
+    }
+
+    public static void showMessage(String text, int value) {
+        Message msg = new Message();
+        msg.what = 250;
+        Bundle params = new Bundle();
+        params.putString("text", text);
+        msg.setData(params);
+        msg.arg2 = 1;
+        if (mMsgHandler != null) {
+            mMsgHandler.sendMessage(msg);
+        }
+    }
+
+    public void showToast(String text, int type) {
+        int delay = type == 1 ? 3500 : 2000;
+        if (toastObj == null) {
+            toastObj = Toast.makeText(this, text, type);
+            try {
+                toastObj.show();
+            } catch (WindowManager.BadTokenException ignored) {
+                Log.e("MainActivity", ignored.toString());
+            }
+        } else {
+            toastCurTime = System.currentTimeMillis();
+            if (text.equals(toastMsg)) {
+                if (toastCurTime - toastPreTime > delay) {
+                    try {
+                        toastObj.show();
+                    } catch (WindowManager.BadTokenException ignored) {
+                        Log.e("MainActivity", ignored.toString());
+                    }
+                }
+            } else {
+                toastMsg = text;
+                toastObj.setText(text);
+                try {
+                    toastObj.show();
+                } catch (WindowManager.BadTokenException ignored) {
+                    Log.e("MainActivity", ignored.toString());
+                }
+            }
+        }
+        toastPreTime = toastCurTime;
+    }
+
+    public static void showQuitDialog(Context context) {
+        final LogoutDialog.Builder dialogBuilder = new LogoutDialog.Builder(context);
+        dialogBuilder.message = context.getResources().getString(R.string.confirm_quit);
+        dialogBuilder.positiveOption = context.getResources().getString(R.string.quit_later);
+        dialogBuilder.positiveListener = (dialogInterface, n) -> {
+            dialogInterface.dismiss();
+        };
+        dialogBuilder.negativeOption = context.getResources().getString(R.string.quit_now);
+        dialogBuilder.cancelListener = (dialogInterface, n) -> {
+            dialogInterface.dismiss();
+            MainActivity.mMsgHandler.sendEmptyMessage(9999);
+        };
+        dialogBuilder.build().show();
     }
 
 }

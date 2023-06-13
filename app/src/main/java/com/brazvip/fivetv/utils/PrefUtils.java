@@ -50,12 +50,18 @@ public class PrefUtils {
     /* renamed from: e */
     public static Formatter f14039e = new Formatter(f14038d, Locale.getDefault());
 
-    public static void Toast(int i) {
-        Toast(SopApplication.getAppContext().getString(i));
+    public static void ToastShort(int resID) {
+        ToastShort(SopApplication.getAppContext().getString(resID));
+    }
+    public static void ToastShort(String text) {
+        Toast.makeText(SopApplication.getAppContext(), text, Toast.LENGTH_SHORT).show();
     }
 
-    public static void Toast(String text) {
-        Toast.makeText(SopApplication.getAppContext(), text, 2000).show();
+    public static void ToastLong(int resID) {
+        ToastLong(SopApplication.getAppContext().getString(resID));
+    }
+    public static void ToastLong(String text) {
+        Toast.makeText(SopApplication.getAppContext(), text, Toast.LENGTH_LONG).show();
     }
 
     /* renamed from: a 2246 */

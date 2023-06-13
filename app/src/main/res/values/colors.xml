@@ -163,4 +163,10 @@
     <color name="white_50_percent">#be6f6f70</color>
     <color name="white_75_percent">#be6f6f70</color>
     <color name="white_message_text">#ff6f6f70</color>
+
+    <color name="galleryBg">#212121</color>
+    <color name="galleryCurrentItemOverlay">@android:color/transparent</color>
+    <color name="galleryItemOverlay">#cc000000</color>
+    <color name="galleryEdgeEffect">#b4ffffff</color>
+    <color name="galleryAccent">#FFC107</color>
 </resources>

@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.zhy.autolayout.AutoLinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content">
+
+    <RelativeLayout
+        android:layout_width="1440px"
+        android:layout_height="900px"
+        android:orientation="vertical">
+
+        <RelativeLayout
+            android:id="@+id/head"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@color/dialog_epg_text_title"
+            android:paddingStart="54px"
+            android:paddingTop="44px"
+            android:paddingEnd="54px"
+            android:paddingBottom="44px">
+
+            <TextView
+                android:id="@+id/name"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="channel name"
+                android:textColor="#ffffff"
+                android:textSize="44px" />
+
+            <TextView
+                android:id="@+id/description"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_below="@+id/name"
+                android:layout_marginTop="30px"
+                android:ellipsize="end"
+                android:maxLines="5"
+                android:text="description1 \nd2\nd3\nd4\nd5"
+                android:textColor="#ffffff"
+                android:textSize="26px" />
+
+            <TextView
+                android:id="@+id/genre"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_below="@+id/description"
+                android:layout_marginTop="20px"
+                android:text="Genre"
+                android:textColor="#ffffff"
+                android:textSize="26px" />
+
+            <TextView
+                android:id="@+id/duration"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_below="@+id/genre"
+                android:layout_marginTop="10px"
+                android:text="Length"
+                android:textColor="#ffffff"
+                android:textSize="26px" />
+        </RelativeLayout>
+
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_below="@+id/head"
+            android:background="@color/dialog_epg_text_body"
+            android:paddingStart="54px"
+            android:paddingTop="44px"
+            android:paddingEnd="44px"
+            android:paddingBottom="44px">
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/episode_rview"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:descendantFocusability="beforeDescendants" />
+        </RelativeLayout>
+    </RelativeLayout>
+</com.zhy.autolayout.AutoLinearLayout>

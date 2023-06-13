@@ -5,18 +5,27 @@ import android.os.Message;
 import android.util.Log;
 
 import com.alibaba.fastjson.JSON;
+import com.brazvip.fivetv.Config;
 import com.brazvip.fivetv.Constant;
+import com.brazvip.fivetv.LibTvServiceClient;
 import com.brazvip.fivetv.beans.AuthInfo;
 import com.brazvip.fivetv.utils.PrefUtils;
+import com.brazvip.fivetv.utils.Utils;
 import com.lzy.okgo.callback.StringCallback;
 import com.lzy.okgo.model.HttpParams;
 import com.lzy.okgo.model.Response;
 import com.lzy.okgo.request.PostRequest;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+import java.util.Locale;
+
 public class AuthInstance {
     public static AuthInfo mAuthInfo = null;
     private static String mUserName = "";
     private static String mPassword = "";
+    private static long serverTime = 0;
     private static Handler mMsgHandler = null;
 
     private static String mCacheKey = "AuthInstance";
@@ -56,16 +65,19 @@ public class AuthInstance {
                         new StringCallback() {
                             @Override
                             public void onCacheSuccess(Response<String> response) {
+                                Log.d("AuthInstance", "onCacheSuccess() - response : " + response.body());
                                 onLoginSuccess(response.body());
                             }
 
                             @Override
                             public void onError(Response<String> response) {
+                                Log.d("AuthInstance", "onError() - response : " + response.body());
                                 onLoginFail();
                             }
 
                             @Override
                             public void onSuccess(Response<String> response) {
+                                Log.d("AuthInstance", "onSuccess() - response : " + response.body());
                                 if (response.isSuccessful()) {
                                     onLoginSuccess(response.body());
                                 } else {
@@ -79,13 +91,49 @@ public class AuthInstance {
         ).start();
     }
 
+    public static void doAuth(String username, String password, Handler msgHandler) {
+        mMsgHandler = msgHandler;
+
+        if (!username.contains("@"))
+            username += Constant.DEFAULT_MAIL_SUFFIX;
+
+        LibTvServiceClient.getInstance().setAuthData(username, password);
+        Utils.setValue(Config.HASH_USERNAME, LibTvServiceClient.getInstance().getUserPass("user"));
+        Utils.setValue(Config.HASH_USERPASS, LibTvServiceClient.getInstance().getUserPass("pass"));
+
+        boolean isLogin;
+        try {
+            isLogin = LibTvServiceClient.getInstance().doLogin();
+        } catch (Exception e) {
+            e.getMessage();
+            isLogin = false;
+        }
+        if (!isLogin) {
+            onLoginFail();
+            return;
+        }
+        String serverDate = LibTvServiceClient.getInstance().getServerDate();
+        LibTvServiceClient.getInstance().getLoginData();
+        Calendar.getInstance();
+        try {
+            serverTime = new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss z", Locale.US).parse(serverDate).getTime();
+        } catch (ParseException e2) {
+            e2.printStackTrace();
+        }
+        if (Math.abs(serverTime - System.currentTimeMillis()) > 600000) {
+            Utils.DELTA_TIME = serverTime - System.currentTimeMillis();
+        }
+        //getCustomUserInfo(LibTvServiceClient.getInstance().getLoginData());
+
+        onLoginSuccess(LibTvServiceClient.getInstance().getLoginData());
+    }
+
     private static void onLoginSuccess(String result) {
         try {
-            Log.d("AuthInstance", result);
             mAuthInfo = JSON.parseObject(result, AuthInfo.class);
 
             if (mAuthInfo.code != 0 && mAuthInfo.code != -12) {
-                PrefUtils.Toast(mAuthInfo.result);
+                PrefUtils.ToastShort(mAuthInfo.result);
 
                 Message msg = new Message();
                 msg.what = Constant.MSG_LOGIN_FAIL;
@@ -103,7 +151,9 @@ public class AuthInstance {
     }
 
     private static void onLoginFail() {
-        PrefUtils.Toast("Login server no response, retry later!");
+        Message msg = new Message();
+        msg.what = Constant.MSG_LOGIN_FAIL;
+        mMsgHandler.sendMessage(msg);
     }
 
     public enum API_TYPE {

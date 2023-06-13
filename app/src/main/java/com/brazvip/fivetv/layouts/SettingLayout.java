@@ -15,7 +15,6 @@ import com.brazvip.fivetv.Config;
 import com.brazvip.fivetv.MainActivity;
 import com.brazvip.fivetv.R;
 import com.brazvip.fivetv.SopApplication;
-import com.brazvip.fivetv.beans.UpdateInfo;
 import com.brazvip.fivetv.instances.ChannelInstance;
 import com.brazvip.fivetv.instances.UpdateInstance;
 import com.brazvip.fivetv.utils.PrefUtils;
@@ -152,7 +151,7 @@ public class SettingLayout extends RelativeLayout {
 //        message2.what = 1;
 //        VodFragment.handler.sendMessage(message2);
 
-        PrefUtils.Toast(R.string.done);
+        PrefUtils.ToastShort(R.string.done);
     }
 
     private void setUpdateVersion() {

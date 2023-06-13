@@ -1,7 +1,5 @@
 package com.brazvip.fivetv.layouts;
 
-import static com.lzy.okgo.utils.HttpUtils.runOnUiThread;
-
 import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
@@ -21,8 +19,6 @@ import android.widget.SeekBar;
 import android.widget.TextView;
 import android.widget.VideoView;
 
-import androidx.annotation.Nullable;
-
 import com.brazvip.fivetv.Constant;
 import com.brazvip.fivetv.MainActivity;
 import com.brazvip.fivetv.R;
@@ -30,36 +26,20 @@ import com.brazvip.fivetv.SopApplication;
 import com.brazvip.fivetv.TVCarService;
 import com.brazvip.fivetv.instances.AuthInstance;
 import com.brazvip.fivetv.Config;
+import com.brazvip.fivetv.instances.VodChannelInstance;
 import com.brazvip.fivetv.utils.PrefUtils;
-import com.google.android.exoplayer2.DefaultLoadControl;
-import com.google.android.exoplayer2.DefaultRenderersFactory;
-import com.google.android.exoplayer2.ExoPlaybackException;
 import com.google.android.exoplayer2.ExoPlayer;
-import com.google.android.exoplayer2.LoadControl;
 import com.google.android.exoplayer2.MediaItem;
 import com.google.android.exoplayer2.PlaybackException;
 import com.google.android.exoplayer2.PlaybackParameters;
 import com.google.android.exoplayer2.Player;
-import com.google.android.exoplayer2.SimpleExoPlayer;
 import com.google.android.exoplayer2.Timeline;
-import com.google.android.exoplayer2.analytics.AnalyticsCollector;
 import com.google.android.exoplayer2.extractor.ts.TsExtractor;
-import com.google.android.exoplayer2.source.MediaSource;
 import com.google.android.exoplayer2.source.ProgressiveMediaSource;
-import com.google.android.exoplayer2.source.TrackGroupArray;
 import com.google.android.exoplayer2.source.hls.HlsMediaSource;
-import com.google.android.exoplayer2.trackselection.DefaultTrackSelector;
-import com.google.android.exoplayer2.trackselection.TrackSelectionArray;
-import com.google.android.exoplayer2.ui.AspectRatioFrameLayout;
-import com.google.android.exoplayer2.ui.PlayerView;
 import com.google.android.exoplayer2.ui.StyledPlayerView;
-import com.google.android.exoplayer2.upstream.DataSource;
-import com.google.android.exoplayer2.upstream.DefaultBandwidthMeter;
 import com.google.android.exoplayer2.upstream.DefaultDataSource;
-import com.google.android.exoplayer2.upstream.DefaultDataSourceFactory;
 import com.google.android.exoplayer2.upstream.DefaultHttpDataSource;
-import com.google.android.exoplayer2.upstream.TransferListener;
-import com.google.android.exoplayer2.util.Clock;
 import com.google.android.exoplayer2.video.VideoSize;
 import com.tvbus.engine.TVCore;
 import com.tvbus.engine.TVListener;
@@ -130,7 +110,9 @@ public class PlayerLayout extends FrameLayout {
         initExoPlayer();
         initMessageHandler();
 
-        if (Constant.OFFLINE_TEST == false) {
+        if (Constant.OFFLINE_TEST == true) {
+
+        } else {
             initTVCore();
             initTVCarService();
         }
@@ -525,9 +507,7 @@ public class PlayerLayout extends FrameLayout {
             mPlayerCurrentPos = 0;
             mPlayerSeekPos = 0;
             Libtvcar.start(videoURL);
-        } else if (mBsMode != Config.BS_MODE.STATIC) {
-            return;
-        } else {
+        } else if (mBsMode == Config.BS_MODE.STATIC) {
             //String log6 = "STATIC vidoeURL " + videoURL;
             Message msg = new Message();
             Bundle params = new Bundle();
@@ -535,6 +515,8 @@ public class PlayerLayout extends FrameLayout {
             msg.what = Constant.MSG_PLAYER_PLAY;
             msg.setData(params);
             mMsgHandler.sendMessage(msg);
+        } else {
+            return;
         }
         mIsEnded = true;
         stopVideoPlaying();

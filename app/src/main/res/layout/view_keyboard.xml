@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android" android:orientation="vertical" android:id="@+id/relKeyboard" android:layout_width="match_parent" android:layout_height="wrap_content">
+    <RelativeLayout android:layout_width="match_parent" android:layout_height="576px">
+        <androidx.recyclerview.widget.RecyclerView android:id="@+id/rv_kb_num" android:focusable="true" android:focusableInTouchMode="true" android:clickable="true" android:descendantFocusability="beforeDescendants" android:layout_width="504px" android:layout_height="wrap_content" android:importantForAccessibility="yes"/>
+    </RelativeLayout>
+</LinearLayout>

@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/history_menu"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="@color/background_v3"
+    android:theme="@style/WhiteOpenSans">
+
+    <ImageView
+        android:id="@+id/group_split_line"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:background="@drawable/cut_off_line" />
+
+    <TextView
+        android:id="@+id/x_title"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="25dp"
+        android:layout_marginTop="10dp"
+        android:fontFamily="@font/open_sans_semibold"
+        android:text="Assistidos Recentemente"
+        android:textSize="18sp" />
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/x_title"
+        android:scrollbars="vertical">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="20dp"
+            android:layout_marginTop="10dp"
+            android:layout_marginEnd="35dp"
+            android:layout_marginBottom="10dp"
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/textView"
+                style="@style/history_title_text"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/video_live"
+                android:textSize="18sp" />
+
+            <include
+                android:id="@+id/live_history_placehold"
+                layout="@layout/history_item_hold"
+                android:layout_width="@dimen/history_item_width"
+                android:layout_height="@dimen/history_item_height"
+                android:layout_marginTop="7dp"
+                android:layout_marginBottom="7dp"
+                android:visibility="gone" />
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/history_live_rview"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="20dp"
+                android:clipToPadding="false"
+                android:descendantFocusability="beforeDescendants"
+                android:focusable="true"
+                android:orientation="horizontal"
+                android:scrollbars="none"
+                app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager" />
+
+            <TextView
+                android:id="@+id/textView2"
+                style="@style/history_title_text"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="20dp"
+                android:text="@string/video_playback_vod"
+                android:textSize="18sp" />
+
+            <include
+                android:id="@+id/vod_history_placehold"
+                layout="@layout/history_item_hold"
+                android:layout_width="@dimen/history_item_width"
+                android:layout_height="@dimen/history_item_height"
+                android:layout_marginTop="7dp"
+                android:layout_marginBottom="7dp"
+                android:visibility="gone" />
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/vod_history_rview"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="7dp"
+                android:clipToPadding="false"
+                android:descendantFocusability="beforeDescendants"
+                android:focusable="true"
+                android:orientation="horizontal"
+                android:scrollbars="none"
+                app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager" />
+        </LinearLayout>
+    </ScrollView>
+</RelativeLayout>

@@ -20,6 +20,7 @@ public class Config {
 
     public static boolean isEpgReverseOrder = false;
 
+    public static int backToExitMinPress = 2;
 
     /* renamed from: A */
     public static final int f13314A = 81;
@@ -252,6 +253,9 @@ public class Config {
     /* renamed from: n */
     public static final int f13390n = 22;
 
+    public static String HASH_USERNAME = "HASH_USERNAME";
+    public static String HASH_USERPASS = "HASH_USERPASS";
+
     /* renamed from: na 13391 */
     public static final String SP_PLAYER = "SP_PLAYER";
 
@@ -394,10 +398,15 @@ public class Config {
         APPS
     }
 
-    /* compiled from: MyApplication */
-    /* renamed from: e.b.a.a$d 3459 */
-    /* loaded from: classes.dex */
     public enum VIDEO_TYPE {
+        BSLIVE,
+        PLAYBACK,
+        BSVOD,
+        f8646d
+    }
+
+    /* loaded from: classes.dex */
+    public enum VType {
         M3U8,
         TS
     }

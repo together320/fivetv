@@ -10,6 +10,7 @@ import android.os.Message;
 
 import com.brazvip.fivetv.instances.AuthInstance;
 import com.brazvip.fivetv.utils.PrefUtils;
+import com.brazvip.fivetv.utils.Utils;
 
 public class SplashActivity extends AppCompatActivity {
     public static Handler mMsgHandler = null;
@@ -21,12 +22,15 @@ public class SplashActivity extends AppCompatActivity {
 
         initMessageHandler();
 
-        new Handler().postDelayed(new Runnable() {
-            @Override
-            public void run() {
-                init();
-            }
-        }, 1000);
+        new Handler().postDelayed(() ->  {
+            //SopApplication.initLibTv();
+            doLogin();
+        }, 2000);
+    }
+
+    @Override
+    public void onBackPressed() {
+        doExitApp();
     }
 
     public void initMessageHandler() {
@@ -34,6 +38,15 @@ public class SplashActivity extends AppCompatActivity {
             @Override // android.os.Handler
             public void handleMessage(Message message) {
                 switch (message.what) {
+                    case Constant.MSG_LIBTV_SERVICE_CONNECTED:
+                        doLogin();
+                        break;
+                    case Constant.MSG_LIVTV_SERVICE_DISCONNECTED:
+                    case Constant.MSG_LIVTV_SERVICE_BINDING_DIED:
+                    case Constant.MSG_LIVTV_SERVICE_BINDING_NULL:
+                        onLibTvServiceFailed();
+                        break;
+
                     case Constant.MSG_LOGIN_SUCCESS:
                         onLoginSuccess();
                         break;
@@ -46,7 +59,7 @@ public class SplashActivity extends AppCompatActivity {
         };
     }
 
-    private void init() {
+    private void doLogin() {
         if (AuthInstance.LoadAuthParams()) {
             AuthInstance.Login(mMsgHandler);
         }
@@ -54,6 +67,11 @@ public class SplashActivity extends AppCompatActivity {
             startActivity(new Intent(SplashActivity.this, LoginActivity.class));
             finish();
         }
+    }
+
+    private void onLibTvServiceFailed() {
+        PrefUtils.ToastShort("Failed to connect on tv service!");
+        new Handler().postDelayed(() -> doExitApp(), 2000);
     }
 
     private void onLoginSuccess() {
@@ -64,5 +82,10 @@ public class SplashActivity extends AppCompatActivity {
     private void onLoginFail() {
         startActivity(new Intent(SplashActivity.this, LoginActivity.class));
         finish();
+    }
+
+    private void doExitApp() {
+        finish();
+        Utils.exitApp();
     }
 }

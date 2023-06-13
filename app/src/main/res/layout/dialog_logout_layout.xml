@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.zhy.autolayout.AutoLinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content">
+
+    <LinearLayout
+        android:layout_width="764px"
+        android:layout_height="490px"
+        android:layout_gravity="center"
+        android:background="@mipmap/dialog_bg"
+        android:orientation="vertical">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="330px">
+
+            <TextView
+                android:id="@+id/message"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:gravity="center"
+                android:lineSpacingMultiplier="1.5"
+                android:textColor="#ffffff"
+                android:textSize="36px" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal"
+            android:layout_marginLeft="75px"
+            android:layout_marginRight="75px"
+            android:gravity="center"
+            android:orientation="horizontal">
+
+            <Button
+                android:id="@+id/positiveButton"
+                android:layout_width="254px"
+                android:layout_height="78px"
+                android:layout_gravity="center_vertical"
+                android:background="@drawable/dialog_btn_bg2"
+                android:gravity="center"
+                android:text="@string/update_later"
+                android:textColor="@color/dialog_button"
+                android:textSize="28px" />
+
+            <Button
+                android:id="@+id/negativeButton"
+                android:layout_width="254px"
+                android:layout_height="78px"
+                android:layout_gravity="center"
+                android:layout_marginLeft="98px"
+                android:background="@drawable/dialog_btn_bg2"
+                android:gravity="center"
+                android:text="@string/update_now"
+                android:textColor="@color/dialog_button"
+                android:textSize="28px" />
+        </LinearLayout>
+    </LinearLayout>
+</com.zhy.autolayout.AutoLinearLayout>

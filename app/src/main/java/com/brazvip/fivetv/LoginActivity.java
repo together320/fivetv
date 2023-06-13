@@ -13,11 +13,13 @@ import android.widget.EditText;
 
 import com.brazvip.fivetv.instances.AuthInstance;
 import com.brazvip.fivetv.utils.PrefUtils;
+import com.brazvip.fivetv.utils.Utils;
 
 public class LoginActivity extends AppCompatActivity implements View.OnClickListener {
     public static Handler mMsgHandler = null;
     public static EditText et_username = null;
     public static EditText et_password = null;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -32,6 +34,12 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
         initMessageHandler();
     }
 
+    @Override
+    public void onBackPressed() {
+        finish();
+        Utils.exitApp();
+    }
+
     public void initMessageHandler() {
         mMsgHandler = new Handler(Looper.getMainLooper()) {
             @Override // android.os.Handler
@@ -39,6 +47,9 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
                 switch (message.what) {
                     case Constant.MSG_LOGIN_SUCCESS:
                         onLoginSuccess();
+                        break;
+                    case Constant.MSG_LOGIN_FAIL:
+                        PrefUtils.ToastShort("Login server no response, retry later!");
                         break;
                 }
                 super.handleMessage(message);
@@ -49,10 +60,12 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
     private void onLoginSuccess() {
         String username = et_username.getText().toString();
         String password = et_password.getText().toString();
-
         AuthInstance.SaveAuthParams(username, password);
 
-        startActivity(new Intent(LoginActivity.this, MainActivity.class));
+        Intent intent = new Intent(this, MainActivity.class);
+        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
+        startActivity(intent);
+
         finish();
     }
 
@@ -71,13 +84,13 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
         String password = et_password.getText().toString();
 
         if (username.length() == 0)
-            PrefUtils.Toast(getString(R.string.username_cannot_blank));
+            PrefUtils.ToastShort(getString(R.string.username_cannot_blank));
         else if (username.length() < 4)
-            PrefUtils.Toast(String.format(getString(R.string.username_too_short), 4));
+            PrefUtils.ToastShort(String.format(getString(R.string.username_too_short), 4));
         else if (password.length() == 0)
-            PrefUtils.Toast(getString(R.string.password_cannot_blank));
+            PrefUtils.ToastShort(getString(R.string.password_cannot_blank));
         else if (password.length() < 4)
-            PrefUtils.Toast(String.format(getString(R.string.password_too_short), 4));
+            PrefUtils.ToastShort(String.format(getString(R.string.password_too_short), 4));
         else
             AuthInstance.Login(username, password, mMsgHandler);
     }

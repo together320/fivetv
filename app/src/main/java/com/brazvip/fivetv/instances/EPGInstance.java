@@ -1,11 +1,10 @@
 package com.brazvip.fivetv.instances;
 
 import android.os.Message;
+import android.util.Log;
 import android.util.LruCache;
 
-import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONReader;
-import com.alibaba.fastjson.annotation.JSONField;
 import com.brazvip.fivetv.Config;
 import com.brazvip.fivetv.Constant;
 import com.brazvip.fivetv.MainActivity;
@@ -140,6 +139,7 @@ public class EPGInstance {
             @Override
             public void run() {
 
+                Log.d("EPGInstance", "URL: " + url);
                 if (Constant.OFFLINE_TEST == true) {
                     String strInfo = PrefUtils.getPrefString(Constant.PREFS_EPG_INFO, "");
                     if (strInfo.length() > 0) {
@@ -152,19 +152,23 @@ public class EPGInstance {
                         new StringCallback() {
                             @Override
                             public void onCacheSuccess(Response<String> response) {
+                                Log.d("EPGInstance", "onCacheSuccess");
                                 parseEPGInfo(response.body(), true);
                             }
 
                             @Override
                             public void onError(Response<String> response) {
+                                Log.e("EPGInstance", "onError");
                                 onFail();
                             }
 
                             @Override
                             public void onSuccess(Response<String> response) {
                                 if (response.isSuccessful()) {
+                                    Log.d("EPGInstance", "onSuccess - response successful!");
                                     parseEPGInfo(response.body(), true);
                                 } else {
+                                    Log.e("EPGInstance", "onSuccess - response failed!");
                                     onFail();
                                 }
                             }
@@ -266,7 +270,7 @@ public class EPGInstance {
     }
 
     private static void onFail() {
-        PrefUtils.Toast("Failed to get epg list!");
+        PrefUtils.ToastShort("Failed to get epg list!");
 
         Message msg = new Message();
         msg.what = Constant.MSG_EPG_LOADED;

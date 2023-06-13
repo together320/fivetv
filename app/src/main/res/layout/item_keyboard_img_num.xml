@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ImageView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/tv_kb"
+    android:layout_width="72px"
+    android:layout_height="72px"
+    android:layout_gravity="center"
+    android:background="@drawable/selector_keyboard_key_num"
+    android:clickable="true"
+    android:focusable="true"
+    android:focusableInTouchMode="true"
+    android:gravity="center"
+    android:scaleType="center"
+    android:textSize="40px" />

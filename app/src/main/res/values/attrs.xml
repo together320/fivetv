@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <attr name="searchHintIcon" format="reference" />
+    <attr name="searchIcon" format="reference" />
+    <attr name="searchViewStyle" format="reference" />
+
+    <declare-styleable name="MyKeyBoardView">
+        <attr name="initAbcKeyboard" format="boolean" />
+        <attr name="initCharKeyboard" format="boolean" />
+        <attr name="initNumKeyboard" format="boolean" />
+        <attr name="isAbcKeyboardShow" format="boolean" />
+        <attr name="isCharKeyboardShow" format="boolean" />
+        <attr name="isKeyboardTitleGone" format="boolean" />
+        <attr name="isNumKeyboardShow" format="boolean" />
+        <attr name="isSystemKeyboardShow" format="boolean" />
+        <attr name="searchChAppend" format="string" />
+    </declare-styleable>
+
+</resources>

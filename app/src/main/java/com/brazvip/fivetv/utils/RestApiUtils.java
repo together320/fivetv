@@ -105,7 +105,7 @@ public class RestApiUtils {
     public static int f13723G = 2;
 
     /* renamed from: H */
-    public static int f13724H = 6;
+    public static int vodGridSpanCount = 6;
 
     /* renamed from: I */
     public static int f13725I = 0;
