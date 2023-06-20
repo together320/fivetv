@@ -92,6 +92,6 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
         else if (password.length() < 4)
             PrefUtils.ToastShort(String.format(getString(R.string.password_too_short), 4));
         else
-            AuthInstance.Login(username, password, mMsgHandler);
+            AuthInstance.doAuth(username, password, mMsgHandler);
     }
 }

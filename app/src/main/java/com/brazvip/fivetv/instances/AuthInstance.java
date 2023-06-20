@@ -22,6 +22,7 @@ import java.util.Calendar;
 import java.util.Locale;
 
 public class AuthInstance {
+    public static final String TAG = "AuthInstance";
     public static AuthInfo mAuthInfo = null;
     private static String mUserName = "";
     private static String mPassword = "";
@@ -91,6 +92,10 @@ public class AuthInstance {
         ).start();
     }
 
+    public static void Auth(Handler msgHandler) {
+        doAuth(mUserName, mPassword, msgHandler);
+    }
+
     public static void doAuth(String username, String password, Handler msgHandler) {
         mMsgHandler = msgHandler;
 
@@ -101,31 +106,39 @@ public class AuthInstance {
         Utils.setValue(Config.HASH_USERNAME, LibTvServiceClient.getInstance().getUserPass("user"));
         Utils.setValue(Config.HASH_USERPASS, LibTvServiceClient.getInstance().getUserPass("pass"));
 
-        boolean isLogin;
+        boolean isLogin = false;
         try {
             isLogin = LibTvServiceClient.getInstance().doLogin();
+            Log.d(TAG, "LibTvServiceClient.doLogin() : " + isLogin);
+
+            String domain = LibTvServiceClient.getInstance().getLoginPrefix();
+            Log.d(TAG, "LibTvServiceClient.getLoginPrefix() : " + domain);
+
+            String serverDate = LibTvServiceClient.getInstance().getServerDate();
+            Calendar.getInstance();
+            try {
+                serverTime = new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss z", Locale.US).parse(serverDate).getTime();
+                Log.d(TAG, "LibTvServiceClient.getServerDate() : " + serverTime);
+            } catch (ParseException e2) {
+                e2.printStackTrace();
+            }
+            if (Math.abs(serverTime - System.currentTimeMillis()) > 600000) {
+                Utils.DELTA_TIME = serverTime - System.currentTimeMillis();
+                Log.d(TAG, "LibTvServiceClient.getServerDate() : DELTA_TIME : " + Utils.DELTA_TIME);
+            }
+
+            String strLoginData = LibTvServiceClient.getInstance().getLoginData();
+            Log.d(TAG, "LibTvServiceClient.getLoginData() : " + strLoginData);
+
+            onLoginSuccess(strLoginData);
         } catch (Exception e) {
             e.getMessage();
             isLogin = false;
         }
+
         if (!isLogin) {
             onLoginFail();
-            return;
         }
-        String serverDate = LibTvServiceClient.getInstance().getServerDate();
-        LibTvServiceClient.getInstance().getLoginData();
-        Calendar.getInstance();
-        try {
-            serverTime = new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss z", Locale.US).parse(serverDate).getTime();
-        } catch (ParseException e2) {
-            e2.printStackTrace();
-        }
-        if (Math.abs(serverTime - System.currentTimeMillis()) > 600000) {
-            Utils.DELTA_TIME = serverTime - System.currentTimeMillis();
-        }
-        //getCustomUserInfo(LibTvServiceClient.getInstance().getLoginData());
-
-        onLoginSuccess(LibTvServiceClient.getInstance().getLoginData());
     }
 
     private static void onLoginSuccess(String result) {

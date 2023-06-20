@@ -8,6 +8,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
+import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
@@ -37,6 +38,7 @@ import com.brazvip.fivetv.layouts.PlayerLayout;
 import com.brazvip.fivetv.layouts.ProfileLayout;
 import com.brazvip.fivetv.layouts.SettingLayout;
 import com.brazvip.fivetv.layouts.VodLayout;
+import com.brazvip.fivetv.utils.PrefUtils;
 import com.brazvip.fivetv.utils.Utils;
 import com.zhy.autolayout.AutoLayoutActivity;
 
@@ -108,8 +110,6 @@ public class MainActivity extends AutoLayoutActivity implements View.OnClickList
         initMessageHandler();
 
         ChannelInstance.getChannels();
-        EPGInstance.Refresh();
-        VodChannelInstance.Refresh();
 
         if (Constant.OFFLINE_TEST == true) {
             Message msg = new Message();
@@ -281,18 +281,24 @@ public class MainActivity extends AutoLayoutActivity implements View.OnClickList
                     case Constant.MSG_CHANNEL_LOADED:
                         mLoaded |= 0b0001;
                         checkLoaded();
+                        PrefUtils.ToastShort("CHANNEL Loaded!");
+                        EPGInstance.Refresh();
                         break;
                     case Constant.MSG_EPG_LOADED:
                         mLoaded |= 0b0010;
                         checkLoaded();
+                        PrefUtils.ToastShort("EPG Loaded!");
+                        VodChannelInstance.Refresh();
                         break;
                     case Constant.MSG_VOD_LOADED:
                         mLoaded |= 0b0100;
                         checkLoaded();
+                        PrefUtils.ToastShort("VOD Loaded!");
                         break;
                     case Constant.MSG_PLAYER_LOADED:
                         mLoaded |= 0b1000;
                         checkLoaded();
+                        PrefUtils.ToastShort("PLAYER Loaded!");
                         break;
                     case Constant.MSG_PLAYER_START:
                         onMsgVideoStart(message.getData());

@@ -13,6 +13,7 @@ import android.os.Build;
 import android.os.Environment;
 import android.os.StrictMode;
 import android.util.Base64;
+import android.util.Log;
 
 import com.lzy.okgo.OkGo;
 import com.lzy.okgo.cache.CacheMode;
@@ -160,9 +161,9 @@ public class SopApplication extends Application implements InvocationHandler {
         interceptor.setPrintLevel(HttpLoggingInterceptor.Level.NONE);
         interceptor.setColorLevel(Level.INFO);
         builder.addInterceptor(interceptor);
-        builder.readTimeout(20000, TimeUnit.MILLISECONDS);
-        builder.writeTimeout(20000, TimeUnit.MILLISECONDS);
-        builder.connectTimeout(20000, TimeUnit.MILLISECONDS);
+        builder.readTimeout(200000, TimeUnit.MILLISECONDS);
+        builder.writeTimeout(200000, TimeUnit.MILLISECONDS);
+        builder.connectTimeout(200000, TimeUnit.MILLISECONDS);
         HttpsUtils.SSLParams sslSocketFactory = HttpsUtils.getSslSocketFactory();
         builder.sslSocketFactory(sslSocketFactory.sSLSocketFactory, sslSocketFactory.trustManager);
         OkGo.getInstance().init(this).setOkHttpClient(builder.build())
@@ -220,12 +221,12 @@ public class SopApplication extends Application implements InvocationHandler {
             TrustManager tm = new X509TrustManager() {
                 @Override
                 public void checkClientTrusted(X509Certificate[] chain, String authType) throws CertificateException {
-
+                    Log.d("SopApplication", "SSL Context Init -> checkClientTrusted()");
                 }
 
                 @Override
                 public void checkServerTrusted(X509Certificate[] chain, String authType) throws CertificateException {
-
+                    Log.d("SopApplication", "SSL Context Init -> checkServerTrusted())");
                 }
 
                 @Override

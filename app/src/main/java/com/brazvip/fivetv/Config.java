@@ -1,5 +1,15 @@
 package com.brazvip.fivetv;
 
+import android.os.Build;
+import android.util.DisplayMetrics;
+
+import com.brazvip.fivetv.utils.Utils;
+import com.phoenix.libtv.Libtv;
+import com.phoenix.libtv.service.LibTvService;
+
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.util.HashMap;
 
 public class Config {
@@ -19,6 +29,10 @@ public class Config {
     public static boolean f8924v = true;
 
     public static boolean isEpgReverseOrder = false;
+
+    public static String socketAddr = "";
+
+    public static boolean LoginByLib = true;
 
     public static int backToExitMinPress = 2;
 
@@ -451,4 +465,57 @@ public class Config {
         }
         //String text = "" + f13325Fa + " " + f13327Ga + " " + f13329Ha + " " + f13331Ia + " " + f13333Ja;
     }
+
+    public static String domain = "@sp1.com";
+
+    public static DisplayMetrics displayMetrics = null;
+
+    private static void getInfo() {
+//        String m5118c = SopCast.rConfig.m5118c("adult_words");
+//        if (m5118c.isEmpty()) {
+//            return;
+//        }
+//        SopCast.adultList = new ArrayList<>(Arrays.asList(m5118c.split(",")));
+    }
+
+    private static void initLibTV() {
+//        String m5118c = SopCast.rConfig.m5118c("app_license");
+//        socketAddr = SopCast.rConfig.m5118c("socket_addr");
+//        LibTvServiceClient.getInstance().setAppLicense(m5118c);
+
+        LibTvServiceClient.getInstance().setAppLicense("3e3925c5f54e2d6538b8bef61e868aac0527d2c11cc6b49b684b0753294314b43ebd6dffe48005a967d9d70c117676776ae472b7163b8675578e917a038c3184e7fa0a0c0c463dc9aeb5738d074b6cfc149c450d71052d52244d5ebdbbe45014ebea5d721de25db318dcdd68019f3539f02c88eff2f7b8f226131850b5834a619186eba742cdcb3c3b0d58f425e08362e527b53fae640053a01d7cecdfc009e6d2ddec446b53670845109ff52927860fdd");
+
+        try {
+            new BSCF(SopApplication.getAppContext());
+
+            JSONObject jSONObject = new JSONObject();
+            jSONObject.put("did", (Object) Utils.getValue(Config.DEVICE_ID, ""));
+            jSONObject.put("username", (Object) Utils.getValue(Config.USERNAME, ""));
+            jSONObject.put("password", (Object) Utils.getValue(Config.PASSWORD, ""));
+            jSONObject.put("packageName", (Object) BSCF.packageName);
+            jSONObject.put("appName", (Object) BSCF.appName);
+            jSONObject.put("appVersion", (Object) Integer.valueOf(BSCF.appVersionCode));
+            jSONObject.put("buildBrand", (Object) Build.BRAND);
+            jSONObject.put("buildProduct", (Object) Build.PRODUCT);
+            jSONObject.put("buildBoard", (Object) Build.BOARD);
+            jSONObject.put("buildABI", (Object) Build.CPU_ABI);
+            jSONObject.put("buildDisplay", (Object) Build.DISPLAY);
+            jSONObject.put("buildModel", (Object) Build.MODEL);
+            jSONObject.put("sysVersion", (Object) Build.VERSION.RELEASE);
+            LibTvServiceClient.getInstance().setConfig(jSONObject.toString());
+        } catch (JSONException ex) {
+
+        }
+
+        domain = LibTvServiceClient.getInstance().getLoginPrefix();
+
+        getInfo();
+    }
+
+    public static void initializeConfig() {
+        initLibTV();
+        f8909g = false;
+        f8924v = true;
+    }
+
 }

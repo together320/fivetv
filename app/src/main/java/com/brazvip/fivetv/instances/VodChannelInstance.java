@@ -33,6 +33,8 @@ import java.util.Set;
 
 public class VodChannelInstance {
 
+    public static final String TAG = "VodChannelInstance";
+
     private static String mCacheKey = "VodChannelInstance";
 
     public static int f13619e = 0;
@@ -75,13 +77,14 @@ public class VodChannelInstance {
                             @Override
                             public void onCacheSuccess(Response<String> response) {
                                 Log.d("VodInstance", "onCacheSuccess");
+                                PrefUtils.ToastShort("Getting vod channel list! - onCacheSuccess");
                                 asyncParseVodChannels(response.body(), true);
                             }
 
                             @Override
                             public void onError(Response<String> response) {
                                 Log.e("VodInstance", "onError");
-                                onFail();
+                                onFail("onError");
                             }
 
                             @Override
@@ -91,7 +94,7 @@ public class VodChannelInstance {
                                     asyncParseVodChannels(response.body(), true);
                                 } else {
                                     Log.e("VodInstance", "onSuccess - response failed!");
-                                    onFail();
+                                    onFail("onSuccess");
                                 }
                             }
                         }
@@ -116,7 +119,7 @@ public class VodChannelInstance {
                     if (savePref == true) {
                         PrefUtils.setPrefString(Constant.PREFS_VOD_INFO, result);
                     }
-
+Log.e(TAG, "Size: " + result.length());
                     VodChannelInstance.parseJson(result);
 
                     Message msg = new Message();
@@ -283,7 +286,7 @@ public class VodChannelInstance {
         }
     }
 
-    private static void onFail() {
-        PrefUtils.ToastShort("Failed to get vod channel list!");
+    private static void onFail(String strFuncName) {
+        PrefUtils.ToastShort("Failed to get vod channel list! - " + strFuncName);
     }
 }

@@ -7,6 +7,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
+import android.util.DisplayMetrics;
 
 import com.brazvip.fivetv.instances.AuthInstance;
 import com.brazvip.fivetv.utils.PrefUtils;
@@ -20,11 +21,13 @@ public class SplashActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_splash);
 
+        Config.displayMetrics = new DisplayMetrics();
+        getWindowManager().getDefaultDisplay().getMetrics(Config.displayMetrics);
+
         initMessageHandler();
 
         new Handler().postDelayed(() ->  {
-            //SopApplication.initLibTv();
-            doLogin();
+            SopApplication.initLibTv();
         }, 2000);
     }
 
@@ -59,9 +62,15 @@ public class SplashActivity extends AppCompatActivity {
         };
     }
 
+    private void appLicensing() {
+        // FirebaseApp appInstance = FirebaseApp.getInstance();
+    }
+
     private void doLogin() {
+        Config.initializeConfig();
+
         if (AuthInstance.LoadAuthParams()) {
-            AuthInstance.Login(mMsgHandler);
+            AuthInstance.Auth(mMsgHandler);
         }
         else {
             startActivity(new Intent(SplashActivity.this, LoginActivity.class));
