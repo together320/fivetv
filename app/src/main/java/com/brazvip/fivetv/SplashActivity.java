@@ -8,6 +8,8 @@ import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
 import android.util.DisplayMetrics;
+import android.view.View;
+import android.widget.ProgressBar;
 
 import com.brazvip.fivetv.instances.AuthInstance;
 import com.brazvip.fivetv.utils.PrefUtils;
@@ -15,6 +17,8 @@ import com.brazvip.fivetv.utils.Utils;
 
 public class SplashActivity extends AppCompatActivity {
     public static Handler mMsgHandler = null;
+
+    public static ProgressBar loading_progress = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -24,9 +28,13 @@ public class SplashActivity extends AppCompatActivity {
         Config.displayMetrics = new DisplayMetrics();
         getWindowManager().getDefaultDisplay().getMetrics(Config.displayMetrics);
 
+        loading_progress = findViewById(R.id.loading_progress);
+        loading_progress.setVisibility(View.GONE);
+
         initMessageHandler();
 
         new Handler().postDelayed(() ->  {
+            loading_progress.setVisibility(View.VISIBLE);
             SopApplication.initLibTv();
         }, 2000);
     }
@@ -79,7 +87,7 @@ public class SplashActivity extends AppCompatActivity {
     }
 
     private void onLibTvServiceFailed() {
-        PrefUtils.ToastShort("Failed to connect on tv service!");
+        PrefUtils.ToastShort("Service Connect Failure!");
         new Handler().postDelayed(() -> doExitApp(), 2000);
     }
 
@@ -89,6 +97,7 @@ public class SplashActivity extends AppCompatActivity {
     }
 
     private void onLoginFail() {
+        PrefUtils.ToastShort("Account Login Failure!");
         startActivity(new Intent(SplashActivity.this, LoginActivity.class));
         finish();
     }

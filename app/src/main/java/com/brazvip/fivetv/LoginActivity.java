@@ -10,6 +10,7 @@ import android.os.Message;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.RelativeLayout;
 
 import com.brazvip.fivetv.instances.AuthInstance;
 import com.brazvip.fivetv.utils.PrefUtils;
@@ -19,6 +20,7 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
     public static Handler mMsgHandler = null;
     public static EditText et_username = null;
     public static EditText et_password = null;
+    public static RelativeLayout loading_progress = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -27,6 +29,12 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
 
         et_username = (EditText)findViewById(R.id.et_username);
         et_password = (EditText)findViewById(R.id.et_password);
+        loading_progress = findViewById(R.id.loading_progress);
+        loading_progress.setVisibility(View.GONE);
+
+        String savedUserName = PrefUtils.getPrefString("username", "");
+        if (savedUserName.length() > 0)
+            et_username.setText(savedUserName);
 
         Button btn_login = (Button)findViewById(R.id.username_login_submit_btn);
         btn_login.setOnClickListener(this);
@@ -49,7 +57,7 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
                         onLoginSuccess();
                         break;
                     case Constant.MSG_LOGIN_FAIL:
-                        PrefUtils.ToastShort("Login server no response, retry later!");
+                        onLoginFail();
                         break;
                 }
                 super.handleMessage(message);
@@ -62,6 +70,8 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
         String password = et_password.getText().toString();
         AuthInstance.SaveAuthParams(username, password);
 
+        loading_progress.setVisibility(View.GONE);
+
         Intent intent = new Intent(this, MainActivity.class);
         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
         startActivity(intent);
@@ -69,12 +79,22 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
         finish();
     }
 
+    private void onLoginFail() {
+        loading_progress.setVisibility(View.GONE);
+
+        PrefUtils.ToastShort("Account Login Failure!");
+    }
+
+
 
     @Override
     public void onClick(View v) {
         int id = v.getId();
 
         if (id == R.id.username_login_submit_btn) {
+            if (loading_progress.getVisibility() == View.VISIBLE)
+                return;
+
             login();
         }
     }
@@ -91,7 +111,9 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
             PrefUtils.ToastShort(getString(R.string.password_cannot_blank));
         else if (password.length() < 4)
             PrefUtils.ToastShort(String.format(getString(R.string.password_too_short), 4));
-        else
+        else {
+            loading_progress.setVisibility(View.VISIBLE);
             AuthInstance.doAuth(username, password, mMsgHandler);
+        }
     }
 }

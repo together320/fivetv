@@ -3,6 +3,7 @@ package com.brazvip.fivetv.instances;
 import android.os.Handler;
 import android.os.Message;
 import android.util.Log;
+import android.view.View;
 
 import com.alibaba.fastjson.JSON;
 import com.brazvip.fivetv.Config;
@@ -103,54 +104,56 @@ public class AuthInstance {
             username += Constant.DEFAULT_MAIL_SUFFIX;
 
         LibTvServiceClient.getInstance().setAuthData(username, password);
-        Utils.setValue(Config.HASH_USERNAME, LibTvServiceClient.getInstance().getUserPass("user"));
-        Utils.setValue(Config.HASH_USERPASS, LibTvServiceClient.getInstance().getUserPass("pass"));
 
-        boolean isLogin = false;
-        try {
-            isLogin = LibTvServiceClient.getInstance().doLogin();
-            Log.d(TAG, "LibTvServiceClient.doLogin() : " + isLogin);
+        new Thread(() -> {
+            Utils.setValue(Config.HASH_USERNAME, LibTvServiceClient.getInstance().getUserPass("user"));
+            Utils.setValue(Config.HASH_USERPASS, LibTvServiceClient.getInstance().getUserPass("pass"));
 
-            String domain = LibTvServiceClient.getInstance().getLoginPrefix();
-            Log.d(TAG, "LibTvServiceClient.getLoginPrefix() : " + domain);
-
-            String serverDate = LibTvServiceClient.getInstance().getServerDate();
-            Calendar.getInstance();
+            boolean isLogin;
             try {
-                serverTime = new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss z", Locale.US).parse(serverDate).getTime();
-                Log.d(TAG, "LibTvServiceClient.getServerDate() : " + serverTime);
-            } catch (ParseException e2) {
-                e2.printStackTrace();
+                isLogin = LibTvServiceClient.getInstance().doLogin();
+                Log.d(TAG, "LibTvServiceClient.doLogin() : " + isLogin);
+
+                if (isLogin) {
+                    String domain = LibTvServiceClient.getInstance().getLoginPrefix();
+                    Log.d(TAG, "LibTvServiceClient.getLoginPrefix() : " + domain);
+
+                    String serverDate = LibTvServiceClient.getInstance().getServerDate();
+                    Calendar.getInstance();
+                    try {
+                        serverTime = new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss z", Locale.US).parse(serverDate).getTime();
+                        Log.d(TAG, "LibTvServiceClient.getServerDate() : " + serverTime);
+                    } catch (ParseException e2) {
+                        e2.printStackTrace();
+                    }
+                    if (Math.abs(serverTime - System.currentTimeMillis()) > 600000) {
+                        Utils.DELTA_TIME = serverTime - System.currentTimeMillis();
+                        Log.d(TAG, "LibTvServiceClient.getServerDate() : DELTA_TIME : " + Utils.DELTA_TIME);
+                    }
+
+                    String strLoginData = LibTvServiceClient.getInstance().getLoginData();
+                    Log.d(TAG, "LibTvServiceClient.getLoginData() : " + strLoginData);
+
+                    onLoginSuccess(strLoginData);
+                }
+            } catch (Exception e) {
+                e.getMessage();
+                isLogin = false;
             }
-            if (Math.abs(serverTime - System.currentTimeMillis()) > 600000) {
-                Utils.DELTA_TIME = serverTime - System.currentTimeMillis();
-                Log.d(TAG, "LibTvServiceClient.getServerDate() : DELTA_TIME : " + Utils.DELTA_TIME);
+
+            if (!isLogin) {
+                onLoginFail();
             }
-
-            String strLoginData = LibTvServiceClient.getInstance().getLoginData();
-            Log.d(TAG, "LibTvServiceClient.getLoginData() : " + strLoginData);
-
-            onLoginSuccess(strLoginData);
-        } catch (Exception e) {
-            e.getMessage();
-            isLogin = false;
-        }
-
-        if (!isLogin) {
-            onLoginFail();
-        }
+        }).start();
     }
 
     private static void onLoginSuccess(String result) {
         try {
             mAuthInfo = JSON.parseObject(result, AuthInfo.class);
 
-            if (mAuthInfo.code != 0 && mAuthInfo.code != -12) {
-                PrefUtils.ToastShort(mAuthInfo.result);
-
-                Message msg = new Message();
-                msg.what = Constant.MSG_LOGIN_FAIL;
-                mMsgHandler.sendMessage(msg);
+            if (mAuthInfo.code != Config.LOGIN_OK && mAuthInfo.code != Config.LOGIN_DISABLED_OR_EXPIRED) {
+                //PrefUtils.ToastShort(mAuthInfo.result);
+                onLoginFail();
             }
             else {
                 Message msg = new Message();
@@ -159,7 +162,7 @@ public class AuthInstance {
             }
         }
         catch (Exception e) {
-
+            onLoginFail();
         }
     }
 

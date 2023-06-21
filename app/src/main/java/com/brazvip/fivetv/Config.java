@@ -270,6 +270,10 @@ public class Config {
     public static String HASH_USERNAME = "HASH_USERNAME";
     public static String HASH_USERPASS = "HASH_USERPASS";
 
+    public static int LOGIN_OK = 0;
+    public static int LOGIN_FAIL = -11;
+    public static int LOGIN_DISABLED_OR_EXPIRED = -12;
+
     /* renamed from: na 13391 */
     public static final String SP_PLAYER = "SP_PLAYER";
 
