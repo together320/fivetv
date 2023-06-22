@@ -8,7 +8,6 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
-import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
@@ -41,6 +40,8 @@ import com.brazvip.fivetv.layouts.VodLayout;
 import com.brazvip.fivetv.utils.PrefUtils;
 import com.brazvip.fivetv.utils.Utils;
 import com.zhy.autolayout.AutoLayoutActivity;
+
+import java.util.ArrayList;
 
 public class MainActivity extends AutoLayoutActivity implements View.OnClickListener, View.OnKeyListener {
 
@@ -101,6 +102,10 @@ public class MainActivity extends AutoLayoutActivity implements View.OnClickList
 
     public static String toastMsg = null;
 
+    public static boolean restrictedGroupsUnlocked = false;
+
+    public static ArrayList<String> adultList = new ArrayList<>();
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -109,7 +114,7 @@ public class MainActivity extends AutoLayoutActivity implements View.OnClickList
         initComponents();
         initMessageHandler();
 
-        ChannelInstance.getChannels();
+        ChannelInstance.getAllChannels();
 
         if (Constant.OFFLINE_TEST == true) {
             Message msg = new Message();
@@ -248,7 +253,7 @@ public class MainActivity extends AutoLayoutActivity implements View.OnClickList
             case VOD:
                 mRadioGroup.check(R.id.rb_vod);
                 mVodLayout.setVisibility(View.VISIBLE);
-                mVodLayout.mMsgHandler.sendMessage(Message.obtain(this.mMsgHandler, 1, 0, 0));
+                mVodLayout.handler.sendMessage(Message.obtain(this.mMsgHandler, 1, 0, 0));
                 break;
             case HISTORY:
                 mRadioGroup.check(R.id.rb_history);
@@ -282,13 +287,13 @@ public class MainActivity extends AutoLayoutActivity implements View.OnClickList
                         mLoaded |= 0b0001;
                         checkLoaded();
                         PrefUtils.ToastShort("CHANNEL Loaded!");
-                        EPGInstance.Refresh();
+                        EPGInstance.getAllEPGs();
                         break;
                     case Constant.MSG_EPG_LOADED:
                         mLoaded |= 0b0010;
                         checkLoaded();
                         PrefUtils.ToastShort("EPG Loaded!");
-                        VodChannelInstance.Refresh();
+                        VodChannelInstance.getAllVodGroups();
                         break;
                     case Constant.MSG_VOD_LOADED:
                         mLoaded |= 0b0100;

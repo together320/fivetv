@@ -131,7 +131,7 @@ public class EPGInstance {
     }
 
 
-    public static void Refresh() {
+    public static void getAllEPGs() {
 
         final String url = AuthInstance.getApiUrl(AuthInstance.API_TYPE.EPG);
 

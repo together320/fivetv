@@ -34,7 +34,7 @@ public class ChannelInstance {
     public static volatile HashMap<Integer, Group> groupChannelMap;
     public static volatile HashMap<Integer, ChannelBean> liveChannels;
 
-    public static void getChannels() {
+    public static void getAllChannels() {
 
         final String url = AuthInstance.getApiUrl(AuthInstance.API_TYPE.CHANNEL);
 

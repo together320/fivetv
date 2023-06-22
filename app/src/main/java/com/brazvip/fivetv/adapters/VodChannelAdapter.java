@@ -2,282 +2,230 @@ package com.brazvip.fivetv.adapters;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.os.Bundle;
 import android.os.Message;
+import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Filter;
-import android.widget.Filterable;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import androidx.annotation.NonNull;
+import androidx.fragment.app.FragmentManager;
+import androidx.recyclerview.widget.RecyclerView.ViewHolder;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.brazvip.fivetv.Config;
-import com.brazvip.fivetv.MainActivity;
-import com.brazvip.fivetv.instances.VodChannelInstance;
 import com.brazvip.fivetv.layouts.VodLayout;
 import com.bumptech.glide.Glide;
+import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.brazvip.fivetv.R;
-import com.zhy.autolayout.attr.Attrs;
-import com.zhy.autolayout.attr.AutoAttr;
-import com.zhy.autolayout.utils.AutoUtils;
-
-import com.brazvip.fivetv.beans.ChannelBean;
-import com.brazvip.fivetv.dialogs.EpisodeDialog;
-import com.brazvip.fivetv.dialogs.PasswordChangeDialog;
-import com.brazvip.fivetv.utils.PrefUtils;
-
-import java.util.ArrayList;
 import java.util.List;
+import com.brazvip.fivetv.Config;
+import com.brazvip.fivetv.beans.vod.VodChannelBean;
+import com.brazvip.fivetv.instances.VodChannelInstance;
 
+public class VodChannelAdapter extends GridRecyclerViewAdapter<VodChannelAdapter.ViewHolder> {
 
-/* compiled from: MyApplication */
-/* renamed from: e.b.a.a.B 3462 */
-/* loaded from: classes.dex */
-public class VodChannelAdapter extends GridRecyclerViewAdapter<VodChannelAdapter.VodChannelViewHolder> implements Filterable {
+    private static final String TAG = "VodChannelAdapter";
+    public static int searchCount;
+    private List<VodChannelBean> channels;
+    private Context context;
+    private FragmentManager fragmentManager;
+    private String groupKey;
 
-    /* renamed from: j 13466 */
-    public static final String TAG = "VodChannelAdapter";
+    
+    public class ViewHolder extends RecyclerView.ViewHolder {
+        public TextView channelName;
+        public ImageView favorite;
+        public ImageView image;
 
-    /* renamed from: k 13467 */
-    public static EpisodeDialog.Helper mEpisodeDlgHelper;
-
-    /* renamed from: l 13468 */
-    public List<ChannelBean> mChannelList;
-
-    /* renamed from: m 13469 */
-    public Context mContext;
-
-    /* renamed from: n */
-    public int f13470n;
-
-    /* JADX INFO: Access modifiers changed from: package-private */
-    /* compiled from: MyApplication */
-    /* renamed from: e.b.a.a.B$a 3463 */
-    /* loaded from: classes.dex */
-    public class VodChannelViewHolder extends RecyclerView.ViewHolder {
-
-        public ImageView ivImage;
-
-        public TextView tvName;
-
-        public ImageView ivFavorite;
-
-        public VodChannelViewHolder(View view) {
+        public ViewHolder(VodChannelAdapter vodChannelAdapter, View view) {
             super(view);
-            ivImage = (ImageView) view.findViewById(R.id.image);
-            tvName = (TextView) view.findViewById(R.id.channel_name);
-            ivFavorite = (ImageView) view.findViewById(R.id.favorite_icon);
-            AutoUtils.auto(view, Attrs.WIDTH | Attrs.HEIGHT, AutoAttr.BASE_HEIGHT);
+            this.image = (ImageView) view.findViewById(R.id.image);
+            this.channelName = (TextView) view.findViewById(R.id.channel_name);
+            this.favorite = (ImageView) view.findViewById(R.id.favorite_icon);
         }
     }
 
-    public VodChannelAdapter(List<ChannelBean> list, Context context, int i) {
-        super(context, Config.CHANNEL_TYPE.VOD_CHANNEL);
-        this.mContext = context;
-        this.mChannelList = list;
-        this.f13470n = i;
-        mEpisodeDlgHelper = null;
+    public VodChannelAdapter(List<VodChannelBean> list, Context context, String str, FragmentManager FragmentManager, NavigationListener navigationListener) {
+        super(context, Config.MenuType.VOD);
+        this.context = context;
+        this.channels = list;
+        this.groupKey = str;
+        this.fragmentManager = FragmentManager;
+        this.navigationKeyListener = navigationListener;
     }
 
-    @Override // android.widget.Filterable
+    public static void onFocusChange(ViewHolder viewHolder, View view, boolean z) {
+        View view2 = viewHolder.itemView;
+        if (z) {
+            view2.setSelected(true);
+            viewHolder.image.setBackgroundResource(R.color.background_v3_secondary);
+        } else {
+            view2.setSelected(false);
+            viewHolder.image.setBackgroundResource(0);
+        }
+    }
+
     public Filter getFilter() {
-        return new Filter() { //C3461A
-            @Override
-            protected FilterResults performFiltering(CharSequence constraint) {
-                Filter.FilterResults results = new Filter.FilterResults();
-                ArrayList<ChannelBean> needRemoveBlocks = new ArrayList<>();
-                String keyword = constraint.toString().toLowerCase();
-                List<ChannelBean> list = VodChannelInstance.mGroupList.get(-10).channnels;
-                //String log = "chlist size " + list.size();
-                for (int i = 0; i < list.size(); i++) {
-                    //String log = list.get(i).getSearch() + " " + keyword + " " + list.get(i).getSearch().toLowerCase().indexOf(keyword);
-                    if (list.get(i).getSearch().toLowerCase().contains(keyword)) {
-                        needRemoveBlocks.add(list.get(i));
-                    }
-                }
-                results.count = needRemoveBlocks.size();
-                results.values = needRemoveBlocks;
-                //String log2 = "results.count" + results.count;
-                return results;
+        VodChannelInstance.cancelSearch = true;
+        return new Filter() {
+            @Override // android.widget.Filter
+            public Filter.FilterResults performFiltering(CharSequence charSequence) {
+                Filter.FilterResults filterResults = new Filter.FilterResults();
+                List<VodChannelBean> doSearch = VodChannelInstance.doSearch(charSequence);
+                filterResults.count = doSearch.size();
+                filterResults.values = doSearch;
+                VodChannelAdapter.searchCount = doSearch.size();
+                return filterResults;
             }
 
-            @Override
-            protected void publishResults(CharSequence constraint, FilterResults results) {
-                mChannelList = (List<ChannelBean>) results.values;
-                notifyDataSetChanged();
+            @Override // android.widget.Filter
+            public void publishResults(CharSequence charSequence, Filter.FilterResults filterResults) {
+                VodChannelAdapter.this.channels = (List) filterResults.values;
+                VodChannelAdapter.this.notifyDataSetChanged();
             }
         };
     }
 
-    /* JADX DEBUG: Method merged with bridge method */
-    @SuppressLint("RecyclerView")
+    public String getGroupKey() {
+        return this.groupKey;
+    }
+
     @Override
-    /* renamed from: a */
-    public void onBindViewHolder(@NonNull VodChannelViewHolder holder, int position) {
-        boolean isSelected = position == this.mSelectedItem;
-        boolean isUnSelected = (!isSelected || this.mNextSelectItem < 0) ? false : true;
-        holder.itemView.setSelected(isSelected);
-
-        final ChannelBean channel = mChannelList.get(position);
-        String name = channel.getName().getInit();
-        String big = channel.getLogo().getImage().getBig();
-        String childTxt = "" + mChannelList.get(position).getChid();
-        if (VodChannelInstance.mFavoriteVodChannelList.contains(childTxt)) {
-            //name = "★" + name;
-            holder.ivFavorite.setImageResource(R.drawable.ic_star_fav);
-        }
-        holder.tvName.setText(name);
-        if (isUnSelected) {
-            holder.ivImage.setBackgroundResource(R.color.background_v3_secondary);
-        } else {
-            holder.ivImage.setBackgroundResource(0);
-        }
-
-        Glide.with(mContext).load(big).placeholder(R.mipmap.loading) //4.12.0 version
-                                //.diskCacheStrategy(DiskCacheStrategy.RESULT) //3.8.0 version
-                                .error(R.mipmap.load_error).into(holder.ivImage);
-
-        holder.itemView.setOnFocusChangeListener((view, b) -> {
-            if (b) {
-                holder.itemView.setSelected(true);
-                ((View)holder.ivImage).setBackgroundResource(R.color.background_v3_secondary);
-            }
-            else {
-                holder.itemView.setSelected(false);
-                ((View)holder.ivImage).setBackgroundResource(0);
-            }
-        });
-
-        //View$OnLongClickListenerC3496x(channel, position)
-        holder.itemView.setOnLongClickListener(view -> {
-            int chid = channel.getChid();
-            if (VodChannelInstance.mFavoriteVodChannelList.contains("" + chid)) {
-                Toast.makeText(getContext(), channel.getName().getInit() + " " +
-                        getContext().getString(R.string.remove_fav), Toast.LENGTH_SHORT).show();
-                VodChannelInstance.mFavoriteVodChannelList.remove("" + chid);
-                PrefUtils.setPrefStringSet(Config.SP_FAV_VOD_CHANNEL, VodChannelInstance.mFavoriteVodChannelList);
-                VodChannelInstance.parseVodChannels();
-                if (f13470n == -5) {
-                    mChannelList = VodChannelInstance.mGroupList.get(-5).channnels;
-                    notifyItemRemoved(position);
-                    notifyDataSetChanged();
-                    int k = position - 1;
-                    if (position == 0 && mChannelList.size() > 0) {
-                        k = 0;
-                    }
-                    if (k >= 0) {
-                        notifyItemChanged(k);
-                        setNextSelectItem(k);
-                        setSelectedItem(k);
-                        notifyItemChanged(k);
-                    } else {
-                        VodLayout.mMsgHandler.removeMessages(3);
-                        VodLayout.mMsgHandler.sendMessage(Message.obtain(VodLayout.mMsgHandler, 3, -5, 0));
-                        MainActivity.mMsgHandler.sendEmptyMessage(108);
-                        VodLayout.channelType = Config.CHANNEL_TYPE.VOD_GROUP;
-                    }
-                } else {
-                    notifyItemChanged(getSelectedItem());
-                    setNextSelectItem(getOwnerRecyclerView().getChildLayoutPosition(view));
-                    setSelectedItem(getOwnerRecyclerView().getChildLayoutPosition(view));
-                    notifyItemChanged(getSelectedItem());
-                }
-                holder.ivFavorite.setImageResource(0);
-            } else {
-                Toast.makeText(getContext(), channel.getName().getInit() + " " + getContext().getString(R.string.favorite_added), Toast.LENGTH_SHORT).show();
-                VodChannelInstance.mFavoriteVodChannelList.add("" + chid);
-                PrefUtils.setPrefStringSet(Config.SP_FAV_VOD_CHANNEL, VodChannelInstance.mFavoriteVodChannelList);
-                VodChannelInstance.parseVodChannels();
-                notifyDataSetChanged();
-                notifyItemChanged(getSelectedItem());
-                setNextSelectItem(getOwnerRecyclerView().getChildLayoutPosition(view));
-                setSelectedItem(getOwnerRecyclerView().getChildLayoutPosition(view));
-                notifyItemChanged(getSelectedItem());
-            }
-            VodLayout.channelType = Config.CHANNEL_TYPE.VOD_CHANNEL;
-            return true;
-        });
-        String finalName = name;
-        holder.itemView.setOnClickListener(new View.OnClickListener() { //View$OnClickListenerC3497y(this, holder, name, channel)
-            @Override
-            public void onClick(View view) {
-                notifyItemChanged(getSelectedItem());
-                setNextSelectItem(getOwnerRecyclerView().getChildLayoutPosition(view));
-                setSelectedItem(getOwnerRecyclerView().getChildLayoutPosition(view));
-                notifyItemChanged(getSelectedItem());
-
-                VodLayout.channelType = Config.CHANNEL_TYPE.VOD_CHANNEL;
-                VodLayout.mVodChannelView = holder.itemView;
-
-                showEpisodeDialogWithName(finalName, channel);
-            }
-        });
-    }
-
-    /* JADX DEBUG: Method merged with bridge method */
-    @Override 
-    /* renamed from: b */
-    public VodChannelViewHolder onCreateViewHolder(ViewGroup viewGroup, int i) {
-        return new VodChannelViewHolder(LayoutInflater.from(this.mContext).inflate(R.layout.vod_channel_item, viewGroup, false));
-    }
-
-    /* JADX INFO: Access modifiers changed from: private */
-    /* renamed from: b 2510*/
-    public void showEpisodeDialogWithName(String name, ChannelBean channel) {
-        if (channel == null || channel.getSources() == null || channel.getSources().size() < 1) {
-            return;
-        }
-        showEpisodeDialog(channel);
-    }
-
-    /* renamed from: a 2512 */
-    private void showPasswordDialogForEpisode(final String name, final ChannelBean channel) {
-        PasswordChangeDialog.Helper helper = new PasswordChangeDialog.Helper(mContext);
-        helper.setClickListener(new DialogInterface.OnClickListener() { //DialogInterface$OnClickListenerC3498z (this, name, channel)
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-                showEpisodeDialogWithName(name, channel);
-            }
-        });
-        helper.create().show();
-    }
-
-    /* renamed from: a 2511 */
-    private void showEpisodeDialog(ChannelBean channel) {
-        if (mEpisodeDlgHelper == null) {
-            mEpisodeDlgHelper = new EpisodeDialog.Helper(mContext);
-        }
-        mEpisodeDlgHelper.create(channel).show();
-    }
-
-    /* renamed from: a 2514 */
-//    private void showWebDialog(String url) {
-//        WebViewDialog.Helper helper = new WebViewDialog.Helper(mContext);
-//        helper.setUrl(url);
-//        helper.create().show();
-//    }
-
-    /* renamed from: a 2513 */
-    private void m2513a(String name, String url) {
-        Message msg = new Message();
-        msg.what = 80;
-        Bundle bundle = new Bundle();
-        bundle.putString("url", url);
-        bundle.putString("name", name);
-        bundle.putString("type", (url.contains("tvcar://") ? Config.BS_MODE.BSVOD : Config.BS_MODE.STATIC).name());
-        msg.setData(bundle);
-        MainActivity.mMsgHandler.sendMessage(msg);
-    }
-
-    @Override 
-    /* renamed from: a */
     public int getItemCount() {
-        return mChannelList.size();
+        return this.channels.size();
+    }
+
+    @SuppressLint("CheckResult")
+    @Override
+    public void onBindViewHolder(VodChannelAdapter.ViewHolder viewHolder, int i) {
+        int i2 = this.mSelectedItem;
+        int i3 = this.nextSelectItem;
+        boolean z = true;
+        boolean z2 = i == i2;
+        z = (!z2 || i3 < 0) ? false : false;
+        viewHolder.itemView.setSelected(z2);
+        final VodChannelBean vodChannelBean = this.channels.get(viewHolder.getAbsoluteAdapterPosition());
+        String title = vodChannelBean.getTitle();
+        String poster = vodChannelBean.getPoster();
+        if (VodChannelInstance.isFavoriteVod(this.channels.get(viewHolder.getAbsoluteAdapterPosition()).getId())) {
+            viewHolder.favorite.setImageResource(R.drawable.ic_star_fav);
+        }
+        viewHolder.channelName.setText(title);
+        ImageView imageView = viewHolder.image;
+        if (z) {
+            imageView.setBackgroundResource(R.color.background_v3_secondary);
+        } else {
+            imageView.setBackgroundResource(0);
+        }
+        try {
+            Glide.with(this.context)
+                    .load(poster)
+                    .load(R.mipmap.loading)
+                    .load(DiskCacheStrategy.AUTOMATIC)
+                    .load(R.mipmap.load_error)
+                    .load(viewHolder.image);
+        } catch (Exception unused) {
+        }
+        viewHolder.itemView.setOnFocusChangeListener(new ViewOnFocusChangeListener(viewHolder, 0));
+        viewHolder.itemView.setOnLongClickListener(new View.OnLongClickListener() {
+            @Override
+            public boolean onLongClick(View view) {
+                String id = vodChannelBean.getId();
+                if (VodChannelInstance.isFavoriteVod(id)) {
+                    Context context = VodChannelAdapter.this.context;
+                    Toast.makeText(context, vodChannelBean.getTitle() + " " + VodChannelAdapter.this.context.getString(R.string.remove_fav), Toast.LENGTH_SHORT).show();
+                    VodChannelInstance.removeFavoriteChannel(id);
+                    if (VodChannelInstance.FAVORITES_GROUP_ID.equals(VodChannelAdapter.this.groupKey)) {
+                        VodChannelAdapter.this.channels = VodChannelInstance.getFavoriteChannels();
+                        VodChannelAdapter.this.notifyItemRemoved(viewHolder.getAbsoluteAdapterPosition());
+                        VodChannelAdapter.this.notifyDataSetChanged();
+                        int adapterPosition = viewHolder.getAbsoluteAdapterPosition() - 1;
+                        if (viewHolder.getAbsoluteAdapterPosition() == 0 && VodChannelAdapter.this.channels.size() > 0) {
+                            adapterPosition = 0;
+                        }
+                        if (adapterPosition >= 0) {
+                            VodChannelAdapter.this.notifyItemChanged(adapterPosition);
+                            VodChannelAdapter vodChannelAdapter = VodChannelAdapter.this;
+                            vodChannelAdapter.nextSelectItem = adapterPosition;
+                            vodChannelAdapter.mSelectedItem = adapterPosition;
+                            vodChannelAdapter.notifyItemChanged(adapterPosition);
+                        } else {
+                            VodLayout.handler.removeMessages(3);
+                            Message obtainMessage = VodLayout.handler.obtainMessage();
+                            obtainMessage.what = 3;
+                            Bundle bundle = new Bundle();
+                            bundle.putString("groupId", VodChannelInstance.FAVORITES_GROUP_ID);
+                            bundle.putBoolean("restrictedAccess", false);
+                            obtainMessage.setData(bundle);
+                            VodLayout.handler.sendMessage(obtainMessage);
+//                            SopCast.handler.sendEmptyMessage(108);
+//                            VodLayout.menuType = Config.MenuType.f8635d;
+                        }
+                    } else {
+                        notifyItemChanged(mSelectedItem);
+                        nextSelectItem = recyclerView.getChildLayoutPosition(view);
+                        mSelectedItem = recyclerView.getChildLayoutPosition(view);
+                        notifyItemChanged(mSelectedItem);
+                    }
+                    viewHolder.favorite.setImageResource(0);
+                } else {
+                    Context context2 = VodChannelAdapter.this.context;
+                    Toast.makeText(context2, vodChannelBean.getTitle() + " " + VodChannelAdapter.this.context.getString(R.string.favorited), Toast.LENGTH_SHORT).show();
+                    VodChannelInstance.addFavoriteChannel(id);
+                    VodChannelAdapter.this.notifyDataSetChanged();
+
+                    notifyItemChanged(mSelectedItem);
+                    nextSelectItem = recyclerView.getChildLayoutPosition(view);
+                    mSelectedItem = recyclerView.getChildLayoutPosition(view);
+                    notifyItemChanged(mSelectedItem);
+                }
+                VodLayout.menuType = Config.MenuType.VOD;
+                return true;
+            }
+        });
+        viewHolder.itemView.setOnClickListener(new View.OnClickListener() {
+            @Override // android.view.View.OnClickListener
+            public void onClick(View view) {
+                notifyItemChanged(mSelectedItem);
+                nextSelectItem = recyclerView.getChildLayoutPosition(view);
+                mSelectedItem = recyclerView.getChildLayoutPosition(view);
+                notifyItemChanged(mSelectedItem);
+                Config.MenuType menuType = Config.MenuType.VOD;
+                VodLayout.menuType = menuType;
+                VodChannelBean fullChannelBean = VodChannelInstance.getFullChannelBean(vodChannelBean.getId());
+                if (fullChannelBean == null || fullChannelBean.getEpisodes() == null || fullChannelBean.getEpisodes().isEmpty()) {
+                    return;
+                }
+                fullChannelBean.restricted = vodChannelBean.restricted;
+//                VodDialog createDialog = VodDialog.createDialog(VodChannelAdapter.this.context, fullChannelBean, menuType);
+//                createDialog.show(VodChannelAdapter.this.fragmentManager, createDialog.FRAGMENT_TAG);
+            }
+        });
+    }
+
+    @Override
+    public ViewHolder onCreateViewHolder(ViewGroup viewGroup, int i) {
+        return new ViewHolder(this, LayoutInflater.from(this.context).inflate(R.layout.vod_channel_item, viewGroup, false));
+    }
+
+    @Override
+    public boolean onKey(View view, int i, KeyEvent keyEvent) {
+        if (i == 4) {
+            if (keyEvent.getAction() == 1) {
+                this.mSelectedItem = 0;
+                this.nextSelectItem = -1;
+                notifyDataSetChanged();
+                VodLayout.channelRView.scrollToPosition(0);
+                VodLayout.groupRView.requestFocus();
+                VodLayout.groupRView.requestFocusFromTouch();
+                keyEvent.getAction();
+            }
+            return true;
+        }
+        return super.onKey(view, i, keyEvent);
     }
 }

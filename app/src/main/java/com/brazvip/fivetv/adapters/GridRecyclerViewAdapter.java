@@ -1,220 +1,159 @@
 package com.brazvip.fivetv.adapters;
 
 import android.content.Context;
+import android.os.Handler;
 import android.view.KeyEvent;
 import android.view.View;
-
 import androidx.recyclerview.widget.RecyclerView;
-
+import java.util.Objects;
 import com.brazvip.fivetv.Config;
-import com.brazvip.fivetv.MainActivity;
-import com.brazvip.fivetv.layouts.PlayerLayout;
-import com.brazvip.fivetv.layouts.VodLayout;
-import com.brazvip.fivetv.utils.PrefUtils;
-import com.brazvip.fivetv.utils.RestApiUtils;
 
-/* compiled from: MyApplication */
-/* renamed from: e.b.a.a.p 3488 */
-/* loaded from: classes.dex */
-public abstract class GridRecyclerViewAdapter<VH extends RecyclerView.ViewHolder> extends RecyclerView.Adapter<VH> {
 
-    /* renamed from: c 13566 */
+public abstract class GridRecyclerViewAdapter<VH extends RecyclerView.ViewHolder> extends RecyclerView.Adapter<VH> implements View.OnKeyListener {
     public static String TAG = "GridRecyclerViewAdapter";
+    public int columnCount;
+    public Context context;
+    public Config.MenuType menuType;
+    public RecyclerView recyclerView;
+    public int mSelectedItem = 0;
+    public int nextSelectItem = -1;
+    public NavigationListener navigationKeyListener = null;
 
-    /* renamed from: d 13567 */
-    public Context mContext;
-
-    /* renamed from: e */
-    public int mSelectedItem;
-
-    /* renamed from: f */
-    public int mNextSelectItem;
-
-    /* renamed from: g 13570 */
-    public RecyclerView mOwnerRecyclerView;
-
-    /* renamed from: h 13571 */
-    public Config.CHANNEL_TYPE mChannelType;
-
-    /* renamed from: i */
-    public int f13572i;
-
-
-    public GridRecyclerViewAdapter(Context context) {
-        this.mSelectedItem = 0;
-        this.mNextSelectItem = -1;
-        this.f13572i = 5;
-        this.mContext = context;
-    }
-
-    /* renamed from: f 2477 */
-    public Context getContext() {
-        return this.mContext;
-    }
-
-    /* renamed from: g */
-    public void setSelectedItem(int i) {
-        mSelectedItem = i;
-    }
-
-    /* renamed from: h */
-    public RecyclerView getOwnerRecyclerView() {
-        return mOwnerRecyclerView;
-    }
-
-    /* renamed from: i */
-    public int getSelectedItem() {
-        return this.mSelectedItem;
-    }
-
-    @Override 
-    /* renamed from: b */
-    public void onBindViewHolder(VH vh, int i) {
-        onBindViewHolder(vh, i);
-    }
-
-    /* renamed from: f */
-    public void setNextSelectItem(int i) {
-        this.mNextSelectItem = i;
-    }
-
-    /* renamed from: g */
-    public int getNextSelectItem() {
-        return this.mNextSelectItem;
-    }
-
-    @Override 
-    /* renamed from: a */
-    public void onAttachedToRecyclerView(RecyclerView view) {
-        mOwnerRecyclerView = view;
-        view.setOnKeyListener(new View.OnKeyListener() { //new View$OnKeyListenerC3484l(this, view)
-            @Override
-            public boolean onKey(View v, int keyCode, KeyEvent event) {
-                RecyclerView.LayoutManager layoutManager = mOwnerRecyclerView.getLayoutManager();
-                //String text1 = GridRecyclerViewAdapter.TAG;
-                //String text2 = "=========== ============ onKey:" + keyCode + " event:" + event;
-                if (keyCode == KeyEvent.KEYCODE_BACK) {
-                    if (event.getAction() == 0) {
-                        if (PlayerLayout.isPlaying() && MainActivity.f16805n && mChannelType == Config.CHANNEL_TYPE.VOD_CHANNEL) {
-                            MainActivity.mMsgHandler.sendEmptyMessage(100);
-                            return true;
-                        }
-                        PrefUtils.logout(mContext);
-                        return true;
-                    }
-                    return true;
-                } else if (event.getAction() == 0) {
-                    if (keyCode == 22) {
-                        return m2483a(layoutManager, 1);
-                    } else if (keyCode != 21) {
-                        if (keyCode != 19) {
-                            if (keyCode == 20) {
-                                return m2483a(layoutManager, f13572i);
-                            }
-                            return false;
-                        }
-                        if (mChannelType != Config.CHANNEL_TYPE.APPS || mSelectedItem > f13572i) {
-                            return m2483a(layoutManager, -f13572i);
-                        }
-                        return true;
-                    } else {
-                        if (mSelectedItem % f13572i != 0) {
-                            return m2483a(layoutManager, -1);
-                        }
-                        if (mChannelType == Config.CHANNEL_TYPE.VOD_CHANNEL && !VodLayout.isSearchState) {
-                            MainActivity.mMsgHandler.sendEmptyMessage(105);
-                            VodLayout.channelType = Config.CHANNEL_TYPE.VOD_CHANNEL;
-                        } else {
-                            if (mChannelType == Config.CHANNEL_TYPE.APPS) {
-                                MainActivity.mMsgHandler.sendEmptyMessage(106);
-                            } else if (mChannelType == Config.CHANNEL_TYPE.VOD_CHANNEL && VodLayout.isSearchState) {
-                                MainActivity.mMsgHandler.sendEmptyMessage(107);
-                                VodLayout.channelType = Config.CHANNEL_TYPE.VOD_CHANNEL;
-                            }
-                        }
-                        mNextSelectItem = -100;
-                        return true;
-                    }
-                } else
-                    return false;
-            }
-        });
-        view.setOnLongClickListener(new View.OnLongClickListener() { //View$OnLongClickListenerC3485m
-            @Override
-            public boolean onLongClick(View v) {
-                RecyclerView.ViewHolder holder = mOwnerRecyclerView.findViewHolderForAdapterPosition(mSelectedItem);
-                if (holder != null) {
-                    if (holder.itemView != null) {
-                        holder.itemView.performLongClick();
-                    }
-                }
-                return true;
-            }
-        });
-        view.setOnClickListener(new View.OnClickListener() { //View$OnClickListenerC3486n
-            @Override
-            public void onClick(View v) {
-                RecyclerView.ViewHolder holder = mOwnerRecyclerView.findViewHolderForAdapterPosition(mSelectedItem);
-                if (holder != null) {
-                    if (holder.itemView != null) {
-                        holder.itemView.performClick();
-                    }
-                }
-            }
-        });
-        view.setOnFocusChangeListener(new View.OnFocusChangeListener() { //View$OnFocusChangeListenerC3487o
-            @Override
-            public void onFocusChange(View v, boolean hasFocus) {
-                if (hasFocus) {
-                    mNextSelectItem = 0;
-                }
-                //String log = "-----------onFocusChange " + hasFocus + " mSelectedItem " + f13568e;
-                notifyItemChanged(mSelectedItem);
-                setSelectedItem(0);
-                notifyItemChanged(mSelectedItem);
-            }
-        });
-    }
-
-    public GridRecyclerViewAdapter(Context context, Config.CHANNEL_TYPE channelType) {
-        this.mSelectedItem = 0;
-        this.mNextSelectItem = -1;
-        this.f13572i = 5;
-        this.mContext = context;
-        this.mChannelType = channelType;
-        if (this.mChannelType == Config.CHANNEL_TYPE.VOD_CHANNEL) {
-            this.f13572i = RestApiUtils.vodGridSpanCount;
+    public GridRecyclerViewAdapter(Context context, Config.MenuType menuType) {
+        this.columnCount = 5;
+        this.context = context;
+        this.menuType = menuType;
+        if (menuType == Config.MenuType.VOD) {
+            this.columnCount = Config.maxVodColumns;
         }
-        if (this.mChannelType == Config.CHANNEL_TYPE.APPS) {
-            this.f13572i = RestApiUtils.f13726J;
+        if (menuType == Config.MenuType.APPS) {
+            this.columnCount = Config.maxAppColumns;
         }
     }
 
-    /* JADX INFO: Access modifiers changed from: private */
-    /* renamed from: a */
-    public boolean m2483a(RecyclerView.LayoutManager layoutManager, int position) {
-        mNextSelectItem = mSelectedItem + position;
-        //String text1 = TAG;
-        //String text2 = "mSelectedItem: " + f13568e + " nextSelectItem: " + f13569f;
-        if (mNextSelectItem < 0) {
-            notifyItemChanged(mSelectedItem);
+    private static boolean tryMoveSelection(GridRecyclerViewAdapter gridRecyclerViewAdapter, RecyclerView.LayoutManager layoutManager, int i) {
+        gridRecyclerViewAdapter.nextSelectItem = gridRecyclerViewAdapter.mSelectedItem + i;
+        int i2 = gridRecyclerViewAdapter.mSelectedItem;
+        int i3 = gridRecyclerViewAdapter.nextSelectItem;
+        if (i3 < 0) {
+            gridRecyclerViewAdapter.notifyItemChanged(i2);
             return false;
-        } else if (mNextSelectItem < 0 || mNextSelectItem >= getItemCount()) {
-            return mNextSelectItem >= getItemCount();
+        } else if (i3 < 0 || i3 >= gridRecyclerViewAdapter.getItemCount()) {
+            return gridRecyclerViewAdapter.nextSelectItem >= gridRecyclerViewAdapter.getItemCount();
         } else {
-            notifyItemChanged(mSelectedItem);
-            mSelectedItem = mNextSelectItem;
-            notifyItemChanged(mSelectedItem);
-            mOwnerRecyclerView.scrollToPosition(mSelectedItem);
+            gridRecyclerViewAdapter.notifyItemChanged(gridRecyclerViewAdapter.mSelectedItem);
+            int i4 = gridRecyclerViewAdapter.nextSelectItem;
+            gridRecyclerViewAdapter.mSelectedItem = i4;
+            gridRecyclerViewAdapter.notifyItemChanged(i4);
+            gridRecyclerViewAdapter.recyclerView.scrollToPosition(gridRecyclerViewAdapter.mSelectedItem);
             return true;
         }
     }
 
-    /* renamed from: a 2482 */
-    public static boolean isEnterKey(KeyEvent event) {
-        int keyCode = event.getKeyCode();
-        return  keyCode == KeyEvent.KEYCODE_DPAD_CENTER ||
-                keyCode == KeyEvent.KEYCODE_ENTER ||
-                keyCode == KeyEvent.KEYCODE_BUTTON_A;
+    @Override // androidx.recyclerview.widget.RecyclerView.Adapter<VH>
+    public void onAttachedToRecyclerView(final RecyclerView recyclerView) {
+        this.recyclerView = recyclerView;
+        recyclerView.setOnKeyListener(this);
+        recyclerView.setOnLongClickListener(new View.OnLongClickListener() {
+            @Override // android.view.View.OnLongClickListener
+            public boolean onLongClick(View view) {
+                if (recyclerView.findViewHolderForAdapterPosition(GridRecyclerViewAdapter.this.mSelectedItem) == null ||
+                    recyclerView.findViewHolderForAdapterPosition(GridRecyclerViewAdapter.this.mSelectedItem).itemView == null) {
+                    return true;
+                }
+                recyclerView.findViewHolderForAdapterPosition(GridRecyclerViewAdapter.this.mSelectedItem).itemView.performLongClick();
+                return true;
+            }
+        });
+        recyclerView.setOnClickListener(new View.OnClickListener() {
+            @Override // android.view.View.OnClickListener
+            public void onClick(View view) {
+                if (recyclerView.findViewHolderForAdapterPosition(GridRecyclerViewAdapter.this.mSelectedItem) == null ||
+                    recyclerView.findViewHolderForAdapterPosition(GridRecyclerViewAdapter.this.mSelectedItem).itemView == null) {
+                    return;
+                }
+                recyclerView.findViewHolderForAdapterPosition(GridRecyclerViewAdapter.this.mSelectedItem).itemView.performClick();
+            }
+        });
+        recyclerView.setOnFocusChangeListener(new View.OnFocusChangeListener() {
+            @Override // android.view.View.OnFocusChangeListener
+            public void onFocusChange(View view, boolean z) {
+                if (z) {
+                    GridRecyclerViewAdapter.this.nextSelectItem = 0;
+                }
+                if (GridRecyclerViewAdapter.this.mSelectedItem < recyclerView.getAdapter().getItemCount()) {
+                    GridRecyclerViewAdapter gridRecyclerViewAdapter = GridRecyclerViewAdapter.this;
+                    gridRecyclerViewAdapter.notifyItemChanged(gridRecyclerViewAdapter.mSelectedItem);
+                    return;
+                }
+                GridRecyclerViewAdapter gridRecyclerViewAdapter2 = GridRecyclerViewAdapter.this;
+                gridRecyclerViewAdapter2.mSelectedItem = 0;
+                gridRecyclerViewAdapter2.notifyItemChanged(0);
+            }
+        });
+    }
+
+    @Override // android.view.View.OnKeyListener
+    public boolean onKey(View view, int i, KeyEvent keyEvent) {
+        NavigationListener navigationListener;
+        NavigationListener navigationListener2;
+        Handler handler;
+        int i2;
+        RecyclerView.LayoutManager layoutManager = this.recyclerView.getLayoutManager();
+        Objects.toString(keyEvent);
+        if (i == 4) {
+            if (keyEvent.getAction() == 0) {
+//                if (SopCast.isPlaying() && SopCast.isMenuDisplayed && this.menuType == Config.MenuType.VOD) {
+//                    SopCast.handler.sendEmptyMessage(100);
+//                } else {
+//                    Utils.showQuitDialog(this.context);
+//                }
+            }
+            return true;
+        } else if (keyEvent.getAction() == 0) {
+            switch (i) {
+                case 19:
+                    if ((this.menuType == Config.MenuType.APPS && this.mSelectedItem <= this.columnCount) || tryMoveSelection(this, layoutManager, this.columnCount * (-1)) || (navigationListener = this.navigationKeyListener) == null) {
+                        return true;
+                    }
+                    return navigationListener.navigateAbove();
+                case 20:
+                    if (tryMoveSelection(this, layoutManager, this.columnCount) || (navigationListener2 = this.navigationKeyListener) == null) {
+                        return true;
+                    }
+                    return navigationListener2.navigateBelow();
+                case 21:
+                    if (this.mSelectedItem % this.columnCount != 0) {
+                        return tryMoveSelection(this, layoutManager, -1);
+                    }
+                    Config.MenuType menuType = this.menuType;
+                    Config.MenuType menuType2 = Config.MenuType.VOD;
+//                    if (menuType == menuType2) {
+//                        NavigationListener navigationListener3 = this.navigationKeyListener;
+//                        if (navigationListener3 != null) {
+//                            return navigationListener3.navigateLeft();
+//                        }
+//                        if (VodLayo.IS_SEARCH_STATE) {
+//                            handler = SopCast.handler;
+//                            i2 = 107;
+//                        } else {
+//                            handler = SopCast.handler;
+//                            i2 = SopHandler.EVENT_FOCUS_VOD_BUTTON;
+//                        }
+//                        handler.sendEmptyMessage(i2);
+//                        VodFragment.menuType = menuType2;
+//                    } else if (menuType == Config.MenuType.APPS) {
+//                        SopCast.handler.sendEmptyMessage(106);
+//                    }
+                    this.nextSelectItem = -100;
+                    return true;
+                case 22:
+                    return tryMoveSelection(this, layoutManager, 1);
+                default:
+                    return false;
+            }
+        } else {
+            return false;
+        }
     }
 }

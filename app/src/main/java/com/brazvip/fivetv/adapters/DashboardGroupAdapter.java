@@ -50,7 +50,7 @@ public class DashboardGroupAdapter extends HRecyclerViewAdapter<DashboardGroupAd
     }
 
     public DashboardGroupAdapter(SparseArray<GroupL1> sparseArray, Context context, Handler handler) {
-        super(context, 1);
+        super(context);
 
         this.mContext = context;
         this.mHandler = handler;
@@ -79,30 +79,30 @@ public class DashboardGroupAdapter extends HRecyclerViewAdapter<DashboardGroupAd
     @Override
     /* renamed from: a */
     public void onBindViewHolder(DashGroupViewHolder holder, int position) {
-        boolean isSelected = position == getSelectedItem();
-        if (isSelected) {
-            getNextSelectItem();
-        }
-        holder.itemView.setSelected(isSelected);
-
-        int groupId = this.mGroupItemList[position].intValue();
-        holder.tvName.setText(this.mGroupL1Array.get(groupId).name);
-        holder.tvName.setTag(Integer.valueOf(groupId));
-        if (isSelected) {
-            holder.tvName.setTextColor(0xffffffff);
-            if (this.mSelItem != getSelectedItem()) {
-                this.mHandler.removeMessages(DashboardLayout.MSG_DASH_CHANNEL_TOP_SHOW);
-                this.mHandler.sendMessage(Message.obtain(this.mHandler, DashboardLayout.MSG_DASH_CHANNEL_TOP_SHOW, groupId, 0));
-                this.mSelItem = getSelectedItem();
-            }
-        } else {
-            holder.tvName.setTextColor(0x8fffffff);
-        }
-        holder.itemView.setOnClickListener(view -> {
-            notifyItemChanged(getSelectedItem());
-            setNextSelectItem(getOwnerView().getChildLayoutPosition(view));
-            setSelectedItem(getOwnerView().getChildLayoutPosition(view));
-            notifyItemChanged(getSelectedItem());
-        });
+//        boolean isSelected = position == getSelectedItem();
+//        if (isSelected) {
+//            getNextSelectItem();
+//        }
+//        holder.itemView.setSelected(isSelected);
+//
+//        int groupId = this.mGroupItemList[position].intValue();
+//        holder.tvName.setText(this.mGroupL1Array.get(groupId).name);
+//        holder.tvName.setTag(Integer.valueOf(groupId));
+//        if (isSelected) {
+//            holder.tvName.setTextColor(0xffffffff);
+//            if (this.mSelItem != getSelectedItem()) {
+//                this.mHandler.removeMessages(DashboardLayout.MSG_DASH_CHANNEL_TOP_SHOW);
+//                this.mHandler.sendMessage(Message.obtain(this.mHandler, DashboardLayout.MSG_DASH_CHANNEL_TOP_SHOW, groupId, 0));
+//                this.mSelItem = getSelectedItem();
+//            }
+//        } else {
+//            holder.tvName.setTextColor(0x8fffffff);
+//        }
+//        holder.itemView.setOnClickListener(view -> {
+//            notifyItemChanged(getSelectedItem());
+//            setNextSelectItem(getOwnerView().getChildLayoutPosition(view));
+//            setSelectedItem(getOwnerView().getChildLayoutPosition(view));
+//            notifyItemChanged(getSelectedItem());
+//        });
     }
 }

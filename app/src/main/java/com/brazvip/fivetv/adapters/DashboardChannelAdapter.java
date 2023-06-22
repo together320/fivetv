@@ -5,7 +5,6 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.os.Bundle;
 import android.os.Message;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -76,7 +75,7 @@ public class DashboardChannelAdapter extends GridRecyclerViewAdapter<DashboardCh
     }
 
     public DashboardChannelAdapter(List<ChannelBean> list, Context context, int i) {
-        super(context, Config.CHANNEL_TYPE.VOD_CHANNEL);
+        super(context, Config.MenuType.VOD);
         this.mContext = context;
         this.mChannelList = list;
         this.f13470n = i;
@@ -91,14 +90,14 @@ public class DashboardChannelAdapter extends GridRecyclerViewAdapter<DashboardCh
                 Filter.FilterResults results = new Filter.FilterResults();
                 ArrayList<ChannelBean> needRemoveBlocks = new ArrayList<>();
                 String keyword = constraint.toString().toLowerCase();
-                List<ChannelBean> list = VodChannelInstance.mChannelList;// mGroupList.get(-10).channnels;
-                //String log = "chlist size " + list.size();
-                for (int i = 0; i < list.size(); i++) {
-                    //String log = list.get(i).getSearch() + " " + keyword + " " + list.get(i).getSearch().toLowerCase().indexOf(keyword);
-                    if (list.get(i).getSearch().toLowerCase().contains(keyword)) {
-                        needRemoveBlocks.add(list.get(i));
-                    }
-                }
+//                List<ChannelBean> list = VodChannelInstance.mChannelList;// mGroupList.get(-10).channnels;
+//                //String log = "chlist size " + list.size();
+//                for (int i = 0; i < list.size(); i++) {
+//                    //String log = list.get(i).getSearch() + " " + keyword + " " + list.get(i).getSearch().toLowerCase().indexOf(keyword);
+//                    if (list.get(i).getSearch().toLowerCase().contains(keyword)) {
+//                        needRemoveBlocks.add(list.get(i));
+//                    }
+//                }
                 results.count = needRemoveBlocks.size();
                 results.values = needRemoveBlocks;
                 //String log2 = "results.count" + results.count;
@@ -118,105 +117,105 @@ public class DashboardChannelAdapter extends GridRecyclerViewAdapter<DashboardCh
     @Override
     /* renamed from: a */
     public void onBindViewHolder(@NonNull DashboardChannelViewHolder holder, int position) {
-        boolean isSelected = position == this.mSelectedItem;
-        boolean isUnSelected = (!isSelected || this.mNextSelectItem < 0) ? false : true;
-        holder.itemView.setSelected(isSelected);
-
-        final ChannelBean channel = mChannelList.get(position);
-        String name = channel.getName().getInit();
-        String big = channel.getLogo().getImage().getBig();
-        String childTxt = "" + mChannelList.get(position).getChid();
-        if (VodChannelInstance.mFavoriteVodChannelList.contains(childTxt)) {
-            //name = "★" + name;
-            holder.ivFavorite.setImageResource(R.drawable.ic_star_fav);
-        }
-        holder.tvName.setText(name);
-
-        if (isUnSelected) {
-            holder.ivImage.setBackgroundResource(R.color.background_v3_secondary);
-        } else {
-            holder.ivImage.setBackgroundResource(0);
-        }
-
-        Glide.with(mContext).load(big).placeholder(R.mipmap.loading) //4.12.0 version
-                                //.diskCacheStrategy(DiskCacheStrategy.RESULT) //3.8.0 version
-                                .error(R.mipmap.load_error).into(holder.ivImage);
-
-        holder.itemView.setOnFocusChangeListener((view, b) -> {
-            if (b) {
-                holder.itemView.setSelected(true);
-                ((View)holder.ivImage).setBackgroundResource(R.color.background_v3_secondary);
-            }
-            else {
-                holder.itemView.setSelected(false);
-                ((View)holder.ivImage).setBackgroundResource(0);
-            }
-        });
-
-        //View$OnLongClickListenerC3496x(channel, position)
-        holder.itemView.setOnLongClickListener(view -> {
-            int chid = channel.getChid();
-            if (VodChannelInstance.mFavoriteVodChannelList.contains("" + chid)) {
-                Toast.makeText(getContext(), channel.getName().getInit() + " " +
-                        getContext().getString(R.string.remove_fav), Toast.LENGTH_SHORT).show();
-                VodChannelInstance.mFavoriteVodChannelList.remove("" + chid);
-                PrefUtils.setPrefStringSet(Config.SP_FAV_VOD_CHANNEL, VodChannelInstance.mFavoriteVodChannelList);
-                VodChannelInstance.parseVodChannels();
-                if (f13470n == -5) {
-                    mChannelList = VodChannelInstance.mGroupList.get(-5).channnels;
-                    notifyItemRemoved(position);
-                    notifyDataSetChanged();
-                    int k = position - 1;
-                    if (position == 0 && mChannelList.size() > 0) {
-                        k = 0;
-                    }
-                    if (k >= 0) {
-                        notifyItemChanged(k);
-                        setNextSelectItem(k);
-                        setSelectedItem(k);
-                        notifyItemChanged(k);
-                    } else {
-                        VodLayout.mMsgHandler.removeMessages(3);
-                        VodLayout.mMsgHandler.sendMessage(Message.obtain(VodLayout.mMsgHandler, 3, -5, 0));
-                        MainActivity.mMsgHandler.sendEmptyMessage(108);
-                        VodLayout.channelType = Config.CHANNEL_TYPE.VOD_GROUP;
-                    }
-                } else {
-                    notifyItemChanged(getSelectedItem());
-                    setNextSelectItem(getOwnerRecyclerView().getChildLayoutPosition(view));
-                    setSelectedItem(getOwnerRecyclerView().getChildLayoutPosition(view));
-                    notifyItemChanged(getSelectedItem());
-                }
-                holder.ivFavorite.setImageResource(0);
-            } else {
-                Toast.makeText(getContext(), channel.getName().getInit() + " " + getContext().getString(R.string.favorite_added), Toast.LENGTH_SHORT).show();
-                VodChannelInstance.mFavoriteVodChannelList.add("" + chid);
-                PrefUtils.setPrefStringSet(Config.SP_FAV_VOD_CHANNEL, VodChannelInstance.mFavoriteVodChannelList);
-                VodChannelInstance.parseVodChannels();
-                notifyDataSetChanged();
-                notifyItemChanged(getSelectedItem());
-                setNextSelectItem(getOwnerRecyclerView().getChildLayoutPosition(view));
-                setSelectedItem(getOwnerRecyclerView().getChildLayoutPosition(view));
-                notifyItemChanged(getSelectedItem());
-            }
-            VodLayout.channelType = Config.CHANNEL_TYPE.VOD_CHANNEL;
-            return true;
-        });
-        String finalName = name;
-        holder.itemView.setOnClickListener(new View.OnClickListener() { //View$OnClickListenerC3497y(this, holder, name, channel)
-            @Override
-            public void onClick(View view) {
-                notifyItemChanged(getSelectedItem());
-                setNextSelectItem(getOwnerRecyclerView().getChildLayoutPosition(view));
-                setSelectedItem(getOwnerRecyclerView().getChildLayoutPosition(view));
-                notifyItemChanged(getSelectedItem());
-
-                VodLayout.channelType = Config.CHANNEL_TYPE.VOD_CHANNEL;
-                VodLayout.mVodChannelView = holder.itemView;
-
-                showEpisodeDialogWithName(finalName, channel);
-            }
-        });
+//        boolean isSelected = position == this.mSelectedItem;
+//        boolean isUnSelected = (!isSelected || this.mNextSelectItem < 0) ? false : true;
+//        holder.itemView.setSelected(isSelected);
+//
+//        final ChannelBean channel = mChannelList.get(position);
+//        String name = channel.getName().getInit();
+//        String big = channel.getLogo().getImage().getBig();
+//        String childTxt = "" + mChannelList.get(position).getChid();
+//        if (VodChannelInstance.mFavoriteVodChannelList.contains(childTxt)) {
+//            //name = "★" + name;
+//            holder.ivFavorite.setImageResource(R.drawable.ic_star_fav);
+//        }
+//        holder.tvName.setText(name);
+//
+//        if (isUnSelected) {
+//            holder.ivImage.setBackgroundResource(R.color.background_v3_secondary);
+//        } else {
+//            holder.ivImage.setBackgroundResource(0);
+//        }
+//
+//        Glide.with(mContext).load(big).placeholder(R.mipmap.loading) //4.12.0 version
+//                                //.diskCacheStrategy(DiskCacheStrategy.RESULT) //3.8.0 version
+//                                .error(R.mipmap.load_error).into(holder.ivImage);
+//
+//        holder.itemView.setOnFocusChangeListener((view, b) -> {
+//            if (b) {
+//                holder.itemView.setSelected(true);
+//                ((View)holder.ivImage).setBackgroundResource(R.color.background_v3_secondary);
+//            }
+//            else {
+//                holder.itemView.setSelected(false);
+//                ((View)holder.ivImage).setBackgroundResource(0);
+//            }
+//        });
+//
+//        //View$OnLongClickListenerC3496x(channel, position)
+//        holder.itemView.setOnLongClickListener(view -> {
+//            int chid = channel.getChid();
+//            if (VodChannelInstance.mFavoriteVodChannelList.contains("" + chid)) {
+//                Toast.makeText(getContext(), channel.getName().getInit() + " " +
+//                        getContext().getString(R.string.remove_fav), Toast.LENGTH_SHORT).show();
+//                VodChannelInstance.mFavoriteVodChannelList.remove("" + chid);
+//                PrefUtils.setPrefStringSet(Config.SP_FAV_VOD_CHANNEL, VodChannelInstance.mFavoriteVodChannelList);
+//                VodChannelInstance.parseVodChannels();
+//                if (f13470n == -5) {
+//                    mChannelList = VodChannelInstance.mGroupList.get(-5).channnels;
+//                    notifyItemRemoved(position);
+//                    notifyDataSetChanged();
+//                    int k = position - 1;
+//                    if (position == 0 && mChannelList.size() > 0) {
+//                        k = 0;
+//                    }
+//                    if (k >= 0) {
+//                        notifyItemChanged(k);
+//                        setNextSelectItem(k);
+//                        setSelectedItem(k);
+//                        notifyItemChanged(k);
+//                    } else {
+//                        VodLayout.handler.removeMessages(3);
+//                        VodLayout.handler.sendMessage(Message.obtain(VodLayout.handler, 3, -5, 0));
+//                        MainActivity.mMsgHandler.sendEmptyMessage(108);
+//                        VodLayout.channelType = Config.CHANNEL_TYPE.VOD_GROUP;
+//                    }
+//                } else {
+//                    notifyItemChanged(getSelectedItem());
+//                    setNextSelectItem(getOwnerRecyclerView().getChildLayoutPosition(view));
+//                    setSelectedItem(getOwnerRecyclerView().getChildLayoutPosition(view));
+//                    notifyItemChanged(getSelectedItem());
+//                }
+//                holder.ivFavorite.setImageResource(0);
+//            } else {
+//                Toast.makeText(getContext(), channel.getName().getInit() + " " + getContext().getString(R.string.favorite_added), Toast.LENGTH_SHORT).show();
+//                VodChannelInstance.mFavoriteVodChannelList.add("" + chid);
+//                PrefUtils.setPrefStringSet(Config.SP_FAV_VOD_CHANNEL, VodChannelInstance.mFavoriteVodChannelList);
+//                VodChannelInstance.parseVodChannels();
+//                notifyDataSetChanged();
+//                notifyItemChanged(getSelectedItem());
+//                setNextSelectItem(getOwnerRecyclerView().getChildLayoutPosition(view));
+//                setSelectedItem(getOwnerRecyclerView().getChildLayoutPosition(view));
+//                notifyItemChanged(getSelectedItem());
+//            }
+//            VodLayout.channelType = Config.CHANNEL_TYPE.VOD_CHANNEL;
+//            return true;
+//        });
+//        String finalName = name;
+//        holder.itemView.setOnClickListener(new View.OnClickListener() { //View$OnClickListenerC3497y(this, holder, name, channel)
+//            @Override
+//            public void onClick(View view) {
+//                notifyItemChanged(getSelectedItem());
+//                setNextSelectItem(getOwnerRecyclerView().getChildLayoutPosition(view));
+//                setSelectedItem(getOwnerRecyclerView().getChildLayoutPosition(view));
+//                notifyItemChanged(getSelectedItem());
+//
+//                VodLayout.channelType = Config.CHANNEL_TYPE.VOD_CHANNEL;
+//                VodLayout.mVodChannelView = holder.itemView;
+//
+//                showEpisodeDialogWithName(finalName, channel);
+//            }
+//        });
     }
 
     /* JADX DEBUG: Method merged with bridge method */

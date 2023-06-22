@@ -263,12 +263,23 @@ public class Config {
 
     /* renamed from: ma */
     public static String PASSWORD = "PASSWORD";
+    public static String defaultPassword = "1321";
+
 
     /* renamed from: n */
     public static final int f13390n = 22;
 
     public static String HASH_USERNAME = "HASH_USERNAME";
     public static String HASH_USERPASS = "HASH_USERPASS";
+
+    public static int f8915m = 43200000;
+    public static int f8916n = 43200000;
+    public static int f8917o = 7200000;
+    public static int f8918p = 1209600000;
+    public static int restrictedGroupMinPress = 2;
+    public static int maxVodColumns = 7;
+    public static int gridSpanCount = 5;
+    public static int maxAppColumns = 8;
 
     public static int LOGIN_OK = 0;
     public static int LOGIN_FAIL = -11;
@@ -349,7 +360,18 @@ public class Config {
     /* renamed from: za */
     public static final int f13415za = -2;
 
-    
+
+    public enum MenuType {
+        f8632a,
+        LIVE,
+        f8634c,
+        f8635d,
+        VOD,
+        HISTORY,
+        APPS,
+        DASHBOARD
+    }
+
     /* compiled from: MyApplication */
     /* renamed from: e.b.a.a$a 3456 */
     /* loaded from: classes.dex */

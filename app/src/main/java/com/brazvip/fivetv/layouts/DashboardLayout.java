@@ -188,22 +188,22 @@ public class DashboardLayout extends RelativeLayout implements View.OnKeyListene
     public void showDashboard() {
         if (isInitialized) {
             try {
-                if (dashGroupView == null || VodChannelInstance.mGroupL1List == null || VodChannelInstance.mGroupL1List.size() == 0) {
-                    return;
-                }
-                mDashboardGroupAdapter = new DashboardGroupAdapter(VodChannelInstance.mGroupL1List, mContext, mMsgHandler);
-                if (mDashboardGroupAdapter != null) {
-                    dashGroupView.setAdapter(mDashboardGroupAdapter);
-                    dashGroupView.setVisibility(View.VISIBLE);
-
-                    Integer[] indices = mDashboardGroupAdapter.mGroupItemList;
-                    if ((indices != null) && (indices.length > 0))
-                        showChannelTop(indices[0]);
-
-                    if (dashLoadingProgress != null && dashLoadingProgress.getVisibility() == View.VISIBLE) {
-                        this.dashLoadingProgress.setVisibility(View.GONE);
-                    }
-                }
+//                if (dashGroupView == null || VodChannelInstance.mGroupL1List == null || VodChannelInstance.mGroupL1List.size() == 0) {
+//                    return;
+//                }
+//                mDashboardGroupAdapter = new DashboardGroupAdapter(VodChannelInstance.mGroupL1List, mContext, mMsgHandler);
+//                if (mDashboardGroupAdapter != null) {
+//                    dashGroupView.setAdapter(mDashboardGroupAdapter);
+//                    dashGroupView.setVisibility(View.VISIBLE);
+//
+//                    Integer[] indices = mDashboardGroupAdapter.mGroupItemList;
+//                    if ((indices != null) && (indices.length > 0))
+//                        showChannelTop(indices[0]);
+//
+//                    if (dashLoadingProgress != null && dashLoadingProgress.getVisibility() == View.VISIBLE) {
+//                        this.dashLoadingProgress.setVisibility(View.GONE);
+//                    }
+//                }
             } catch (Exception e) {
                 e.printStackTrace();
             }
@@ -213,11 +213,11 @@ public class DashboardLayout extends RelativeLayout implements View.OnKeyListene
     public void showChannelTop(int groupId) {
         galleryLayout.setVisibility(View.GONE);
         try {
-            String strType = VodChannelInstance.mGroupL1List.get(groupId).name;
-            VodChannelInstance.parseTopVodChannels(strType);
-
-            galleryLayout.setGalleryData(VodChannelInstance.mTopChannelList);
-            galleryLayout.setVisibility(View.VISIBLE);
+//            String strType = VodChannelInstance.mGroupL1List.get(groupId).name;
+//            VodChannelInstance.parseTopVodChannels(strType);
+//
+//            galleryLayout.setGalleryData(VodChannelInstance.mTopChannelList);
+//            galleryLayout.setVisibility(View.VISIBLE);
         } catch (Exception e) {
             e.printStackTrace();
         }

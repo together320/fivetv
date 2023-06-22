@@ -10,6 +10,7 @@ import android.os.Message;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
 
 import com.brazvip.fivetv.instances.AuthInstance;
@@ -17,10 +18,11 @@ import com.brazvip.fivetv.utils.PrefUtils;
 import com.brazvip.fivetv.utils.Utils;
 
 public class LoginActivity extends AppCompatActivity implements View.OnClickListener {
+
     public static Handler mMsgHandler = null;
     public static EditText et_username = null;
     public static EditText et_password = null;
-    public static RelativeLayout loading_progress = null;
+    public static ProgressBar loading_progress = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -29,6 +31,7 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
 
         et_username = (EditText)findViewById(R.id.et_username);
         et_password = (EditText)findViewById(R.id.et_password);
+
         loading_progress = findViewById(R.id.loading_progress);
         loading_progress.setVisibility(View.GONE);
 
