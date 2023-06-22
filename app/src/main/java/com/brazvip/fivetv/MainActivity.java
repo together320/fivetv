@@ -308,12 +308,12 @@ public class MainActivity extends AutoLayoutActivity implements View.OnClickList
                         PrefUtils.ToastShort("PLAYER Loaded!");
                         break;
                     case Constant.MSG_PLAYER_PLAY_VIDEO:
-                        mPlayerLayout.playVideo(message.getData());
                         showPlayerLayout();
+                        mPlayerLayout.playVideo(message.getData());
                         break;
                     case Constant.MSG_PLAYER_START_PLAYBACK:
-                        onStartPlayback(message.getData());
                         showPlayerLayout();
+                        onStartPlayback(message.getData());
                         break;
 
                     case 250:

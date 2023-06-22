@@ -312,10 +312,8 @@ public class PlayerLayout extends FrameLayout {
         if (Config.f8893M == 3) {
             AuthInfo.ServiceBean serviceBean = AuthInstance.mAuthInfo.service;
             if (serviceBean != null && serviceBean.auth_url_sdk != null) {
-                mTVCore.setAuthUrl(AuthInstance.mAuthInfo.service.auth_url_sdk);
-                Utils.getValue(Config.HASH_USERNAME, "");
+                mTVCore.setAuthUrl(serviceBean.auth_url_sdk);
                 mTVCore.setUsername(Utils.getValue(Config.HASH_USERNAME, ""));
-                Utils.getValue(Config.HASH_PASSWORD, "");
                 mTVCore.setPassword(Utils.getValue(Config.HASH_PASSWORD, ""));
             }
         } else {
