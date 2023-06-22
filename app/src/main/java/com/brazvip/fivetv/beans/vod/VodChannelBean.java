@@ -4,7 +4,7 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
-
+/* loaded from: classes.dex */
 public class VodChannelBean implements Serializable {
     public String _id;
     public String backdrop;
@@ -22,14 +22,14 @@ public class VodChannelBean implements Serializable {
     public int vodType;
     public int voteAverage;
 
-    
+    /* loaded from: classes.dex */
     public static class Episode {
         public String address;
         public int duration;
         public int episode;
 
         /* renamed from: id */
-        public int id;
+        public int f8661id;
         public String overview;
         public int popularity;
         public int season;
@@ -39,7 +39,7 @@ public class VodChannelBean implements Serializable {
         public int voteAverage;
         public int voteCount;
 
-        
+        /* loaded from: classes.dex */
         public static class SubtitlesBean {
             public String code;
             public String type = "text";

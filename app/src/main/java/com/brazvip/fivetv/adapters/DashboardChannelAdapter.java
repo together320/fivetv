@@ -28,7 +28,6 @@ import com.zhy.autolayout.attr.AutoAttr;
 import com.zhy.autolayout.utils.AutoUtils;
 
 import com.brazvip.fivetv.beans.ChannelBean;
-import com.brazvip.fivetv.dialogs.EpisodeDialog;
 import com.brazvip.fivetv.dialogs.PasswordChangeDialog;
 import com.brazvip.fivetv.utils.PrefUtils;
 
@@ -38,13 +37,8 @@ import java.util.List;
 
 public class DashboardChannelAdapter extends GridRecyclerViewAdapter<DashboardChannelAdapter.DashboardChannelViewHolder> implements Filterable {
 
-    /* renamed from: j 13466 */
     public static final String TAG = "DashboardChannelAdapter";
 
-    /* renamed from: k 13467 */
-    public static EpisodeDialog.Helper mEpisodeDlgHelper;
-
-    /* renamed from: l 13468 */
     public List<ChannelBean> mChannelList;
 
     /* renamed from: m 13469 */
@@ -79,7 +73,6 @@ public class DashboardChannelAdapter extends GridRecyclerViewAdapter<DashboardCh
         this.mContext = context;
         this.mChannelList = list;
         this.f13470n = i;
-        mEpisodeDlgHelper = null;
     }
 
     @Override // android.widget.Filterable
@@ -248,10 +241,10 @@ public class DashboardChannelAdapter extends GridRecyclerViewAdapter<DashboardCh
 
     /* renamed from: a 2511 */
     private void showEpisodeDialog(ChannelBean channel) {
-        if (mEpisodeDlgHelper == null) {
-            mEpisodeDlgHelper = new EpisodeDialog.Helper(mContext);
-        }
-        mEpisodeDlgHelper.create(channel).show();
+//        if (mEpisodeDlgHelper == null) {
+//            mEpisodeDlgHelper = new EpisodeDialog.Helper(mContext);
+//        }
+//        mEpisodeDlgHelper.create(channel).show();
     }
 
     /* renamed from: a 2514 */

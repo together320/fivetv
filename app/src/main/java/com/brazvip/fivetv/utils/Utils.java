@@ -6,6 +6,8 @@ import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Handler;
 import android.telephony.TelephonyManager;
+import android.view.View;
+import android.view.ViewGroup;
 
 import com.brazvip.fivetv.SopApplication;
 import com.brazvip.fivetv.Config;
@@ -220,5 +222,20 @@ public class Utils {
 
     public static void setValue(String str, String str2) {
         SopApplication.getSopContext().getSharedPreferences(Config.PREFS_NAME, 0).edit().putString(str, str2).commit();
+    }
+
+    public static View m385i(int i, View view) {
+        if (view instanceof ViewGroup) {
+            ViewGroup viewGroup = (ViewGroup) view;
+            int childCount = viewGroup.getChildCount();
+            for (int i2 = 0; i2 < childCount; i2++) {
+                View findViewById = viewGroup.getChildAt(i2).findViewById(i);
+                if (findViewById != null) {
+                    return findViewById;
+                }
+            }
+            return null;
+        }
+        return null;
     }
 }

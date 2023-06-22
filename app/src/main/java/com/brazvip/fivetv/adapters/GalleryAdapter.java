@@ -11,7 +11,6 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.brazvip.fivetv.Config;
 import com.brazvip.fivetv.beans.ChannelBean;
-import com.brazvip.fivetv.dialogs.EpisodeDialog;
 import com.brazvip.fivetv.layouts.VodLayout;
 import com.bumptech.glide.Glide;
 import com.brazvip.fivetv.R;
@@ -23,12 +22,9 @@ public class GalleryAdapter extends RecyclerView.Adapter<GalleryAdapter.ViewHold
     private Context mContext;
     private List<ChannelBean> mChannelList;
 
-    public static EpisodeDialog.Helper mEpisodeDlgHelper;
-
     public GalleryAdapter(Context context, List<ChannelBean> list) {
         this.mContext = context;
         this.mChannelList = list;
-        mEpisodeDlgHelper = null;
     }
 
     @NonNull
@@ -82,9 +78,9 @@ public class GalleryAdapter extends RecyclerView.Adapter<GalleryAdapter.ViewHold
     }
 
     private void showEpisodeDialog(ChannelBean channel) {
-        if (mEpisodeDlgHelper == null) {
-            mEpisodeDlgHelper = new EpisodeDialog.Helper(mContext);
-        }
-        mEpisodeDlgHelper.create(channel).show();
+//        if (mEpisodeDlgHelper == null) {
+//            mEpisodeDlgHelper = new EpisodeDialog.Helper(mContext);
+//        }
+//        mEpisodeDlgHelper.create(channel).show();
     }
 }

@@ -18,6 +18,7 @@ import androidx.fragment.app.FragmentManager;
 import androidx.recyclerview.widget.RecyclerView.ViewHolder;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.brazvip.fivetv.dialogs.VodDialog;
 import com.brazvip.fivetv.layouts.VodLayout;
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
@@ -198,8 +199,9 @@ public class VodChannelAdapter extends GridRecyclerViewAdapter<VodChannelAdapter
                     return;
                 }
                 fullChannelBean.restricted = vodChannelBean.restricted;
-//                VodDialog createDialog = VodDialog.createDialog(VodChannelAdapter.this.context, fullChannelBean, menuType);
-//                createDialog.show(VodChannelAdapter.this.fragmentManager, createDialog.FRAGMENT_TAG);
+
+                VodDialog createDialog = VodDialog.createDialog(VodChannelAdapter.this.context, fullChannelBean, menuType);
+                createDialog.show(VodChannelAdapter.this.fragmentManager, createDialog.FRAGMENT_TAG);
             }
         });
     }

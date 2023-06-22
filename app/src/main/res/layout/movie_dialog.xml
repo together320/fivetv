@@ -1,0 +1,453 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/background_v3"
+    android:theme="@style/WhiteOpenSans">
+
+    <ImageView
+        android:id="@+id/movie_backdrop"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:focusable="false"
+        android:scaleType="fitXY" />
+
+    <View
+        android:id="@+id/backdrop_tint"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="#65000000"
+        android:visibility="gone" />
+
+    <View
+        android:id="@+id/left_spacer"
+        android:layout_width="1dp"
+        android:layout_height="0dp"
+        app:layout_constraintEnd_toStartOf="@+id/x_ll_left"
+        app:layout_constraintHorizontal_weight="1"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <LinearLayout
+        android:id="@+id/x_ll_left"
+        android:layout_width="wrap_content"
+        android:layout_height="match_parent"
+        android:layout_marginStart="10dp"
+        android:layout_marginTop="10dp"
+        android:layout_marginEnd="10dp"
+        android:layout_marginBottom="10dp"
+        android:gravity="center_horizontal"
+        android:orientation="vertical"
+        app:layout_constraintBottom_toBottomOf="@+id/x_ll_center"
+        app:layout_constraintEnd_toStartOf="@+id/x_ll_center"
+        app:layout_constraintStart_toEndOf="@+id/left_spacer"
+        app:layout_constraintTop_toTopOf="@+id/x_ll_center">
+
+        <com.google.android.material.imageview.ShapeableImageView
+            android:id="@+id/movie_image"
+            android:layout_width="240px"
+            android:layout_height="360px"
+            android:adjustViewBounds="true"
+            android:scaleType="fitCenter"
+            android:src="@color/background_v3_secondary"
+            app:shapeAppearanceOverlay="@style/roundimageview" />
+
+        <LinearLayout
+            android:id="@+id/play_button"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:background="@drawable/series_play_button_bg_selector"
+            android:clickable="true"
+            android:focusable="true"
+            android:gravity="center_vertical"
+            android:minWidth="90dp"
+            android:nextFocusDown="@+id/movie_toggle_fav"
+            android:orientation="horizontal"
+            android:paddingStart="10dp"
+            android:paddingTop="6dp"
+            android:paddingEnd="6dp"
+            android:paddingBottom="6dp">
+
+            <View
+                android:layout_width="20px"
+                android:layout_height="24px"
+                android:background="@drawable/series_button_ic_play" />
+
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="3dp"
+                android:layout_weight="1"
+                android:fontFamily="@font/open_sans_semibold"
+                android:text="Assistir"
+                android:textAlignment="center"
+                android:textSize="24px" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/movie_toggle_fav"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:background="@drawable/series_play_button_bg_selector"
+            android:clickable="true"
+            android:focusable="true"
+            android:gravity="center_horizontal"
+            android:minWidth="90dp"
+            android:nextFocusUp="@+id/play_button"
+            android:nextFocusDown="@+id/x_scroll1"
+            android:orientation="horizontal"
+            android:paddingStart="5dp"
+            android:paddingTop="6dp"
+            android:paddingEnd="5dp"
+            android:paddingBottom="6dp">
+
+            <TextView
+                android:id="@+id/movie_toggle_fav_txt"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="1dp"
+                android:fontFamily="@font/open_sans_semibold"
+                android:text="@string/add_favorite"
+                android:textSize="24px" />
+        </LinearLayout>
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/rating_layout"
+            android:layout_width="114dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:visibility="gone">
+
+            <TextView
+                android:id="@+id/views_count"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="5dp"
+                android:fontFamily="@font/open_sans_semibold"
+                android:text="0"
+                android:textSize="11sp"
+                app:layout_constraintTop_toTopOf="parent"
+                tools:ignore="MissingConstraints" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="3dp"
+                android:text="Visualizações"
+                android:textSize="11sp"
+                app:layout_constraintStart_toEndOf="@+id/views_count"
+                app:layout_constraintTop_toTopOf="parent" />
+        </androidx.constraintlayout.widget.ConstraintLayout>
+    </LinearLayout>
+
+    <ImageView
+        android:id="@+id/movie_fav_img"
+        android:layout_width="40px"
+        android:layout_height="60px"
+        android:layout_marginStart="5dp"
+        android:layout_marginTop="5dp"
+        android:focusable="false"
+        android:src="@drawable/ic_star_fav"
+        android:visibility="gone"
+        app:layout_constraintStart_toStartOf="@+id/x_ll_left"
+        app:layout_constraintTop_toTopOf="@+id/x_ll_left" />
+
+    <LinearLayout
+        android:id="@+id/x_ll_center"
+        android:layout_width="0dp"
+        android:layout_height="match_parent"
+        android:layout_marginTop="10dp"
+        android:layout_marginBottom="10dp"
+        android:background="@drawable/movie_info_bg"
+        android:orientation="vertical"
+        android:padding="7dp"
+        app:layout_constrainedHeight="true"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toStartOf="@+id/recommendations_layout"
+        app:layout_constraintHorizontal_weight="10"
+        app:layout_constraintStart_toEndOf="@+id/x_ll_left"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <TextView
+            android:id="@+id/title"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:fontFamily="@font/open_sans_bold"
+            android:shadowColor="#0e0e0e"
+            android:shadowDx="1"
+            android:shadowDy="1"
+            android:shadowRadius="1"
+            android:text="Title"
+            android:textSize="38px" />
+
+        <LinearLayout
+            android:id="@+id/certificate_info"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <LinearLayout
+                android:id="@+id/certificate_area"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="#90ffffff">
+
+                <TextView
+                    android:id="@+id/certificate"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:fontFamily="@font/open_sans_bold"
+                    android:paddingLeft="2dp"
+                    android:paddingRight="2dp"
+                    android:text="00"
+                    android:textColor="@color/background_v3"
+                    android:textSize="16px" />
+            </LinearLayout>
+
+            <TextView
+                android:id="@+id/release_y"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:fontFamily="@font/open_sans_bold"
+                android:paddingLeft="5dp"
+                android:shadowColor="#0e0e0e"
+                android:shadowDx="1"
+                android:shadowDy="1"
+                android:shadowRadius="1"
+                android:text="2017"
+                android:textColor="@color/white"
+                android:textSize="16px" />
+
+            <ImageView
+                android:layout_width="12dp"
+                android:layout_height="12dp"
+                android:layout_marginLeft="5dp"
+                android:src="@drawable/icons_popcorn_96" />
+
+            <TextView
+                android:id="@+id/vote_average"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:fontFamily="@font/open_sans_bold"
+                android:paddingLeft="2dp"
+                android:paddingRight="2dp"
+                android:shadowColor="#0e0e0e"
+                android:shadowDx="1"
+                android:shadowDy="1"
+                android:shadowRadius="1"
+                android:text="00%"
+                android:textColor="@color/white"
+                android:textSize="16px" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:fontFamily="@font/open_sans_bold"
+                android:shadowColor="#0e0e0e"
+                android:shadowDx="1"
+                android:shadowDy="1"
+                android:shadowRadius="1"
+                android:text="Relevante"
+                android:textColor="@color/white"
+                android:textSize="16px" />
+        </LinearLayout>
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content">
+
+            <ScrollView
+                android:id="@+id/x_scroll1"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                android:background="@drawable/scroll_text_bg"
+                android:focusable="true"
+                android:nextFocusLeft="@+id/play_button"
+                android:nextFocusRight="@+id/recommendations_r_v"
+                android:nextFocusUp="@+id/play_button"
+                android:nextFocusDown="@+id/recommendations_r_v"
+                android:paddingBottom="14dp"
+                android:scrollbars="vertical"
+                app:layout_constrainedHeight="true"
+                app:layout_constraintBottom_toTopOf="@+id/x_details"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintVertical_weight="1">
+
+                <TextView
+                    android:id="@+id/overview"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="..."
+                    android:textSize="22px" />
+            </ScrollView>
+
+            <TableLayout
+                android:id="@+id/x_details"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:focusable="false"
+                app:layout_constrainedHeight="true"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/x_scroll1">
+
+                <TableRow
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content" />
+
+                <View
+                    android:id="@+id/separator_1"
+                    android:layout_width="match_parent"
+                    android:layout_height="@dimen/movie_separator_height"
+                    android:background="@drawable/movie_detail_separator" />
+
+                <TableRow
+                    android:id="@+id/genre_row"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="10dp"
+                    android:layout_marginBottom="5dp"
+                    android:gravity="center_vertical"
+                    android:paddingLeft="5dp">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:fontFamily="@font/open_sans_bold"
+                        android:text="Gênero"
+                        android:textSize="24px" />
+
+                    <androidx.recyclerview.widget.RecyclerView
+                        android:id="@+id/genre_r_v"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:focusable="false" />
+                </TableRow>
+
+                <View
+                    android:id="@+id/separator_gender"
+                    android:layout_width="wrap_content"
+                    android:layout_height="@dimen/movie_separator_height"
+                    android:background="@drawable/movie_detail_separator" />
+
+                <TableRow
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="10dp"
+                    android:layout_marginBottom="5dp"
+                    android:gravity="center_vertical"
+                    android:paddingLeft="5dp">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:fontFamily="@font/open_sans_bold"
+                        android:text="Gênero"
+                        android:textSize="24px" />
+
+                    <TextView
+                        android:id="@+id/genre_string"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginLeft="10dp"
+                        android:text="----"
+                        android:textSize="22px" />
+                </TableRow>
+
+                <View
+                    android:id="@+id/separator_2"
+                    android:layout_width="wrap_content"
+                    android:layout_height="@dimen/movie_separator_height"
+                    android:background="@drawable/movie_detail_separator" />
+
+                <TableRow
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="10dp"
+                    android:layout_marginBottom="5dp"
+                    android:gravity="center_vertical"
+                    android:paddingLeft="5dp">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:fontFamily="@font/open_sans_bold"
+                        android:text="Duração"
+                        android:textSize="24px" />
+
+                    <TextView
+                        android:id="@+id/duration"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginLeft="10dp"
+                        android:text="0h 0min"
+                        android:textSize="22px" />
+                </TableRow>
+
+                <View
+                    android:id="@+id/separator_3"
+                    android:layout_width="wrap_content"
+                    android:layout_height="@dimen/movie_separator_height"
+                    android:background="@drawable/movie_detail_separator" />
+            </TableLayout>
+        </androidx.constraintlayout.widget.ConstraintLayout>
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/recommendations_layout"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="12dp"
+        android:layout_marginEnd="8dp"
+        android:layout_marginBottom="12dp"
+        android:orientation="vertical"
+        android:visibility="gone"
+        app:layout_constraintBottom_toBottomOf="@+id/x_ll_center"
+        app:layout_constraintEnd_toEndOf="@+id/right_spacer"
+        app:layout_constraintStart_toEndOf="@+id/x_ll_center"
+        app:layout_constraintTop_toTopOf="@+id/x_ll_center">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:fontFamily="@font/open_sans_bold"
+            android:text="Recomendações"
+            android:textSize="18sp" />
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/recommendations_r_v"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="15dp"
+            android:focusable="true"
+            android:nextFocusLeft="@+id/play_button"
+            android:nextFocusUp="@+id/x_scroll1" />
+    </LinearLayout>
+
+    <View
+        android:id="@+id/right_spacer"
+        android:layout_width="10dp"
+        android:layout_height="0dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toEndOf="@+id/recommendations_layout"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:baselineAligned="false"
+        android:gravity="center_horizontal"
+        android:orientation="horizontal"
+        android:visibility="gone"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+</androidx.constraintlayout.widget.ConstraintLayout>

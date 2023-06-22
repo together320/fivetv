@@ -1,0 +1,205 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/background_v3"
+    android:theme="@style/WhiteOpenSans">
+
+    <ImageView
+        android:id="@+id/backdrop"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" />
+
+    <View
+        android:id="@+id/backdrop_tint"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="#80000000"
+        android:visibility="visible" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:paddingStart="10dp"
+        android:paddingTop="10dp"
+        android:paddingEnd="10dp">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+
+                <ImageView
+                    android:id="@+id/series_fav_img"
+                    android:layout_width="48px"
+                    android:layout_height="60px"
+                    android:layout_marginEnd="5dp"
+                    android:src="@drawable/ic_star_fav"
+                    android:visibility="gone" />
+
+                <TextView
+                    android:id="@+id/series_name"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_vertical"
+                    android:fontFamily="@font/open_sans_bold"
+                    android:text="Name"
+                    android:textSize="32px" />
+            </LinearLayout>
+
+            <ScrollView
+                android:id="@+id/x_desc_scroll"
+                android:maxHeight="74dp"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:scrollbars="vertical">
+
+                <TextView
+                    android:id="@+id/series_description"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="3dp"
+                    android:text="scrollable multiline description"
+                    android:textSize="22px" />
+            </ScrollView>
+
+            <TextView
+                android:id="@+id/_ep_separator1"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="24px"
+                android:fontFamily="@font/open_sans_bold"
+                android:text="Episódios" />
+
+            <View
+                android:id="@+id/_ep_separator2"
+                android:layout_width="match_parent"
+                android:layout_height="1.5dp"
+                android:layout_marginTop="3dp"
+                android:background="@android:color/white" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_marginTop="10dp"
+            android:layout_marginBottom="20dp"
+            android:orientation="horizontal">
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:orientation="vertical">
+
+                <LinearLayout
+                    android:id="@+id/play_button"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:background="@drawable/series_play_button_bg_selector"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:gravity="center_vertical"
+                    android:minWidth="90dp"
+                    android:nextFocusLeft="@+id/play_button"
+                    android:nextFocusRight="@+id/episode_rv"
+                    android:nextFocusUp="@+id/play_button"
+                    android:nextFocusDown="@+id/series_toggle_fav"
+                    android:orientation="horizontal"
+                    android:paddingStart="10dp"
+                    android:paddingTop="6dp"
+                    android:paddingEnd="6dp"
+                    android:paddingBottom="6dp">
+
+                    <View
+                        android:layout_width="20px"
+                        android:layout_height="24px"
+                        android:background="@drawable/series_button_ic_play" />
+
+                    <TextView
+                        android:id="@+id/play_button_text"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="3dp"
+                        android:layout_weight="1"
+                        android:fontFamily="@font/open_sans_semibold"
+                        android:text="Assistir"
+                        android:textAlignment="center"
+                        android:textSize="26px" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:id="@+id/series_toggle_fav"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="10dp"
+                    android:background="@drawable/series_play_button_bg_selector"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:gravity="center"
+                    android:minWidth="90dp"
+                    android:nextFocusLeft="@+id/play_button"
+                    android:nextFocusRight="@+id/episode_rv"
+                    android:nextFocusUp="@+id/play_button"
+                    android:nextFocusDown="@+id/season_rv"
+                    android:orientation="horizontal"
+                    android:paddingStart="5dp"
+                    android:paddingTop="6dp"
+                    android:paddingEnd="5dp"
+                    android:paddingBottom="6dp">
+
+                    <TextView
+                        android:id="@+id/series_toggle_fav_txt"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginBottom="1dp"
+                        android:fontFamily="@font/open_sans_semibold"
+                        android:text="@string/add_favorite"
+                        android:textSize="26px" />
+                </LinearLayout>
+
+                <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/season_rv"
+                    android:layout_width="250px"
+                    android:layout_height="match_parent"
+                    android:layout_marginTop="10dp"
+                    android:descendantFocusability="beforeDescendants"
+                    android:focusable="true"
+                    android:focusableInTouchMode="true"
+                    android:nextFocusLeft="@+id/series_toggle_fav"
+                    android:nextFocusRight="@+id/episode_rv"
+                    android:nextFocusUp="@+id/series_toggle_fav"
+                    android:nextFocusDown="@+id/season_rv"
+                    android:orientation="vertical"
+                    android:overScrollMode="never"
+                    android:paddingRight="10px"
+                    android:scrollbars="vertical"
+                    app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager" />
+            </LinearLayout>
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/episode_rv"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_marginStart="30dp"
+                android:layout_marginEnd="0dp"
+                android:descendantFocusability="beforeDescendants"
+                android:fadeScrollbars="true"
+                android:focusable="true"
+                android:focusableInTouchMode="true"
+                android:nextFocusLeft="@+id/season_rv"
+                android:nextFocusUp="@+id/episode_rv"
+                android:nextFocusDown="@+id/episode_rv"
+                android:orientation="vertical"
+                android:overScrollMode="never"
+                android:scrollbars="vertical"
+                app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager" />
+        </LinearLayout>
+    </LinearLayout>
+</RelativeLayout>

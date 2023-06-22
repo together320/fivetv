@@ -69,63 +69,59 @@ public class HistoryAdapter extends HistoryRecyclerViewAdapter<ViewHolder> imple
         return new Filter() {
             @Override
             public Filter.FilterResults performFiltering(CharSequence charSequence) {
+                VodChannelBean fullChannelBean;
                 Filter.FilterResults filterResults = new Filter.FilterResults();
-
-                ArrayList values = new ArrayList();
-                if (history != null && history.size() > 0 && videoType.name().length() > 0) {
-                    for (int i = 0; i < history.size(); i++) {
-                        HistoryBean historyBean = (HistoryBean) history.get(i);
+                ArrayList arrayList = new ArrayList();
+                HistoryAdapter.this.history.size();
+                HistoryAdapter.this.videoType.name();
+                if (HistoryAdapter.this.history != null) {
+                    for (int i = 0; i < HistoryAdapter.this.history.size(); i++) {
+                        HistoryBean historyBean = (HistoryBean) HistoryAdapter.this.history.get(i);
                         Config.VIDEO_TYPE video_type = historyBean.videoType;
-
                         if (video_type == Config.VIDEO_TYPE.BSLIVE) {
-                            if (ChannelInstance.liveChannels == null)
-                                continue;
-                            if (ChannelInstance.liveChannels.get(Integer.valueOf(historyBean.chid)) == null)
-                                continue;
-                            values.add(historyBean);
-                        }
-
-                        if (video_type == Config.VIDEO_TYPE.PLAYBACK) {
-                            if (ChannelInstance.liveChannels == null)
-                                continue;
-
-                            ChannelBean channelBean = ChannelInstance.liveChannels.get(Integer.valueOf(historyBean.chid));
-                            List list = (List) EPGInstance.liveEpgs.get(Integer.valueOf(historyBean.chid));
-                            if (channelBean != null && list != null) {
-                                Iterator it = list.iterator();
-                                while (true) {
-                                    if (!it.hasNext()) {
-                                        break;
-                                    }
-                                    EpgBeans.EpgBean epgBean = (EpgBeans.EpgBean) it.next();
-                                    if (epgBean.getId().equals(historyBean.subId)) {
-                                        values.add(historyBean);
-                                        break;
-                                    }
+                            if (ChannelInstance.liveChannels != null) {
+                                if (ChannelInstance.liveChannels.get(historyBean.chid) == null) {
                                 }
+                                arrayList.add(historyBean);
                             }
-                        }
-
-                        if (video_type == Config.VIDEO_TYPE.BSVOD) {
-                            VodChannelBean fullChannelBean = VodChannelInstance.getFullChannelBean(historyBean.channelId);
-                            if (fullChannelBean == null)
-                                continue;
-                            Iterator<VodChannelBean.Episode> itEpisode = fullChannelBean.getEpisodes().iterator();
-                            while (true) {
-                                if (!itEpisode.hasNext()) {
-                                    break;
+                        } else {
+                            if (video_type == Config.VIDEO_TYPE.PLAYBACK) {
+                                if (ChannelInstance.liveChannels != null) {
+                                    ChannelBean channelBean = ChannelInstance.liveChannels.get(historyBean.chid);
+                                    List<EpgBeans.EpgBean> list = EPGInstance.liveEpgs.get(historyBean.chid);
+                                    if (channelBean != null && list != null) {
+                                        while (true) {
+                                            for (EpgBeans.EpgBean epgBean : list) {
+                                                if (epgBean.getId().equals(historyBean.subId)) {
+                                                    arrayList.add(historyBean);
+                                                    break;
+                                                }
+                                            }
+                                            continue;
+                                        }
+                                    }
                                 }
-                                VodChannelBean.Episode episode = itEpisode.next();
-                                if (episode.id == Integer.parseInt(historyBean.subId)) {
-                                    values.add(historyBean);
-                                    break;
+                            } else {
+                                if (video_type == Config.VIDEO_TYPE.BSVOD && (fullChannelBean = VodChannelInstance.getFullChannelBean(historyBean.channelId)) != null) {
+                                    Iterator<VodChannelBean.Episode> it2 = fullChannelBean.getEpisodes().iterator();
+                                    while (true) {
+                                        if (!it2.hasNext()) {
+                                            break;
+                                        }
+                                        VodChannelBean.Episode next = it2.next();
+                                        if (next.f8661id == Integer.parseInt(historyBean.subId)) {
+                                            arrayList.add(historyBean);
+                                            break;
+                                        }
+                                    }
                                 }
                             }
                         }
                     }
                 }
-                filterResults.count = values.size();
-                filterResults.values = values;
+                filterResults.count = arrayList.size();
+                filterResults.values = arrayList;
+                HistoryAdapter.this.videoType.name();
                 return filterResults;
             }
 

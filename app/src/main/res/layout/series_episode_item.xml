@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android" android:orientation="vertical" android:padding="6dp" android:focusable="true" android:layout_width="match_parent" android:layout_height="wrap_content">
+    <LinearLayout android:orientation="horizontal" android:layout_width="match_parent" android:layout_height="wrap_content">
+        <ImageView android:id="@+id/episode_image" android:background="@drawable/season_item_bg_selector" android:paddingLeft="0dp" android:paddingTop="2dp" android:paddingRight="0dp" android:paddingBottom="2dp" android:layout_width="246px" android:layout_height="142px" android:src="@color/background_v3_secondary" android:scaleType="fitCenter" android:contentDescription="episode image"/>
+        <LinearLayout android:orientation="vertical" android:layout_width="match_parent" android:layout_height="match_parent" android:layout_marginStart="10dp">
+            <TextView android:textSize="24px" android:textColor="@android:color/white" android:id="@+id/episode_name" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginBottom="3dp" android:fontFamily="@font/open_sans_bold"/>
+            <TextView android:textSize="24px" android:textColor="@android:color/white" android:id="@+id/episode_description" android:layout_width="match_parent" android:layout_height="wrap_content" android:fontFamily="@font/open_sans_regular"/>
+        </LinearLayout>
+    </LinearLayout>
+    <ProgressBar android:id="@+id/episode_progress" android:layout_width="246px" android:layout_height="6px" android:layout_marginTop="2dp" android:max="100" android:progress="0" android:layout_marginEnd="15dp" style="@style/Widget.AppCompat.ProgressBar.Horizontal"/>
+</LinearLayout>
