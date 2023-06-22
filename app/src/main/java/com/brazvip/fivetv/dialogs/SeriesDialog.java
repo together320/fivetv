@@ -78,28 +78,23 @@ public class SeriesDialog extends VodDialog {
     }
 
     public static SeriesDialog createDialogImpl(Context context, VodChannelBean vodChannelBean) {
-        if (seriesDialog == null) { // || !seriesDialog2.isAdded()) {
-            seriesDialog = new SeriesDialog(context, vodChannelBean);
-            seriesDialog.init();
-            return seriesDialog;
-        }
+        seriesDialog = new SeriesDialog(context, vodChannelBean);
+        seriesDialog.init();
         return seriesDialog;
     }
 
     public static void destroy() {
-        SeriesDialog seriesDialog2 = seriesDialog;
-        if (seriesDialog2 != null) {
-            seriesDialog2.dismiss();
+        if (seriesDialog != null) {
+            seriesDialog.dismiss();
             seriesDialog = null;
         }
     }
 
     public static SeriesDialog getInstance() {
-        SeriesDialog seriesDialog2 = seriesDialog;
-        if (seriesDialog2 == null) {
+        if (seriesDialog == null) {
             return null;
         }
-        return seriesDialog2;
+        return seriesDialog;
     }
 
     public static void Hide() {
@@ -406,6 +401,5 @@ public class SeriesDialog extends VodDialog {
                 }
             }
         }
-        throw new NullPointerException("Missing required view with ID: ".concat(inflate.getResources().getResourceName(i)));
     }
 }

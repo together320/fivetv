@@ -220,6 +220,8 @@ public class MainActivity extends AutoLayoutActivity implements View.OnClickList
             }
         });
 
+        history = new HistoryInstance(this);
+
         refreshFragment(FRAGMENT.LOADING);
     }
 

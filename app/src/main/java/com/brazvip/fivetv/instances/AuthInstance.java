@@ -107,7 +107,7 @@ public class AuthInstance {
 
         new Thread(() -> {
             Utils.setValue(Config.HASH_USERNAME, LibTvServiceClient.getInstance().getUserPass("user"));
-            Utils.setValue(Config.HASH_USERPASS, LibTvServiceClient.getInstance().getUserPass("pass"));
+            Utils.setValue(Config.HASH_PASSWORD, LibTvServiceClient.getInstance().getUserPass("pass"));
 
             boolean isLogin;
             try {

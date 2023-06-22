@@ -226,19 +226,14 @@ public class MovieDialog extends VodDialog {
     }
 
     public static MovieDialog createDialogImpl(Context context, VodChannelBean vodChannelBean) {
-        VodChannelBean vodChannelBean2;
-        MovieDialog movieDialog2 = movieDialog;
-        if (movieDialog2 == null || (vodChannelBean2 = movieDialog2.channel) == null || !Objects.equals(vodChannelBean2.getId(), vodChannelBean.getId())) {
-            movieDialog = new MovieDialog(context, vodChannelBean);
-            movieDialog.init();
-        }
+        movieDialog = new MovieDialog(context, vodChannelBean);
+        movieDialog.init();
         return movieDialog;
     }
 
     public static void destroy() {
-        MovieDialog movieDialog2 = movieDialog;
-        if (movieDialog2 != null) {
-            movieDialog2.dismiss();
+        if (movieDialog != null) {
+            movieDialog.dismiss();
             movieDialog = null;
         }
     }
@@ -297,7 +292,7 @@ public class MovieDialog extends VodDialog {
 
     public void init() {
         View inflate = ((LayoutInflater) this._context.getSystemService(Context.LAYOUT_INFLATER_SERVICE))
-                .inflate(R.layout.dialog_episode_layout, null);
+                .inflate(R.layout.movie_dialog, null);
         movieDialog.addContentView(inflate, new ViewGroup.LayoutParams(-1, -2));
 
         float f = 0.0f;
@@ -515,6 +510,5 @@ public class MovieDialog extends VodDialog {
                 }
             }
         }
-        throw new NullPointerException("Missing required view with ID: ".concat(inflate.getResources().getResourceName(i)));
     }
 }

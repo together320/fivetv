@@ -276,7 +276,7 @@ public class Config {
     public static final int f13390n = 22;
 
     public static String HASH_USERNAME = "HASH_USERNAME";
-    public static String HASH_USERPASS = "HASH_USERPASS";
+    public static String HASH_PASSWORD = "HASH_PASSWORD";
 
     public static int f8915m = 43200000;
     public static int f8916n = 43200000;
@@ -536,6 +536,8 @@ public class Config {
 
     public static DisplayMetrics displayMetrics = null;
 
+    public static int f8893M = 2;
+
     private static void getInfo() {
 //        String m5118c = SopCast.rConfig.m5118c("adult_words");
 //        if (m5118c.isEmpty()) {
@@ -582,6 +584,7 @@ public class Config {
         initLibTV();
         f8909g = false;
         f8924v = true;
+        f8893M = 3;
     }
 
 }

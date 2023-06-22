@@ -44,8 +44,8 @@ public class SplashActivity extends AppCompatActivity {
             throw new RuntimeException(e);
         }
         if (applicationInfo != null && applicationInfo.metaData != null) {
-            C2053a.f7440f.f7443c = ((Integer) applicationInfo.metaData.get("design_width")).intValue();
-            C2053a.f7440f.f7444d = ((Integer) applicationInfo.metaData.get("design_height")).intValue();
+            C2053a.f7440f.f7443c = (Integer) applicationInfo.metaData.get("design_width");
+            C2053a.f7440f.f7444d = (Integer) applicationInfo.metaData.get("design_height");
         }
 
         Config.displayMetrics = new DisplayMetrics();

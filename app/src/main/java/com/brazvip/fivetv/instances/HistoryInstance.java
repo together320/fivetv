@@ -19,11 +19,14 @@ public class HistoryInstance {
     public static CustomQueue<HistoryBean> liveHistory;
     public static CustomQueue<HistoryBean> vodHistory;
 
-    public HistoryInstance(Context context) throws IOException {
-        Object savedObject = MainActivity.cacheManager.getSavedObject("liveHistory");
-        liveHistory = savedObject != null ? (CustomQueue) savedObject : new CustomQueue<>(Priority.UI_LOW);
-        Object savedObject2 = MainActivity.cacheManager.getSavedObject("vodHistory");
-        vodHistory = savedObject2 != null ? (CustomQueue) savedObject2 : new CustomQueue<>(Priority.UI_NORMAL);
+    public HistoryInstance(Context context) {
+        try {
+            Object savedObject = MainActivity.cacheManager.getSavedObject("liveHistory");
+            liveHistory = savedObject != null ? (CustomQueue) savedObject : new CustomQueue<>(Priority.UI_LOW);
+            Object savedObject2 = MainActivity.cacheManager.getSavedObject("vodHistory");
+            vodHistory = savedObject2 != null ? (CustomQueue) savedObject2 : new CustomQueue<>(Priority.UI_NORMAL);
+        } catch (IOException ex) {
+        }
     }
 
     public static HistoryBean GetLastHistory(String str, String str2) {

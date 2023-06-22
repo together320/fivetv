@@ -25,6 +25,7 @@ import com.brazvip.fivetv.MainActivity;
 import com.brazvip.fivetv.R;
 import com.brazvip.fivetv.SopApplication;
 import com.brazvip.fivetv.TVCarService;
+import com.brazvip.fivetv.beans.AuthInfo;
 import com.brazvip.fivetv.beans.HistoryBean;
 import com.brazvip.fivetv.beans.vod.VodChannelBean;
 import com.brazvip.fivetv.dialogs.PopMsg;
@@ -308,13 +309,26 @@ public class PlayerLayout extends FrameLayout {
         if (mTVCore == null)
             return;
         mTVCore.setMKBroker(AuthInstance.mAuthInfo.service.mk_broker);
-        mTVCore.setAuthUrl(AuthInstance.mAuthInfo.service.auth_url_sdk);
-        String username = PrefUtils.getPrefString("username", "");
-        String password = PrefUtils.getPrefString("password", "");
-        if (!username.contains("@"))
-            username += Constant.DEFAULT_MAIL_SUFFIX;
-        mTVCore.setUsername(username);
-        mTVCore.setPassword(password);
+        if (Config.f8893M == 3) {
+            AuthInfo.ServiceBean serviceBean = AuthInstance.mAuthInfo.service;
+            if (serviceBean != null && serviceBean.auth_url_sdk != null) {
+                mTVCore.setAuthUrl(AuthInstance.mAuthInfo.service.auth_url_sdk);
+                Utils.getValue(Config.HASH_USERNAME, "");
+                mTVCore.setUsername(Utils.getValue(Config.HASH_USERNAME, ""));
+                Utils.getValue(Config.HASH_PASSWORD, "");
+                mTVCore.setPassword(Utils.getValue(Config.HASH_PASSWORD, ""));
+            }
+        } else {
+            String str;
+            String str2;
+            String str3;
+            AuthInfo.KeysBean keysBean = AuthInstance.mAuthInfo.keys;
+            if (keysBean != null && (str = keysBean.user_id) != null && !str.equals("") &&
+                    (str2 = keysBean.peer_id) != null && !str2.equals("") &&
+                    (str3 = keysBean.session_key) != null && !str3.equals("")) {
+                mTVCore.setAuthItems(keysBean.user_id, keysBean.peer_id, keysBean.session_key);
+            }
+        }
 
         mTVCore.setTVListener(new TVListener() { //C3647k
             @Override // com.tvbus.engine.TVListener
@@ -485,6 +499,9 @@ public class PlayerLayout extends FrameLayout {
     }
 
     public void startChannel(String videoURL, String videoName, Config.BS_MODE bsMode) {
+        Log.e(TAG, "startChannel videoURL: " + videoURL);
+        Log.e(TAG, "startChannel videoName: " + videoName);
+        Log.e(TAG, "startChannel bsMode: " + bsMode);
         this.mBsMode = bsMode;
         if (videoURL == null || videoURL.equals("")) {
             return;
@@ -614,6 +631,7 @@ public class PlayerLayout extends FrameLayout {
     }
 
     public void startPlaying(String url) {
+        Log.e(TAG, "startPlaying URL: " + url);
         this.mMPCheckTime = System.nanoTime() + MP_START_CHECK_INTERVAL;
         if (this.playerStatus.getVisibility() == View.VISIBLE) {
             this.playerStatus.setVisibility(View.GONE);

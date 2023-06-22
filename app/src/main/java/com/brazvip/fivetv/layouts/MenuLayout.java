@@ -570,7 +570,7 @@ public class MenuLayout extends RelativeLayout {
 //            return;
 //        }
         Message msg = new Message();
-        msg.what = Constant.MSG_PLAYER_PLAY_VIDEO;
+        msg.what = Constant.MSG_PLAYER_START_PLAYBACK;
         Bundle params = new Bundle();
         params.putString("url", channel.getSources().get(0).getAddress());
         if (channel.getSid() > 0) {
