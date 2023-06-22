@@ -15,7 +15,7 @@
     <color name="background_material_light">@color/material_grey_50</color>
     <color name="background_v3">#ff202332</color>
     <color name="background_v3_75_percent">#be202332</color>
-    <color name="background_v3_secondary">#ff525b7a</color>
+    <color name="background_v3_secondary">#525b7a</color>
     <color name="background_v3_secondary2">#80525b7a</color>
     <color name="blackAssistText">#ff969696</color>
     <color name="blackMainText">#ff323232</color>

@@ -270,7 +270,7 @@ public class VodChannelInstance {
     }
 
     public static synchronized void getVodGroups() {
-        if (newVodL1L2Groups == null || newVodL1L2Groups.size() <= 0) {
+        if (newVodL1L2Groups == null || newVodL1L2Groups.size() == 0) {
             String cacheVodGroups = LibTvServiceClient.getInstance().getCacheVodGroups();
             if (TextUtils.isEmpty(cacheVodGroups)) {
                 String m1441b = MainActivity.cacheManager.m1441b("vodGroups");

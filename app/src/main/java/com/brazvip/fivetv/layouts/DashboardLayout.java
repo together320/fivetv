@@ -135,7 +135,7 @@ public class DashboardLayout extends RelativeLayout implements View.OnKeyListene
         galleryLayout = findViewById(R.id.dashChannelView);
 
         dashLoadingProgress = findViewById(R.id.dashLoadingProgress);
-        dashLoadingProgress.setVisibility(View.VISIBLE);
+        dashLoadingProgress.setVisibility(View.GONE);
 
         isInitialized = true;
     }

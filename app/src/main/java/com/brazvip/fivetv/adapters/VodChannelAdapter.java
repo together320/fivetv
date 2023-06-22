@@ -4,6 +4,7 @@ import android.annotation.SuppressLint;
 import android.content.Context;
 import android.os.Bundle;
 import android.os.Message;
+import android.util.Log;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -101,33 +102,29 @@ public class VodChannelAdapter extends GridRecyclerViewAdapter<VodChannelAdapter
 
     @SuppressLint("CheckResult")
     @Override
-    public void onBindViewHolder(VodChannelAdapter.ViewHolder viewHolder, int i) {
-        int i2 = this.mSelectedItem;
-        int i3 = this.nextSelectItem;
-        boolean z = true;
-        boolean z2 = i == i2;
-        z = (!z2 || i3 < 0) ? false : false;
-        viewHolder.itemView.setSelected(z2);
-        final VodChannelBean vodChannelBean = this.channels.get(viewHolder.getAbsoluteAdapterPosition());
+    public void onBindViewHolder(VodChannelAdapter.ViewHolder viewHolder, int position) {
+        boolean isSelected = position == this.mSelectedItem;
+        boolean isUnSelected = isSelected && this.nextSelectItem >= 0;
+        viewHolder.itemView.setSelected(isSelected);
+
+        VodChannelBean vodChannelBean = this.channels.get(viewHolder.getAbsoluteAdapterPosition());
         String title = vodChannelBean.getTitle();
         String poster = vodChannelBean.getPoster();
         if (VodChannelInstance.isFavoriteVod(this.channels.get(viewHolder.getAbsoluteAdapterPosition()).getId())) {
             viewHolder.favorite.setImageResource(R.drawable.ic_star_fav);
         }
         viewHolder.channelName.setText(title);
-        ImageView imageView = viewHolder.image;
-        if (z) {
-            imageView.setBackgroundResource(R.color.background_v3_secondary);
+        if (isUnSelected) {
+            viewHolder.image.setBackgroundResource(R.color.background_v3_secondary);
         } else {
-            imageView.setBackgroundResource(0);
+            viewHolder.image.setBackgroundResource(0);
         }
         try {
             Glide.with(this.context)
                     .load(poster)
-                    .load(R.mipmap.loading)
-                    .load(DiskCacheStrategy.AUTOMATIC)
-                    .load(R.mipmap.load_error)
-                    .load(viewHolder.image);
+                    .placeholder(R.mipmap.loading)
+                    .error(R.mipmap.load_error)
+                    .into(viewHolder.image);
         } catch (Exception unused) {
         }
         viewHolder.itemView.setOnFocusChangeListener(new ViewOnFocusChangeListener(viewHolder, 0));

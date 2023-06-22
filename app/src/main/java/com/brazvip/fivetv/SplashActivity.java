@@ -11,9 +11,12 @@ import android.util.DisplayMetrics;
 import android.view.View;
 import android.widget.ProgressBar;
 
+import com.brazvip.fivetv.cache.CacheManager;
 import com.brazvip.fivetv.instances.AuthInstance;
 import com.brazvip.fivetv.utils.PrefUtils;
 import com.brazvip.fivetv.utils.Utils;
+
+import okhttp3.Cache;
 
 public class SplashActivity extends AppCompatActivity {
     public static Handler mMsgHandler = null;
@@ -24,6 +27,8 @@ public class SplashActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_splash);
+
+        MainActivity.cacheManager = CacheManager.getCacheManager(SopApplication.getAppContext());
 
         Config.displayMetrics = new DisplayMetrics();
         getWindowManager().getDefaultDisplay().getMetrics(Config.displayMetrics);
