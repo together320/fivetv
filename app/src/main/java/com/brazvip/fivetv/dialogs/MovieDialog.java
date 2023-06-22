@@ -20,6 +20,7 @@ import androidx.constraintlayout.widget.ConstraintSet;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.brazvip.fivetv.SopApplication;
 import com.brazvip.fivetv.utils.StringUtil;
 import com.brazvip.fivetv.utils.Utils;
 import com.bumptech.glide.Glide;
@@ -210,6 +211,7 @@ public class MovieDialog extends VodDialog {
     }
 
     private MovieDialog(Context context, VodChannelBean vodChannelBean) {
+        super(context, R.style.ThemeSplash);
         this.movieSrc = null;
         this._context = context;
         this.channel = vodChannelBean;
@@ -231,6 +233,7 @@ public class MovieDialog extends VodDialog {
         MovieDialog movieDialog2 = movieDialog;
         if (movieDialog2 == null || (vodChannelBean2 = movieDialog2.channel) == null || !Objects.equals(vodChannelBean2.getId(), vodChannelBean.getId())) {
             movieDialog = new MovieDialog(context, vodChannelBean);
+            movieDialog.init();
         }
         return movieDialog;
     }
@@ -247,10 +250,9 @@ public class MovieDialog extends VodDialog {
         return movieDialog;
     }
 
-    public static void hide() {
-        MovieDialog movieDialog2 = movieDialog;
-        if (movieDialog2 != null) {
-            movieDialog2.dismiss();
+    public static void Hide() {
+        if (movieDialog != null) {
+            movieDialog.dismiss();
         }
     }
 
@@ -292,13 +294,16 @@ public class MovieDialog extends VodDialog {
         }
         int i = (int) ((f / 60.0f) % 60.0f);
         int i2 = (int) (f / 3600.0f);
-        return i2 > 0 ? String.format(getString(R.string.duration_hr_min), Integer.valueOf(i2), Integer.valueOf(i)) : String.format(getString(R.string.duration_min), Integer.valueOf(i));
+        return i2 > 0 ? String.format(SopApplication.getAppContext().getString(R.string.duration_hr_min), Integer.valueOf(i2), Integer.valueOf(i)) :
+                String.format(SopApplication.getAppContext().getString(R.string.duration_min), Integer.valueOf(i));
     }
 
-    @Override // androidx.fragment.app.Fragment
-    public View onCreateView(LayoutInflater layoutInflater, ViewGroup viewGroup, Bundle bundle) {
-        float f;
-        View inflate = layoutInflater.inflate(R.layout.movie_dialog, viewGroup, false);
+    public void init() {
+        View inflate = ((LayoutInflater) this._context.getSystemService(Context.LAYOUT_INFLATER_SERVICE))
+                .inflate(R.layout.dialog_episode_layout, null);
+        movieDialog.addContentView(inflate, new ViewGroup.LayoutParams(-1, -2));
+
+        float f = 0.0f;
         int i = R.id.backdrop_tint;
         View m385i = Utils.m385i(R.id.backdrop_tint, inflate);
         if (m385i != null) {
@@ -480,7 +485,7 @@ public class MovieDialog extends VodDialog {
                                                                                                                                                 lambda$onCreateView$1(view);
                                                                                                                                             }
                                                                                                                                         });
-                                                                                                                                        return this.binding.f7139a;
+                                                                                                                                        //return this.binding.f7139a;
                                                                                                                                     }
                                                                                                                                 }
                                                                                                                             }

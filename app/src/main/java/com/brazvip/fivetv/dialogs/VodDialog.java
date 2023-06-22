@@ -1,11 +1,13 @@
 package com.brazvip.fivetv.dialogs;
 
 import android.annotation.SuppressLint;
+import android.app.Dialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.os.Bundle;
 import android.os.Message;
 
+import androidx.annotation.NonNull;
 import androidx.fragment.app.DialogFragment;
 
 import com.brazvip.fivetv.R;
@@ -19,7 +21,7 @@ import com.brazvip.fivetv.adapters.EpisodeAdapter;
 import com.brazvip.fivetv.beans.vod.VodChannelBean;
 
 
-public class VodDialog extends DialogFragment implements DialogInterface.OnCancelListener {
+public class VodDialog extends Dialog implements DialogInterface.OnCancelListener {
 
     public static Config.MenuType MENU_TYPE = null;
     public static final int MOVIE = 100;
@@ -27,6 +29,19 @@ public class VodDialog extends DialogFragment implements DialogInterface.OnCance
     public static int currentDialog;
     public String FRAGMENT_TAG = "VodDialog";
     public VodChannelBean channel;
+
+    public VodDialog(Context context) {
+        super(context);
+    }
+
+    public VodDialog(Context context, int themeResId) {
+        super(context, themeResId);
+    }
+
+    @Override
+    public void onCancel(DialogInterface dialogInterface) {
+
+    }
 
     @Retention(RetentionPolicy.SOURCE)
     
@@ -54,8 +69,8 @@ public class VodDialog extends DialogFragment implements DialogInterface.OnCance
     }
 
     public static void dismissAll() {
-        SeriesDialog.hide();
-        MovieDialog.hide();
+        SeriesDialog.Hide();
+        MovieDialog.Hide();
     }
 
     @SuppressLint({"NotifyDataSetChanged"})
@@ -74,7 +89,7 @@ public class VodDialog extends DialogFragment implements DialogInterface.OnCance
     @Override // androidx.fragment.app.DialogInterface$OnCancelListenerC0312n, androidx.fragment.app.Fragment
     public void onCreate(Bundle bundle) {
         super.onCreate(bundle);
-        setStyle(DialogFragment.STYLE_NORMAL, R.style.ThemeSplash);
+        //setStyle(DialogFragment.STYLE_NORMAL, R.style.ThemeSplash);
     }
 
     public void requestVideoPlayback(String str, String str2, String str3, String str4, String str5, Boolean bool) {

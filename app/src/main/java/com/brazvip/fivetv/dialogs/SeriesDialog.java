@@ -16,6 +16,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.brazvip.fivetv.SopApplication;
 import com.brazvip.fivetv.utils.StringUtil;
 import com.brazvip.fivetv.utils.Utils;
 import com.bumptech.glide.Glide;
@@ -49,6 +50,7 @@ public class SeriesDialog extends VodDialog {
     private SeasonAdapter seasonAdapter;
 
     public SeriesDialog(Context context, VodChannelBean vodChannelBean) {
+        super(context, R.style.ThemeSplash);
         this._context = context;
         this.channel = vodChannelBean;
         this.FRAGMENT_TAG = TAG;
@@ -78,9 +80,10 @@ public class SeriesDialog extends VodDialog {
 
     public static SeriesDialog createDialogImpl(Context context, VodChannelBean vodChannelBean) {
         SeriesDialog seriesDialog2 = seriesDialog;
-        if (seriesDialog2 == null || !seriesDialog2.isAdded()) {
+        if (seriesDialog2 == null) { // || !seriesDialog2.isAdded()) {
             SeriesDialog seriesDialog3 = new SeriesDialog(context, vodChannelBean);
             seriesDialog = seriesDialog3;
+            seriesDialog.init();
             return seriesDialog3;
         }
         return seriesDialog;
@@ -102,10 +105,9 @@ public class SeriesDialog extends VodDialog {
         return seriesDialog2;
     }
 
-    public static void hide() {
-        SeriesDialog seriesDialog2 = seriesDialog;
-        if (seriesDialog2 != null) {
-            seriesDialog2.dismiss();
+    public static void Hide() {
+        if (seriesDialog != null) {
+            seriesDialog.dismiss();
         }
     }
 
@@ -239,13 +241,16 @@ public class SeriesDialog extends VodDialog {
         }
         return null;
     }
-    
-    @Override // androidx.fragment.app.Fragment
-    public View onCreateView(LayoutInflater layoutInflater, ViewGroup viewGroup, Bundle bundle) {
+
+    public void init() {
+
+        View inflate = ((LayoutInflater) this._context.getSystemService(Context.LAYOUT_INFLATER_SERVICE))
+                .inflate(R.layout.episode_layout_dialog_v3, null);
+        seriesDialog.addContentView(inflate, new ViewGroup.LayoutParams(-1, -2));
+
         String str;
         String str2;
         String str3;
-        View inflate = layoutInflater.inflate(R.layout.episode_layout_dialog_v3, viewGroup, false);
         int i = R.id._ep_separator1;
         if (((TextView) Utils.m385i(R.id._ep_separator1, inflate)) != null) {
             i = R.id._ep_separator2;
@@ -333,7 +338,7 @@ public class SeriesDialog extends VodDialog {
                                                                     }
                                                                     TextView textView5 = this.binding.f7100f;
                                                                     StringBuilder sb = new StringBuilder();
-                                                                    sb.append(getString(R.string.ContinueStr));
+                                                                    sb.append(SopApplication.getAppContext().getString(R.string.ContinueStr));
                                                                     if (str3 == " - Snull") {
                                                                         str3 = "";
                                                                     }
@@ -346,7 +351,7 @@ public class SeriesDialog extends VodDialog {
                                                                 } else {
                                                                     this.binding.f7100f.setText(R.string.Play);
                                                                 }
-                                                                getDialog().setOnKeyListener(new DialogInterface.OnKeyListener() { // from class: com.brazvip.fivetv.dialog.f
+                                                                this.setOnKeyListener(new DialogInterface.OnKeyListener() { // from class: com.brazvip.fivetv.dialog.f
                                                                     @Override // android.content.DialogInterface.OnKeyListener
                                                                     public final boolean onKey(DialogInterface dialogInterface, int i2, KeyEvent keyEvent) {
                                                                         boolean lambda$onCreateView$1;
@@ -389,7 +394,7 @@ public class SeriesDialog extends VodDialog {
                                                                             //.m4978s(interfaceC3271f)
                                                                             .into(this.binding.f7096b);
                                                                 }
-                                                                return this.binding.f7095a;
+                                                                //return this.binding.f7095a;
                                                             }
                                                         }
                                                     }

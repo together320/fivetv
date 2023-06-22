@@ -200,8 +200,7 @@ public class VodChannelAdapter extends GridRecyclerViewAdapter<VodChannelAdapter
                 }
                 fullChannelBean.restricted = vodChannelBean.restricted;
 
-                VodDialog createDialog = VodDialog.createDialog(VodChannelAdapter.this.context, fullChannelBean, menuType);
-                createDialog.show(VodChannelAdapter.this.fragmentManager, createDialog.FRAGMENT_TAG);
+                VodDialog.createDialog(VodChannelAdapter.this.context, fullChannelBean, menuType).show();
             }
         });
     }
