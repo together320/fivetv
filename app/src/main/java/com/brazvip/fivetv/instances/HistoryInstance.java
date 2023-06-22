@@ -69,12 +69,12 @@ public class HistoryInstance {
         return asList;
     }
 
-    public void addLiveHistory(HistoryBean historyBean) {
+    public static void addLiveHistory(HistoryBean historyBean) {
         liveHistory.offer(historyBean);
         MainActivity.cacheManager.saveObject("liveHistory", liveHistory, 315360000);
     }
 
-    public void addVodHistory(HistoryBean historyBean) {
+    public static void addVodHistory(HistoryBean historyBean) {
         ArrayList arrayList = new ArrayList();
         Iterator<HistoryBean> it = vodHistory.iterator();
         while (it.hasNext()) {
@@ -96,7 +96,7 @@ public class HistoryInstance {
         return m1328a(vodHistory.toArray());
     }
 
-    public void saveUpdate() {
+    public static void saveUpdate() {
         MainActivity.cacheManager.saveObject("liveHistory", liveHistory, 315360000);
         MainActivity.cacheManager.saveObject("vodHistory", vodHistory, 315360000);
     }

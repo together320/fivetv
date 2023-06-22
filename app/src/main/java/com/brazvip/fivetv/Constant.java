@@ -22,11 +22,11 @@ public class Constant {
     public static final int MSG_VOD_LOADED = 5;
     public static final int MSG_PLAYER_LOADED = 10;
     public static final int MSG_PLAYER_REFRESHINFO = 71;
-    public static final int MSG_PLAYER_START = 80;
-    public static final int MSG_PLAYER_PLAY = 81;
+    public static final int MSG_PLAYER_PLAY_VIDEO = 80;
+    public static final int MSG_PLAYER_START_PLAYBACK = 81;
+    public static final int MSG_PLAYER_STOP = 83;
     public static final int MSG_PLAYER_RESUME = 84;
     public static final int MSG_PLAYER_HIDEPROCESSBAR = 96;
-    public static final int MSG_PLAYER_STOP = 99;
     public static final int MSG_PLAYER_CHECKPLAYER = 201;
     public static final int MSG_LIBTV_SERVICE_CONNECTED = 300;
     public static final int MSG_LIVTV_SERVICE_DISCONNECTED = 301;

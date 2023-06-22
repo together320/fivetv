@@ -1,8 +1,6 @@
 package com.brazvip.fivetv.dialogs;
 
 import android.content.Context;
-import android.os.Bundle;
-import android.text.Layout;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -16,7 +14,6 @@ import android.widget.TextView;
 import android.widget.Toast;
 import androidx.cardview.widget.CardView;
 import androidx.constraintlayout.widget.ConstraintLayout;
-import androidx.constraintlayout.widget.ConstraintSet;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -268,7 +265,7 @@ public class MovieDialog extends VodDialog {
         if (str2 != null && !str2.isEmpty()) {
             String title = this.channel.getTitle();
             StringBuilder m6212l = StringUtil.m6212l("");
-            m6212l.append(this.movieSrc.f8661id);
+            m6212l.append(this.movieSrc.id);
             requestVideoPlayback(title, m6212l.toString(), str2, "", "", this.channel.getRestricted());
             return;
         }

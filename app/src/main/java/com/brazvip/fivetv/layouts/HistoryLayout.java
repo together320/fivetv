@@ -34,13 +34,13 @@ public class HistoryLayout extends RelativeLayout implements View.OnFocusChangeL
     public static Config.VIDEO_TYPE lastFocusVideoType;
     public static Handler navHandler;
     public RelativeLayout historyMenu;
-    private boolean inited = false;
-    private HistoryAdapter liveHistoryAdapter;
-    private RelativeLayout liveHistoryPlacehold;
-    public RecyclerView liveHistoryRView;
-    private HistoryAdapter vodHistoryAdapter;
-    private RelativeLayout vodHistoryPlacehold;
-    public RecyclerView vodHistoryRView;
+    public static boolean inited = false;
+    private static HistoryAdapter liveHistoryAdapter;
+    private static RelativeLayout liveHistoryPlacehold;
+    public static RecyclerView liveHistoryRView;
+    private static HistoryAdapter vodHistoryAdapter;
+    private static RelativeLayout vodHistoryPlacehold;
+    public static RecyclerView vodHistoryRView;
 
     public HistoryLayout(Context context) {
         super(context);
@@ -76,17 +76,17 @@ public class HistoryLayout extends RelativeLayout implements View.OnFocusChangeL
 
         MyItemDecoration MyItemDecoration = new MyItemDecoration(15, 15, 15, 15);
         RecyclerView recyclerView = (RecyclerView) findViewById(R.id.history_live_rview);
-        this.liveHistoryRView = recyclerView;
+        liveHistoryRView = recyclerView;
         recyclerView.addItemDecoration(MyItemDecoration);
-        this.liveHistoryRView.setOnFocusChangeListener(this);
+        liveHistoryRView.setOnFocusChangeListener(this);
         RecyclerView recyclerView2 = (RecyclerView) findViewById(R.id.vod_history_rview);
-        this.vodHistoryRView = recyclerView2;
+        vodHistoryRView = recyclerView2;
         recyclerView2.addItemDecoration(MyItemDecoration);
-        this.vodHistoryRView.setOnFocusChangeListener(this);
-        this.liveHistoryPlacehold = (RelativeLayout) findViewById(R.id.live_history_placehold);
-        this.vodHistoryPlacehold = (RelativeLayout) findViewById(R.id.vod_history_placehold);
-        this.liveHistoryPlacehold.setFocusable(true);
-        this.vodHistoryPlacehold.setFocusable(true);
+        vodHistoryRView.setOnFocusChangeListener(this);
+        liveHistoryPlacehold = (RelativeLayout) findViewById(R.id.live_history_placehold);
+        vodHistoryPlacehold = (RelativeLayout) findViewById(R.id.vod_history_placehold);
+        liveHistoryPlacehold.setFocusable(true);
+        vodHistoryPlacehold.setFocusable(true);
         //this.liveHistoryPlacehold.setOnKeyListener(this);
         //this.vodHistoryPlacehold.setOnKeyListener(this);
         loadGroupData();
@@ -105,53 +105,53 @@ public class HistoryLayout extends RelativeLayout implements View.OnFocusChangeL
 //        }
 //    }
 
-    public void loadGroupData() {
+    public static void loadGroupData() {
         HistoryInstance historyInstance;
-        if (!this.inited || (historyInstance = MainActivity.history) == null) {
+        if (!inited || (historyInstance = MainActivity.history) == null) {
             return;
         }
         List<HistoryBean> liveHistory = historyInstance.getLiveHistory();
         Objects.toString(liveHistory != null ? Integer.valueOf(liveHistory.size()) : "null");
         if (liveHistory == null || liveHistory.size() == 0) {
-            this.liveHistoryRView.setVisibility(View.GONE);
-            this.liveHistoryPlacehold.setVisibility(View.VISIBLE);
+            liveHistoryRView.setVisibility(View.GONE);
+            liveHistoryPlacehold.setVisibility(View.VISIBLE);
         } else {
             try {
-                this.liveHistoryAdapter = new HistoryAdapter(liveHistory, Config.VIDEO_TYPE.BSLIVE, mContext);
+                liveHistoryAdapter = new HistoryAdapter(liveHistory, Config.VIDEO_TYPE.BSLIVE, mContext);
             } catch (Exception e) {
                 e.printStackTrace();
             }
-            this.liveHistoryRView.setAdapter(this.liveHistoryAdapter);
+            liveHistoryRView.setAdapter(liveHistoryAdapter);
             if (lastFocusVideoType == null) {
                 lastFocusVideoType = Config.VIDEO_TYPE.BSLIVE;
             }
-            this.liveHistoryRView.setVisibility(View.VISIBLE);
-            this.liveHistoryPlacehold.setVisibility(View.GONE);
+            liveHistoryRView.setVisibility(View.VISIBLE);
+            liveHistoryPlacehold.setVisibility(View.GONE);
         }
         List<HistoryBean> vodHistory = MainActivity.history.getVodHistory();
         Objects.toString(vodHistory != null ? Integer.valueOf(vodHistory.size()) : "null");
         if (vodHistory == null || vodHistory.size() == 0) {
-            this.vodHistoryRView.setVisibility(View.GONE);
-            this.vodHistoryPlacehold.setVisibility(View.VISIBLE);
+            vodHistoryRView.setVisibility(View.GONE);
+            vodHistoryPlacehold.setVisibility(View.VISIBLE);
             return;
         }
         try {
-            this.vodHistoryAdapter = new HistoryAdapter(vodHistory, Config.VIDEO_TYPE.BSVOD, mContext);
+            vodHistoryAdapter = new HistoryAdapter(vodHistory, Config.VIDEO_TYPE.BSVOD, mContext);
         } catch (Exception e2) {
             e2.printStackTrace();
         }
-        this.vodHistoryRView.setAdapter(this.vodHistoryAdapter);
+        vodHistoryRView.setAdapter(vodHistoryAdapter);
         if (lastFocusVideoType == null) {
             lastFocusVideoType = Config.VIDEO_TYPE.BSVOD;
         }
-        this.vodHistoryRView.setVisibility(View.VISIBLE);
-        this.vodHistoryPlacehold.setVisibility(View.GONE);
+        vodHistoryRView.setVisibility(View.VISIBLE);
+        vodHistoryPlacehold.setVisibility(View.GONE);
     }
 
     public void navigateDownFromLiveRv() {
-        RecyclerView recyclerView = this.vodHistoryRView;
+        RecyclerView recyclerView = vodHistoryRView;
         if (recyclerView == null || !recyclerView.requestFocus()) {
-            this.vodHistoryPlacehold.requestFocus();
+            vodHistoryPlacehold.requestFocus();
         }
     }
 
@@ -247,12 +247,12 @@ public class HistoryLayout extends RelativeLayout implements View.OnFocusChangeL
     }
 
     @SuppressLint({"NotifyDataSetChanged"})
-    public void updateDataSet() {
-        HistoryAdapter historyAdapter = this.liveHistoryAdapter;
+    public static void updateDataSet() {
+        HistoryAdapter historyAdapter = liveHistoryAdapter;
         if (historyAdapter != null) {
             historyAdapter.notifyDataSetChanged();
         }
-        HistoryAdapter historyAdapter2 = this.vodHistoryAdapter;
+        HistoryAdapter historyAdapter2 = vodHistoryAdapter;
         if (historyAdapter2 != null) {
             historyAdapter2.notifyDataSetChanged();
         }

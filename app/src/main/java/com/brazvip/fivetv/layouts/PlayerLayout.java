@@ -19,15 +19,21 @@ import android.widget.SeekBar;
 import android.widget.TextView;
 import android.widget.VideoView;
 
+import com.brazvip.fivetv.BSCF;
 import com.brazvip.fivetv.Constant;
 import com.brazvip.fivetv.MainActivity;
 import com.brazvip.fivetv.R;
 import com.brazvip.fivetv.SopApplication;
 import com.brazvip.fivetv.TVCarService;
+import com.brazvip.fivetv.beans.HistoryBean;
+import com.brazvip.fivetv.beans.vod.VodChannelBean;
+import com.brazvip.fivetv.dialogs.PopMsg;
 import com.brazvip.fivetv.instances.AuthInstance;
 import com.brazvip.fivetv.Config;
+import com.brazvip.fivetv.instances.HistoryInstance;
 import com.brazvip.fivetv.instances.VodChannelInstance;
 import com.brazvip.fivetv.utils.PrefUtils;
+import com.brazvip.fivetv.utils.Utils;
 import com.google.android.exoplayer2.ExoPlayer;
 import com.google.android.exoplayer2.MediaItem;
 import com.google.android.exoplayer2.PlaybackException;
@@ -51,32 +57,37 @@ import org.greenrobot.eventbus.ThreadMode;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+
 import io.binstream.libtvcar.Libtvcar;
 
 public class PlayerLayout extends FrameLayout {
     public static final String TAG = "PlayerLayout";
+    public static Context context;
     public static TVCore mTVCore = null;
-    public static StyledPlayerView mPlayerView = null;
-    public static VideoView mVideoView = null;
+    public static StyledPlayerView exoPlayerView = null;
+    public static VideoView SYS_PLAYER = null;
     public static Handler mMsgHandler = null;
-    public static ExoPlayer mExoPlayer = null;
+    public static ExoPlayer EXO_PLAYER = null;
 
-    private TextView mProgramNameText = null;
-    private TextView mCurrentTimeText = null;
-    private TextView mDurationTimeText = null;
-    private TextView mDlRateText = null;
-    public SeekBar mPlayerSeekBar;
-    public RelativeLayout mDlLayout;
-    public RelativeLayout mPlayerProcessBar;
-    public ProgressBar mLoadingProgress;
-    public ImageView mPlayerStatusImage;
+    private TextView programName = null;
+    private TextView playerCurrentTime = null;
+    private TextView playerDurationTime = null;
+    private TextView dlRate = null;
+    public SeekBar playerSeekbar;
+    public RelativeLayout dlLayout;
+    public RelativeLayout playerProcessBar;
+    public ProgressBar loadingProgress;
+    public ImageView playerStatus;
+    public FrameLayout rootFrameLayout;
 
     public static int mPlayerMode = 1;   //0 - Android Media Player, 1 - ExoPlayer
     private int mBuffer;
     private int mDlRate;
     private int mTmPlayerConn;
     private long mMPCheckTime = 0;
-    private static String playbackUrl;
     public static final long MP_START_CHECK_INTERVAL = 8000000000L;
     public static boolean mIsEnded = true;
     public static int vod_ecode = 0;
@@ -124,16 +135,16 @@ public class PlayerLayout extends FrameLayout {
             public void handleMessage(Message message) {
                 switch (message.what) {
                     case Constant.MSG_PLAYER_REFRESHINFO:
-                        mPlayerSeekBar.setProgress(mBuffer);
-                        mDurationTimeText.setText(mBuffer + "/100");
+                        playerSeekbar.setProgress(mBuffer);
+                        playerDurationTime.setText(mBuffer + "/100");
                         SetDownloadRate(PrefUtils.m2251a(mDlRate));
                         break;
-                    case Constant.MSG_PLAYER_PLAY:
+                    case Constant.MSG_PLAYER_START_PLAYBACK:
                         mCurrentVideoPath = message.getData().getString("videoPath");
                         startPlaying(mCurrentVideoPath);
                         break;
                     case Constant.MSG_PLAYER_HIDEPROCESSBAR:
-                        mPlayerProcessBar.setVisibility(View.GONE);
+                        playerProcessBar.setVisibility(View.GONE);
                         break;
                     case Constant.MSG_PLAYER_CHECKPLAYER:
                         checkPlayer();
@@ -152,29 +163,30 @@ public class PlayerLayout extends FrameLayout {
     }
 
     private void initComponents() {
-        this.mProgramNameText = (TextView) findViewById(R.id.program_name);
-        this.mDlLayout = (RelativeLayout) findViewById(R.id.dl_layout);
-        this.mDlRateText = (TextView) findViewById(R.id.dl_rate);
-        this.mDlLayout.setVisibility(View.GONE);
-        this.mLoadingProgress = (ProgressBar) findViewById(R.id.loading_progress);
-        this.mPlayerProcessBar = (RelativeLayout) findViewById(R.id.player_process_bar);
-        this.mPlayerProcessBar.setVisibility(View.GONE);
-        this.mCurrentTimeText = (TextView) findViewById(R.id.player_current_time);
-        this.mDurationTimeText = (TextView) findViewById(R.id.player_duration_time);
-        this.mPlayerSeekBar = (SeekBar) findViewById(R.id.player_seekbar);
-        this.mPlayerStatusImage = (ImageView) findViewById(R.id.player_status);
+        this.programName = (TextView) findViewById(R.id.program_name);
+        this.dlLayout = (RelativeLayout) findViewById(R.id.dl_layout);
+        this.dlRate = (TextView) findViewById(R.id.dl_rate);
+        this.dlLayout.setVisibility(View.GONE);
+        this.loadingProgress = (ProgressBar) findViewById(R.id.loading_progress);
+        this.playerProcessBar = (RelativeLayout) findViewById(R.id.player_process_bar);
+        this.playerProcessBar.setVisibility(View.GONE);
+        this.playerCurrentTime = (TextView) findViewById(R.id.player_current_time);
+        this.playerDurationTime = (TextView) findViewById(R.id.player_duration_time);
+        this.playerSeekbar = (SeekBar) findViewById(R.id.player_seekbar);
+        this.playerStatus = (ImageView) findViewById(R.id.player_status);
+        rootFrameLayout = this.findViewById(R.id.root);
     }
 
     private void initExoPlayer() {
-        mPlayerView = findViewById(R.id.exoPlayerView);
+        exoPlayerView = findViewById(R.id.exoPlayerView);
         //mPlayerView.setOnKeyListener(this);
         //mPlayerView.setOnClickListener(this);
         //mPlayerView.setOnTouchListener(this);
-        mPlayerView.setClickable(true);
-        mPlayerView.setFocusable(true);
-        mPlayerView.setControllerAutoShow(false);
-        mPlayerView.setUseController(false);
-        mPlayerView.setKeepScreenOn(true);
+        exoPlayerView.setClickable(true);
+        exoPlayerView.setFocusable(true);
+        exoPlayerView.setControllerAutoShow(false);
+        exoPlayerView.setUseController(false);
+        exoPlayerView.setKeepScreenOn(true);
         //ExoPlayer 2.11.3
 //        DefaultBandwidthMeter bandwidthMeter = new DefaultBandwidthMeter.Builder(SopApplication.getAppContext()).build();
 //        DefaultTrackSelector defaultTrackSelector = new DefaultTrackSelector(SopApplication.getAppContext());
@@ -183,9 +195,9 @@ public class PlayerLayout extends FrameLayout {
 //        //renderersFactory.setExtensionRendererMode(DefaultRenderersFactory.EXTENSION_RENDERER_MODE_ON);
 //        Looper looper = PrefUtils.getLooper();
 //        AnalyticsCollector analyticsCollector = new AnalyticsCollector(Clock.DEFAULT);
-        mExoPlayer = new ExoPlayer.Builder(SopApplication.getAppContext()).build();
+        EXO_PLAYER = new ExoPlayer.Builder(SopApplication.getAppContext()).build();
 
-        mExoPlayer.addListener(new Player.Listener() {
+        EXO_PLAYER.addListener(new Player.Listener() {
 
             @Override
             public void onVideoSizeChanged(VideoSize videoSize) {
@@ -227,7 +239,7 @@ public class PlayerLayout extends FrameLayout {
             public void onPlayWhenReadyChanged(boolean playWhenReady, int reason) {
                 if (playWhenReady) {
                     hideProcessBarWithDelay(5000);
-                    mLoadingProgress.setVisibility(View.GONE);
+                    loadingProgress.setVisibility(View.GONE);
                 }
             }
 
@@ -253,7 +265,7 @@ public class PlayerLayout extends FrameLayout {
 
             @Override
             public void onPlayerError(PlaybackException error) {
-                mExoPlayer.stop();
+                EXO_PLAYER.stop();
                 mMPCheckTime = System.nanoTime();
             }
 
@@ -268,12 +280,12 @@ public class PlayerLayout extends FrameLayout {
             }
         });
 
-        mPlayerView.setPlayer(mExoPlayer);
+        exoPlayerView.setPlayer(EXO_PLAYER);
         //mPlayerView.setResizeMode(AspectRatioFrameLayout.RESIZE_MODE_FILL);
     }
 
     public void hideProcessBarWithDelay(int delay) {
-        this.mPlayerProcessBar.setVisibility(View.VISIBLE);
+        this.playerProcessBar.setVisibility(View.VISIBLE);
         if (delay > 0) {
             mMsgHandler.removeMessages(Constant.MSG_PLAYER_HIDEPROCESSBAR);
             mMsgHandler.sendEmptyMessageDelayed(Constant.MSG_PLAYER_HIDEPROCESSBAR, delay);
@@ -332,9 +344,9 @@ public class PlayerLayout extends FrameLayout {
                 if (isOk) {
                     Message msg = new Message();
                     Bundle params = new Bundle();
-                    params.putString("videoPath", playbackUrl);
+                    params.putString("videoPath", mPlaybackUrl);
 
-                    msg.what = Constant.MSG_PLAYER_PLAY;
+                    msg.what = Constant.MSG_PLAYER_START_PLAYBACK;
                     msg.setData(params);
                     mMsgHandler.sendMessage(msg);
                     mIsEnded = false;
@@ -382,7 +394,7 @@ public class PlayerLayout extends FrameLayout {
         } else if (key.equals("onPrepared") && code == 1490401084) { //2 cond_6
             String url = obj.optString("http", "");
             if (!url.isEmpty()) {
-                playbackUrl = url;
+                mPlaybackUrl = url;
                 return true;
             }
             return false;
@@ -439,7 +451,7 @@ public class PlayerLayout extends FrameLayout {
         Message msg = new Message();
         Bundle data = new Bundle();
         data.putString("videoPath", url);
-        msg.what = Constant.MSG_PLAYER_PLAY;
+        msg.what = Constant.MSG_PLAYER_START_PLAYBACK;
         msg.setData(data);
         mMsgHandler.sendMessage(msg);
     }
@@ -450,16 +462,16 @@ public class PlayerLayout extends FrameLayout {
         if (mBsMode == Config.BS_MODE.BSPALYBACK || mBsMode == Config.BS_MODE.BSVOD) {
             mMsgHandler.sendEmptyMessage(Constant.MSG_PLAYER_CHECKPLAYER);
             SetDownloadRate(PrefUtils.m2251a(event.download_rate));
-            if (mPlayerMode == 1 && mExoPlayer.getPlayWhenReady()) {
-                this.mPlayerCurrentPos = (int) mExoPlayer.getCurrentPosition();
-                this.mPlayerDuration = (int) mExoPlayer.getDuration();
-                int progress = mExoPlayer.getBufferedPercentage();
+            if (mPlayerMode == 1 && EXO_PLAYER.getPlayWhenReady()) {
+                this.mPlayerCurrentPos = (int) EXO_PLAYER.getCurrentPosition();
+                this.mPlayerDuration = (int) EXO_PLAYER.getDuration();
+                int progress = EXO_PLAYER.getBufferedPercentage();
                 //String log = "EXO_PLAYER currentPosition " + f16889rb + " duration " + f16891sb;
                 if (mPlayerDuration > 0) {
-                    this.mCurrentTimeText.setText(PrefUtils.m2253a(mPlayerCurrentPos / 1000));
-                    this.mDurationTimeText.setText(PrefUtils.m2253a(mPlayerDuration / 1000));
-                    this.mPlayerSeekBar.setProgress((mPlayerCurrentPos * 100) / mPlayerDuration);
-                    this.mPlayerSeekBar.setSecondaryProgress(progress);
+                    this.playerCurrentTime.setText(PrefUtils.m2253a(mPlayerCurrentPos / 1000));
+                    this.playerDurationTime.setText(PrefUtils.m2253a(mPlayerDuration / 1000));
+                    this.playerSeekbar.setProgress((mPlayerCurrentPos * 100) / mPlayerDuration);
+                    this.playerSeekbar.setSecondaryProgress(progress);
                     //String log = "EXO_PLAYER buffer: " + progress;
                 }
             }
@@ -512,7 +524,7 @@ public class PlayerLayout extends FrameLayout {
             Message msg = new Message();
             Bundle params = new Bundle();
             params.putString("videoPath", videoURL);
-            msg.what = Constant.MSG_PLAYER_PLAY;
+            msg.what = Constant.MSG_PLAYER_START_PLAYBACK;
             msg.setData(params);
             mMsgHandler.sendMessage(msg);
         } else {
@@ -521,35 +533,35 @@ public class PlayerLayout extends FrameLayout {
         mIsEnded = true;
         stopVideoPlaying();
         showPlayerUI();
-        mLoadingProgress.setVisibility(View.VISIBLE);
+        loadingProgress.setVisibility(View.VISIBLE);
         if (mBsMode == Config.BS_MODE.BSPALYBACK) {
-            mCurrentTimeText.setText("00:00");
-            mDurationTimeText.setText("00:00");
+            playerCurrentTime.setText("00:00");
+            playerDurationTime.setText("00:00");
             videoName = SopApplication.getAppContext().getString(R.string.video_play_back) + ": " + videoName;
         } else if (mBsMode == Config.BS_MODE.BSVOD) {
-            mCurrentTimeText.setText("00:00");
-            mDurationTimeText.setText("00:00");
+            playerCurrentTime.setText("00:00");
+            playerDurationTime.setText("00:00");
             videoName = SopApplication.getAppContext().getString(R.string.video_vod) + ": " + videoName;
         } else if (mBsMode == Config.BS_MODE.BSLIVE) {
-            mCurrentTimeText.setText(R.string.buffer);
-            mDurationTimeText.setText("0/100");
+            playerCurrentTime.setText(R.string.buffer);
+            playerDurationTime.setText("0/100");
             videoName = SopApplication.getAppContext().getString(R.string.video_live) + ": " + videoName;
         } else if (mBsMode == Config.BS_MODE.STATIC) {
             videoName = SopApplication.getAppContext().getString(R.string.video_vod) + ": " + videoName;
         }
-        mProgramNameText.setText(videoName);
-        mPlayerSeekBar.setProgress(0);
-        mPlayerSeekBar.setSecondaryProgress(0);
+        programName.setText(videoName);
+        playerSeekbar.setProgress(0);
+        playerSeekbar.setSecondaryProgress(0);
         SetDownloadRate("0B/S");
         hideProcessBarWithDelay(0);
     }
 
     public static boolean isPlaying() {
         if (mPlayerMode == 0) {
-            return (mVideoView != null && mVideoView.isPlaying());
+            return (SYS_PLAYER != null && SYS_PLAYER.isPlaying());
         } else {
-            return mExoPlayer != null && mExoPlayer.getPlayWhenReady() &&
-                    mExoPlayer.getPlaybackState() == Player.STATE_READY; //3
+            return EXO_PLAYER != null && EXO_PLAYER.getPlayWhenReady() &&
+                    EXO_PLAYER.getPlaybackState() == Player.STATE_READY; //3
         }
     }
 
@@ -560,10 +572,10 @@ public class PlayerLayout extends FrameLayout {
         }
         if (mBsMode == Config.BS_MODE.BSLIVE && mTmPlayerConn > 15 && mBuffer > 50) {
             if (mPlayerMode == 0) {
-                mVideoView.stopPlayback();
+                SYS_PLAYER.stopPlayback();
             }
             if (mPlayerMode == 1) {
-                mExoPlayer.setPlayWhenReady(false);
+                EXO_PLAYER.setPlayWhenReady(false);
             }
         }
         if (System.nanoTime() > mMPCheckTime) {
@@ -579,32 +591,32 @@ public class PlayerLayout extends FrameLayout {
     public void resumePlayer() {
         //String text = "resumePlayer isPlaying:" + isPlaying();
         if (mPlayerMode == 0) {
-            if (mVideoView != null) {
-                if (mVideoView.isPlaying()) {
-                    mVideoView.stopPlayback();
+            if (SYS_PLAYER != null) {
+                if (SYS_PLAYER.isPlaying()) {
+                    SYS_PLAYER.stopPlayback();
                 }
-                mVideoView.setVideoPath(this.mCurrentVideoPath);
-                mVideoView.start();
+                SYS_PLAYER.setVideoPath(this.mCurrentVideoPath);
+                SYS_PLAYER.start();
                 if (this.mPlayerSeekPos > 0) {
                     //String text = "resumePlayer seek to:" + mPlayerSeekPos;
-                    mVideoView.seekTo(this.mPlayerSeekPos);
+                    SYS_PLAYER.seekTo(this.mPlayerSeekPos);
                 }
             }
         } else
-            mExoPlayer.setPlayWhenReady(true);
+            EXO_PLAYER.setPlayWhenReady(true);
     }
 
     public void SetDownloadRate(String text) {
-        if (this.mDlLayout.getVisibility() == View.GONE) {
-            this.mDlLayout.setVisibility(View.VISIBLE);
+        if (this.dlLayout.getVisibility() == View.GONE) {
+            this.dlLayout.setVisibility(View.VISIBLE);
         }
-        this.mDlRateText.setText(text);
+        this.dlRate.setText(text);
     }
 
     public void startPlaying(String url) {
         this.mMPCheckTime = System.nanoTime() + MP_START_CHECK_INTERVAL;
-        if (this.mPlayerStatusImage.getVisibility() == View.VISIBLE) {
-            this.mPlayerStatusImage.setVisibility(View.GONE);
+        if (this.playerStatus.getVisibility() == View.VISIBLE) {
+            this.playerStatus.setVisibility(View.GONE);
         }
         mIsEnded = false;
         //DefaultDataSourceFactory factory = new DefaultDataSourceFactory(SopApplication.getAppContext(), "tvbus", (TransferListener) null);
@@ -616,7 +628,7 @@ public class PlayerLayout extends FrameLayout {
         if (mPlayerMode == 1) {
             if (url.indexOf(".m3u8") >= 0) {
                 //mExoPlayer.prepare(new HlsMediaSource.Factory(factory).createMediaSource(Uri.parse(url)));
-                mExoPlayer.setMediaSource(new HlsMediaSource.Factory(factory).createMediaSource(MediaItem.fromUri(url)));
+                EXO_PLAYER.setMediaSource(new HlsMediaSource.Factory(factory).createMediaSource(MediaItem.fromUri(url)));
                 videoType = "-HLS";
             } else {
                 //mExoPlayer.prepare(new ExtractorMediaSource.Factory(factory).createMediaSource(Uri.parse(url)));
@@ -625,34 +637,34 @@ public class PlayerLayout extends FrameLayout {
                 httpFactory.setUserAgent("tvbus");
                 httpFactory.setTransferListener(null);
 
-                mExoPlayer.setMediaSource(new ProgressiveMediaSource.Factory(httpFactory, TsExtractor.FACTORY).createMediaSource(MediaItem.fromUri(url)));
+                EXO_PLAYER.setMediaSource(new ProgressiveMediaSource.Factory(httpFactory, TsExtractor.FACTORY).createMediaSource(MediaItem.fromUri(url)));
             }
-            mExoPlayer.prepare();
-            mExoPlayer.setPlayWhenReady(true);
+            EXO_PLAYER.prepare();
+            EXO_PLAYER.setPlayWhenReady(true);
         } else if (mPlayerMode == 0) {
             videoType = url.indexOf(".m3u8") >= 0 ? "-HLS" : "-MPEGTS";
-            mVideoView.setVideoURI(Uri.parse(url));
+            SYS_PLAYER.setVideoURI(Uri.parse(url));
             playerType = "SYS";
         }
     }
 
     public void stopVideoPlaying() {
-        if (mPlayerMode == 0 && mVideoView != null) {
-            mVideoView.stopPlayback();
-            mVideoView.setVisibility(View.INVISIBLE);
-        } else if (mPlayerView != null) {
-            mExoPlayer.stop();
-            mPlayerView.setVisibility(View.INVISIBLE);
+        if (mPlayerMode == 0 && SYS_PLAYER != null) {
+            SYS_PLAYER.stopPlayback();
+            SYS_PLAYER.setVisibility(View.INVISIBLE);
+        } else if (exoPlayerView != null) {
+            EXO_PLAYER.stop();
+            exoPlayerView.setVisibility(View.INVISIBLE);
         }
     }
 
     private void showPlayerUI() {
         if (mPlayerMode == 0) {
-            if (mVideoView != null)
-                mVideoView.setVisibility(View.VISIBLE);
+            if (SYS_PLAYER != null)
+                SYS_PLAYER.setVisibility(View.VISIBLE);
         } else {
-            if (mPlayerView != null)
-                mPlayerView.setVisibility(View.VISIBLE);
+            if (exoPlayerView != null)
+                exoPlayerView.setVisibility(View.VISIBLE);
         }
     }
 
@@ -668,5 +680,348 @@ public class PlayerLayout extends FrameLayout {
         if (text.equals("")) {
             return;
         }
+    }
+
+    public static int SP_PLAYER = Config.DEFAULT_PLAYER;
+    public Config.VIDEO_TYPE videoType;
+    private Config.MenuType menuType;
+    public String channelId;
+    public String vodSubTitlesId = null;
+    public String mPlaybackUrl = null;
+    public long systemStartTimeVod = 0;
+    public static int VOD_AUTH_ECODE = 0;
+    public List<VodChannelBean.Episode.SubtitlesBean> subtitles = null;
+    public String subtitleUrl = null;
+    public static int subtitleIndex = 0;
+
+    public static boolean userPlayVideo = true;
+
+    public HistoryBean mHistoryBean;
+    public int lastCurrentPosition = 0;
+    public int position = 0;
+    public int duration = 0;
+    public static long playerRestartCount = 0;
+
+    public static long f10865P = 0;
+    public static long f10871V = 0;
+    public static long f10873X = 0;
+    public static long f10874Y = 0;
+    public static long f10875Z = 0;
+    public static long peers = 0;
+
+    public void saveHistoryUpdate() {
+        int i;
+        HistoryBean historyBean;
+        Config.VIDEO_TYPE video_type;
+        if (this.mHistoryBean != null) {
+            int i2 = this.lastCurrentPosition;
+            if (i2 > 0 && (i = this.duration) > 0 && ((video_type = (historyBean = this.mHistoryBean).videoType) == Config.VIDEO_TYPE.PLAYBACK || video_type == Config.VIDEO_TYPE.BSVOD)) {
+                historyBean.duration = i;
+                historyBean.lastPosition = i2;
+            }
+            HistoryInstance.saveUpdate();
+            HistoryLayout.updateDataSet();
+        }
+    }
+
+    public final void showError(final int errCode) {
+        String strError = "";
+        if (errCode == Config.Errors.CHANNEL_OFFLINE.code) {
+            strError = context.getString(R.string.channel_offline);
+        }
+        else if (errCode == Config.Errors.NEED_AUTH.code) {
+            strError = context.getString(R.string.user_no_login);
+        }
+        else if (errCode == Config.Errors.MULTIPLE_LOGIN.code) {
+            strError = context.getString(R.string.user_repeated_logon);
+        }
+        if (!strError.equals("")) {
+            final StringBuilder sb = new StringBuilder();
+            sb.append(strError);
+            sb.append(" (");
+            sb.append(errCode);
+            sb.append(")");
+            new PopMsg(context.getApplicationContext(), context.getString(R.string.errorTitle), sb.toString()).showAtLocation((View)this.rootFrameLayout, 17, 0, 0);
+        }
+    }
+
+    public final void playVideo(final Bundle bundle) {
+        final String string = bundle.getString("chid");
+        final String string2 = bundle.getString("name");
+        final String string3 = bundle.getString("subId");
+        final String string4 = bundle.getString("subTitle");
+        final String string5 = bundle.getString("url");
+        final String string6 = bundle.getString("season");
+        final String string7 = bundle.getString("episode");
+        final boolean boolean1 = bundle.getBoolean("restricted");
+        this.videoType = Config.VIDEO_TYPE.valueOf(bundle.getString("type"));
+        this.menuType = Config.MenuType.valueOf(bundle.getString("menuType"));
+        this.channelId = string;
+        this.vodSubTitlesId = string3;
+        this.subtitles = null;
+        this.subtitleUrl = null;
+        if (this.videoType == Config.VIDEO_TYPE.BSVOD) {
+            final VodChannelBean fullChannelBean = VodChannelInstance.getFullChannelBean(string);
+            this.subtitles = null;
+            if (fullChannelBean != null) {
+                final List<VodChannelBean.Episode> episodes = fullChannelBean.getEpisodes();
+                if (episodes != null) {
+                    for (final VodChannelBean.Episode episode : episodes) {
+                        if (episode.id == Integer.parseInt(this.vodSubTitlesId)) {
+                            final List<VodChannelBean.Episode.SubtitlesBean> subtitle = episode.getSubtitles();
+                            if (subtitle != null && subtitle.size() != 0) {
+                                this.subtitles = new ArrayList();
+                                final VodChannelBean.Episode.SubtitlesBean subtitlesBean = new VodChannelBean.Episode.SubtitlesBean();
+                                subtitlesBean.code = "of_OF";
+                                subtitlesBean.url = null;
+                                this.subtitles.add(0, subtitlesBean);
+                                this.subtitles.addAll(subtitle);
+                            }
+                            break;
+                        }
+                    }
+                }
+            }
+            this.subtitleUrl = this.getDefaultSubtitleUrl();
+        }
+        userPlayVideo = true;
+        stopVideoPlaying();
+        showPlayerUI();
+
+        final HistoryBean mHistoryBean = new HistoryBean();
+        this.mHistoryBean = mHistoryBean;
+        mHistoryBean.channelId = string;
+        final Config.VIDEO_TYPE videoType = this.videoType;
+        if ((videoType == Config.VIDEO_TYPE.BSLIVE || videoType == Config.VIDEO_TYPE.PLAYBACK) && string != null) {
+            try {
+                mHistoryBean.chid = Integer.parseInt(string);
+            }
+            catch (final Exception ex) {}
+        }
+        final HistoryBean mHistoryBean2 = this.mHistoryBean;
+        mHistoryBean2.name = string2;
+        mHistoryBean2.subId = string3;
+        mHistoryBean2.subTitle = string4;
+        mHistoryBean2.Season = string6;
+        mHistoryBean2.Episode = string7;
+        mHistoryBean2.date = new Date();
+        this.mHistoryBean.videoType = this.videoType;
+        String text = string4;
+        if (!"".equals(string6)) {
+            text = string4;
+            if (!"".equals(string7)) {
+                final StringBuilder sb = new StringBuilder();
+                sb.append("S");
+                sb.append(string6);
+                sb.append("E");
+                sb.append(string7);
+                sb.append(" - ");
+                sb.append(string4);
+                text = sb.toString();
+            }
+        }
+        final HistoryBean mHistoryBean3 = this.mHistoryBean;
+        final Config.VIDEO_TYPE videoType2 = mHistoryBean3.videoType;
+        final Config.VIDEO_TYPE playback = Config.VIDEO_TYPE.PLAYBACK;
+        if (videoType2 != playback && videoType2 != Config.VIDEO_TYPE.BSVOD) {
+            if (videoType2 == Config.VIDEO_TYPE.BSLIVE) {
+                if (!boolean1) {
+                    HistoryInstance.addLiveHistory(mHistoryBean3);
+                }
+            }
+        }
+        else {
+            final HistoryBean getLastHistory = HistoryInstance.GetLastHistory(string, string3);
+            int lastPosition;
+            if (getLastHistory == null || (lastPosition = getLastHistory.lastPosition) <= 0) {
+                lastPosition = 0;
+            }
+            int duration;
+            if (getLastHistory == null || (duration = getLastHistory.duration) <= 0) {
+                duration = 0;
+            }
+            final HistoryBean mHistoryBean4 = this.mHistoryBean;
+            mHistoryBean4.lastPosition = lastPosition;
+            mHistoryBean4.duration = duration;
+            if (lastPosition > 0) {
+                //sendShowToastEvent(SopApplication.getSopContext().getString(2131820563), Config.f8899S);
+                //SopCast.handler.sendEmptyMessageDelayed(260, Config.f8899S * 1000L);
+            }
+            if (!boolean1) {
+                HistoryInstance.addVodHistory(this.mHistoryBean);
+            }
+        }
+        HistoryLayout.updateDataSet();
+        if (string5 != null && !string5.equals("")) {
+            this.mPlaybackUrl = null;
+            final Config.VIDEO_TYPE videoType3 = this.videoType;
+            final Config.VIDEO_TYPE bslive = Config.VIDEO_TYPE.BSLIVE;
+            Label_1086: {
+                Config.Errors errors;
+                Message message;
+                if (videoType3 == bslive) {
+                    errors = Config.Errors.MULTIPLE_LOGIN;
+                    if (VOD_AUTH_ECODE != errors.code) {
+                        this.systemStartTimeVod = Long.MAX_VALUE;
+                        mTVCore.start(string5);
+                        break Label_1086;
+                    }
+                    message = new Message();
+                }
+                else if ((videoType3 == playback || videoType3 == Config.VIDEO_TYPE.BSVOD) && Config.enableVodFragment) {
+                    errors = Config.Errors.MULTIPLE_LOGIN;
+                    if (VOD_AUTH_ECODE != errors.code) {
+                        if (mTVCore != null) {
+                            mTVCore.stop();
+                        }
+                        final int intValue = Utils.getIntegerValue(Config.SERVER, 0);
+                        String replaceFirst = string5;
+                        if (intValue != 0) {
+                            final StringBuilder sb2 = new StringBuilder();
+                            sb2.append("-b");
+                            sb2.append(intValue);
+                            sb2.append(".");
+                            replaceFirst = string5.replaceFirst("\\.", sb2.toString());
+                        }
+                        this.position = 0;
+                        this.lastCurrentPosition = 0;
+                        this.duration = 0;
+                        Libtvcar.start(replaceFirst);
+                        break Label_1086;
+                    }
+                    message = new Message();
+                }
+                else {
+                    if (videoType3 != Config.VIDEO_TYPE.f8646d) {
+                        return;
+                    }
+                    final Message message2 = new Message();
+                    final Bundle data = new Bundle();
+                    data.putString("videoPath", string5);
+                    message2.what = 81;
+                    message2.setData(data);
+                    MainActivity.mMsgHandler.sendMessage(message2);
+                    break Label_1086;
+                }
+                message.what = 99;
+                message.arg1 = errors.code;
+                MainActivity.mMsgHandler.sendMessage(message);
+                return;
+            }
+            ((View)this.loadingProgress).setVisibility(View.VISIBLE);
+            final Config.VIDEO_TYPE videoType4 = this.videoType;
+            Label_1292: {
+                StringBuilder sb4;
+                if (videoType4 == playback) {
+                    this.playerCurrentTime.setText("00:00");
+                    this.playerDurationTime.setText("00:00");
+                    final StringBuilder sb3 = new StringBuilder();
+                    sb3.append(context.getString(R.string.video_play_back));
+                    sb3.append(": ");
+                    sb3.append(string2);
+                    sb3.append(" - ");
+                    sb3.append(text);
+                    sb4 = sb3;
+                }
+                else {
+                    if (videoType4 == Config.VIDEO_TYPE.BSVOD) {
+                        this.playerCurrentTime.setText("00:00");
+                        this.playerDurationTime.setText("00:00");
+                        break Label_1292;
+                    }
+                    if (videoType4 != bslive) {
+                        text = string2;
+                        break Label_1292;
+                    }
+                    this.playerCurrentTime.setText(R.string.buffer);
+                    this.playerDurationTime.setText((CharSequence)"0/100");
+                    sb4 = new StringBuilder();
+                    sb4.append(context.getString(R.string.video_live));
+                    sb4.append(": ");
+                    sb4.append(string2);
+                }
+                text = sb4.toString();
+            }
+            programName.setText((CharSequence)text);
+            playerSeekbar.setProgress(0);
+            playerSeekbar.setSecondaryProgress(0);
+            this.updateDlRate("0B/S");
+            this.showProcessBar(0);
+            MainActivity.mMsgHandler.sendEmptyMessage(100);
+//            if (this.videoType == Config.VIDEO_TYPE.BSVOD && this.subtitles != null) {
+//                this.showSubtitle();
+//            }
+//            else {
+//                ((View)this.subtitleLayout).setVisibility(8);
+//            }
+            playerRestartCount = 0L;
+            this.systemStartTimeVod = Long.MAX_VALUE;
+            f10865P = System.currentTimeMillis();
+            f10871V = 0L;
+            peers = 0L;
+            f10873X = 0L;
+            f10874Y = 0L;
+            f10875Z = 0L;
+//            this.bufferView.setText((CharSequence)"0");
+//            this.drView.setText((CharSequence)"0");
+//            this.urView.setText((CharSequence)"0");
+//            this.totalView.setText((CharSequence)"0");
+//            this.peersView.setText((CharSequence)"0");
+//            this.retvView.setText((CharSequence)"0");
+//            this.prepareView.setText((CharSequence)"0.0/0.0");
+//            this.durationView.setText((CharSequence)"0D 00:00:00");
+        }
+    }
+
+    public void showProcessBar(int i) {
+        this.playerProcessBar.setVisibility(View.VISIBLE);
+        if (i > 0) {
+            MainActivity.mMsgHandler.removeMessages(96);
+            MainActivity.mMsgHandler.sendEmptyMessageDelayed(96, i);
+        }
+    }
+
+    public final void updateDlRate(String str) {
+        if (Config.showDownloadRate) {
+            if (this.dlLayout.getVisibility() == View.GONE) {
+                this.dlLayout.setVisibility(View.VISIBLE);
+            }
+            this.dlRate.setText(str);
+        }
+    }
+
+    public final String getDefaultSubtitleUrl() {
+        VodChannelBean.Episode.SubtitlesBean subtitlesBean;
+        if (this.subtitles == null) {
+            return null;
+        }
+        String str = Config.DEFAULT_CHOOSED_LANG;
+        String value = Utils.getValue(str, BSCF.language + "_\n" + BSCF.countryCode);
+        String[] strArr = {value, BSCF.language + "_\n" + BSCF.countryCode};
+        int i = 0;
+        loop0: while (true) {
+            if (i >= 2) {
+                String value2 = Utils.getValue(Config.DEFAULT_CHOOSED_AUDIO_LANG, BSCF.language);
+                for (int i2 = 0; i2 < this.subtitles.size(); i2++) {
+                    if (this.subtitles.get(i2).getCode().equals(value2)) {
+                        this.subtitles.get(i2).getCode();
+                        subtitleIndex = i2;
+                        subtitlesBean = this.subtitles.get(i2);
+                    }
+                }
+                return null;
+            }
+            String str2 = strArr[i];
+            for (int i3 = 0; i3 < this.subtitles.size(); i3++) {
+                if (this.subtitles.get(i3).getCode().contains(str2)) {
+                    this.subtitles.get(i3).getCode();
+                    subtitleIndex = i3;
+                    subtitlesBean = this.subtitles.get(i3);
+                    break loop0;
+                }
+            }
+            i++;
+        }
+        return subtitlesBean.getUrl();
     }
 }

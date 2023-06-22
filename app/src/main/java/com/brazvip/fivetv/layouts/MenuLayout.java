@@ -36,7 +36,6 @@ import java.util.Arrays;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Set;
 
 public class MenuLayout extends RelativeLayout {
     public ListView mGroupListView;
@@ -511,7 +510,7 @@ public class MenuLayout extends RelativeLayout {
                         String playbackUrl = epg.getPlaybackUrl();
                         if ((playbackUrl != null) && !playbackUrl.equals("")) {
                             Message msg = new Message();
-                            msg.what = Constant.MSG_PLAYER_START;
+                            msg.what = Constant.MSG_PLAYER_START_PLAYBACK;
                             Bundle bundle = new Bundle();
                             bundle.putString("url", playbackUrl);
                             bundle.putString("name", epg.getName());
@@ -571,7 +570,7 @@ public class MenuLayout extends RelativeLayout {
 //            return;
 //        }
         Message msg = new Message();
-        msg.what = Constant.MSG_PLAYER_START;
+        msg.what = Constant.MSG_PLAYER_PLAY_VIDEO;
         Bundle params = new Bundle();
         params.putString("url", channel.getSources().get(0).getAddress());
         if (channel.getSid() > 0) {

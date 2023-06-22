@@ -15,7 +15,6 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.brazvip.fivetv.Config;
 import com.brazvip.fivetv.utils.StringUtil;
 import com.bumptech.glide.Glide;
-import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.brazvip.fivetv.R;
 import com.lzy.okgo.cookie.SerializableCookie;
 import com.lzy.okgo.model.Progress;
@@ -87,7 +86,7 @@ public class EpisodeAdapter extends CustomItemAdapter<EpisodeAdapter.EpisodeView
         }
         episodeViewHolder.episodeName.setText(sb);
         episodeViewHolder.episodeDescription.setText(episode.overview);
-        HistoryBean GetLastHistory = HistoryInstance.GetLastHistory(this.channelId, String.valueOf(episode.f8661id));
+        HistoryBean GetLastHistory = HistoryInstance.GetLastHistory(this.channelId, String.valueOf(episode.id));
         int i2 = 0;
         int i3 = (GetLastHistory == null || (i3 = GetLastHistory.lastPosition) <= 0) ? 0 : 0;
         if (i3 > 0 && episode.getDurationInSeconds() > 0.0f) {
@@ -103,7 +102,7 @@ public class EpisodeAdapter extends CustomItemAdapter<EpisodeAdapter.EpisodeView
                     String m6214j2 = StringUtil.m6214j(new StringBuilder(), episode.episode, "");
                     EpisodeAdapter episodeAdapter = EpisodeAdapter.this;
                     VodChannelBean.Episode episode2 = episode;
-                    episodeAdapter.requestVideoPlayback(episode2.title, String.valueOf(episode2.f8661id), str2, m6214j, m6214j2, false);
+                    episodeAdapter.requestVideoPlayback(episode2.title, String.valueOf(episode2.id), str2, m6214j, m6214j2, false);
                 }
                 EpisodeAdapter.this.onItemSelected(episodeViewHolder.getAbsoluteAdapterPosition());
             }

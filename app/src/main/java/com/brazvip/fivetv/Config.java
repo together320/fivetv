@@ -14,6 +14,12 @@ import java.util.HashMap;
 
 public class Config {
 
+    public static String DEFAULT_CHOOSED_AUDIO_LANG = "DEFAULT_CHOOSED_AUDIO_LANG";
+    public static String DEFAULT_CHOOSED_LANG = "DEFAULT_CHOOSED_LANG";
+
+    public static int DEFAULT_PLAYER = 1;
+    public static boolean enableVodFragment = true;
+    public static boolean showDownloadRate = true;
     public static boolean isPlayback = true;
 
     public static boolean f8896P = true;
@@ -412,6 +418,40 @@ public class Config {
         ErrorTypes(String text, int value) {
             this.text = text;
             this.value = value;
+        }
+    }
+
+    public enum Errors {
+        f8598a("DNS error", -100),
+        f8599b("Can not bind to service port", -101),
+        f8600c("Service is not available", -102),
+        f8601d("Socket error", -103),
+        CHANNEL_OFFLINE("Channel is off line now", -104),
+        NEED_AUTH("Need authentication", -105),
+        f8604g("No memory", -106),
+        f8605h("Time error", -107),
+        f8606i("No peers", -108),
+        f8607j("No buffer", -109),
+        f8608k("Open stream timeout", -110),
+        f8609l("Stream redirect", -111),
+        f8610m("Removed Channel", -112),
+        f8611n("Invalid certification", -120),
+        f8612o("Invalid address", -130),
+        f8613p("Auth socket error", -201),
+        f8614q("No auth address", -202),
+        AUTH_SERVER_ERROR("Auth server error", -203),
+        f8616s("Auth message error", -204),
+        f8617t("Invalid username or password", -205),
+        f8618u("Auth incompatible", -206),
+        MULTIPLE_LOGIN("Multiple user login", -210),
+        f8620w("Wrong access code", -211),
+        f8621x("MK socket error", -301),
+        f8622y("MK service timeout", -302);
+
+        public final int code;
+
+        Errors(String str, int i) {
+            this.code = i;
         }
     }
 

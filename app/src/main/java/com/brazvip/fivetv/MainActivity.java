@@ -305,8 +305,13 @@ public class MainActivity extends AutoLayoutActivity implements View.OnClickList
                         checkLoaded();
                         PrefUtils.ToastShort("PLAYER Loaded!");
                         break;
-                    case Constant.MSG_PLAYER_START:
-                        onMsgVideoStart(message.getData());
+                    case Constant.MSG_PLAYER_PLAY_VIDEO:
+                        mPlayerLayout.playVideo(message.getData());
+                        showPlayerLayout();
+                        break;
+                    case Constant.MSG_PLAYER_START_PLAYBACK:
+                        onStartPlayback(message.getData());
+                        showPlayerLayout();
                         break;
 
                     case 250:
@@ -366,15 +371,17 @@ public class MainActivity extends AutoLayoutActivity implements View.OnClickList
         finish();
     }
 
-    public void onMsgVideoStart(Bundle bundle) {
+    public void showPlayerLayout() {
         refreshFragment(FRAGMENT.PLAYER);
+    }
 
+    public void onStartPlayback(Bundle bundle) {
         String videoURL = bundle.getString("url");
         String videoName = bundle.getString("name");
         Config.BS_MODE bsMode = Config.BS_MODE.valueOf(bundle.getString("type"));
-
         mPlayerLayout.startChannel(videoURL, videoName, bsMode);
     }
+
 
     public static void SendMessage(Message msg) {
         mMsgHandler.sendMessage(msg);

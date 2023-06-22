@@ -2,7 +2,10 @@ package com.brazvip.fivetv;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.content.Context;
 import android.content.Intent;
+import android.content.pm.ApplicationInfo;
+import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
@@ -17,9 +20,11 @@ import com.brazvip.fivetv.utils.PrefUtils;
 import com.brazvip.fivetv.utils.Utils;
 
 import okhttp3.Cache;
+import p129l8.C2053a;
 
 public class SplashActivity extends AppCompatActivity {
     public static Handler mMsgHandler = null;
+    public static Context mContext = null;
 
     public static ProgressBar loading_progress = null;
 
@@ -28,7 +33,20 @@ public class SplashActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_splash);
 
-        MainActivity.cacheManager = CacheManager.getCacheManager(SopApplication.getAppContext());
+        mContext = SopApplication.getAppContext();
+
+        MainActivity.cacheManager = CacheManager.getCacheManager(mContext);
+
+        ApplicationInfo applicationInfo = null;
+        try {
+            applicationInfo = mContext.getPackageManager().getApplicationInfo(mContext.getPackageName(), 128);
+        } catch (PackageManager.NameNotFoundException e) {
+            throw new RuntimeException(e);
+        }
+        if (applicationInfo != null && applicationInfo.metaData != null) {
+            C2053a.f7440f.f7443c = ((Integer) applicationInfo.metaData.get("design_width")).intValue();
+            C2053a.f7440f.f7444d = ((Integer) applicationInfo.metaData.get("design_height")).intValue();
+        }
 
         Config.displayMetrics = new DisplayMetrics();
         getWindowManager().getDefaultDisplay().getMetrics(Config.displayMetrics);

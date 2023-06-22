@@ -8,7 +8,6 @@ import android.widget.Filter;
 import android.widget.Filterable;
 import android.widget.TextView;
 
-import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.recyclerview.widget.RecyclerView.ViewHolder;
 import com.brazvip.fivetv.R;
@@ -109,7 +108,7 @@ public class HistoryAdapter extends HistoryRecyclerViewAdapter<ViewHolder> imple
                                             break;
                                         }
                                         VodChannelBean.Episode next = it2.next();
-                                        if (next.f8661id == Integer.parseInt(historyBean.subId)) {
+                                        if (next.id == Integer.parseInt(historyBean.subId)) {
                                             arrayList.add(historyBean);
                                             break;
                                         }

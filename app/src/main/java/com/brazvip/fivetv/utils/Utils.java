@@ -24,6 +24,8 @@ import java.util.Set;
 import java.util.TimeZone;
 import java.util.UUID;
 
+import p129l8.C2053a;
+
 public class Utils {
     public static long DELTA_TIME = 0;
     public static boolean isShowQuitDialog = false;
@@ -237,5 +239,10 @@ public class Utils {
             return null;
         }
         return null;
+    }
+
+    public static int calculateTextSize(int i) {
+        C2053a c2053a = C2053a.f7440f;
+        return (int) (((i * 1.0f) / c2053a.f7443c) * c2053a.f7441a);
     }
 }

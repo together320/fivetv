@@ -2,7 +2,6 @@ package com.brazvip.fivetv.dialogs;
 
 import android.content.Context;
 import android.content.DialogInterface;
-import android.os.Bundle;
 import android.os.Handler;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
@@ -79,12 +78,10 @@ public class SeriesDialog extends VodDialog {
     }
 
     public static SeriesDialog createDialogImpl(Context context, VodChannelBean vodChannelBean) {
-        SeriesDialog seriesDialog2 = seriesDialog;
-        if (seriesDialog2 == null) { // || !seriesDialog2.isAdded()) {
-            SeriesDialog seriesDialog3 = new SeriesDialog(context, vodChannelBean);
-            seriesDialog = seriesDialog3;
+        if (seriesDialog == null) { // || !seriesDialog2.isAdded()) {
+            seriesDialog = new SeriesDialog(context, vodChannelBean);
             seriesDialog.init();
-            return seriesDialog3;
+            return seriesDialog;
         }
         return seriesDialog;
     }
@@ -134,7 +131,7 @@ public class SeriesDialog extends VodDialog {
                 VodChannelBean.Episode next = it.next();
                 String str6 = lastHistoryEpisode.subId;
                 StringBuilder m6212l = StringUtil.m6212l("");
-                m6212l.append(next.f8661id);
+                m6212l.append(next.id);
                 if (str6.equalsIgnoreCase(m6212l.toString())) {
                     String str7 = next.address;
                     String str8 = lastHistoryEpisode.Season;
@@ -159,7 +156,7 @@ public class SeriesDialog extends VodDialog {
         ArrayList arrayList = new ArrayList(this.channel.getEpisodes());
         Collections.reverse(arrayList);
         VodChannelBean.Episode episode = (VodChannelBean.Episode) arrayList.get(0);
-        requestVideoPlayback(episode.title, String.valueOf(episode.f8661id), episode.address, StringUtil.m6214j(new StringBuilder(), episode.season, ""), StringUtil.m6214j(new StringBuilder(), episode.episode, ""), Boolean.FALSE);
+        requestVideoPlayback(episode.title, String.valueOf(episode.id), episode.address, StringUtil.m6214j(new StringBuilder(), episode.season, ""), StringUtil.m6214j(new StringBuilder(), episode.episode, ""), Boolean.FALSE);
     }
 
     public static boolean onCreateView(DialogInterface dialogInterface, int i, KeyEvent keyEvent) {
@@ -316,7 +313,7 @@ public class SeriesDialog extends VodDialog {
                                                                         }
                                                                         String str4 = lastHistoryEpisode.subId;
                                                                         StringBuilder m6212l = StringUtil.m6212l("");
-                                                                        m6212l.append(it.next().f8661id);
+                                                                        m6212l.append(it.next().id);
                                                                         if (str4.equalsIgnoreCase(m6212l.toString())) {
                                                                             String str5 = lastHistoryEpisode.Season;
                                                                             if (str5 == null || str5.trim().isEmpty() || lastHistoryEpisode.Season.equals("null")) {

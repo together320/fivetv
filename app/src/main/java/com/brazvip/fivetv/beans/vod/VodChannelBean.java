@@ -29,7 +29,7 @@ public class VodChannelBean implements Serializable {
         public int episode;
 
         /* renamed from: id */
-        public int f8661id;
+        public int id;
         public String overview;
         public int popularity;
         public int season;
