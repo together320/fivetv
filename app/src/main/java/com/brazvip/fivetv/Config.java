@@ -581,10 +581,12 @@ public class Config {
     }
 
     public static void initializeConfig() {
-        initLibTV();
-        f8909g = false;
-        f8924v = true;
-        f8893M = 3;
+        if (Constant.LOGIN_BY_LIB) {
+            initLibTV();
+            f8909g = false;
+            f8924v = true;
+            f8893M = 3;
+        }
     }
 
 }

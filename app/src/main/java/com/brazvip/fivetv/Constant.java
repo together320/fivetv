@@ -4,6 +4,7 @@ public class Constant {
     public static final String PREFS_NAME = "bsprefer";
 
     public static final boolean OFFLINE_TEST = false;
+    public static final boolean LOGIN_BY_LIB = false;
 
     public static final String PREFS_CHANNEL_INFO = "ftv_pref_channel_info";
     public static final String PREFS_EPG_INFO = "ftv_epg_channel_info";

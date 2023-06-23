@@ -116,7 +116,7 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
             PrefUtils.ToastShort(String.format(getString(R.string.password_too_short), 4));
         else {
             loading_progress.setVisibility(View.VISIBLE);
-            AuthInstance.doAuth(username, password, mMsgHandler);
+            AuthInstance.doLogin(username, password, mMsgHandler);
         }
     }
 }

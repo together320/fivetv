@@ -3,7 +3,6 @@ package com.brazvip.fivetv.instances;
 import android.os.Handler;
 import android.os.Message;
 import android.util.Log;
-import android.view.View;
 
 import com.alibaba.fastjson.JSON;
 import com.brazvip.fivetv.Config;
@@ -46,8 +45,18 @@ public class AuthInstance {
     }
 
 
-    public static void Login(Handler msgHandler) {
-        Login(mUserName, mPassword, msgHandler);
+    public static void doLogin(Handler msgHandler) {
+        if (Constant.LOGIN_BY_LIB)
+            LoginByLib(mUserName, mPassword, msgHandler);
+        else
+            Login(mUserName, mPassword, msgHandler);
+    }
+
+    public static void doLogin(String username, String password, Handler msgHandler) {
+        if (Constant.LOGIN_BY_LIB)
+            LoginByLib(username, password, msgHandler);
+        else
+            Login(username, password, msgHandler);
     }
 
     public static void Login(String username, String password, Handler msgHandler) {
@@ -93,11 +102,7 @@ public class AuthInstance {
         ).start();
     }
 
-    public static void Auth(Handler msgHandler) {
-        doAuth(mUserName, mPassword, msgHandler);
-    }
-
-    public static void doAuth(String username, String password, Handler msgHandler) {
+    public static void LoginByLib(String username, String password, Handler msgHandler) {
         mMsgHandler = msgHandler;
 
         if (!username.contains("@"))

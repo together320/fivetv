@@ -101,7 +101,7 @@ public class SplashActivity extends AppCompatActivity {
         Config.initializeConfig();
 
         if (AuthInstance.LoadAuthParams()) {
-            AuthInstance.Auth(mMsgHandler);
+            AuthInstance.doLogin(mMsgHandler);
         }
         else {
             startActivity(new Intent(SplashActivity.this, LoginActivity.class));
