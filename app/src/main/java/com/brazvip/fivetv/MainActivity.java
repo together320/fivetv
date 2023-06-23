@@ -37,9 +37,7 @@ import com.brazvip.fivetv.layouts.PlayerLayout;
 import com.brazvip.fivetv.layouts.ProfileLayout;
 import com.brazvip.fivetv.layouts.SettingLayout;
 import com.brazvip.fivetv.layouts.VodLayout;
-import com.brazvip.fivetv.utils.PrefUtils;
 import com.brazvip.fivetv.utils.Utils;
-import com.google.android.exoplayer2.Player;
 import com.zhy.autolayout.AutoLayoutActivity;
 
 import java.util.ArrayList;
@@ -230,7 +228,7 @@ public class MainActivity extends AutoLayoutActivity implements View.OnClickList
         refreshFragment(FRAGMENT.LOADING);
     }
 
-    private void refreshFragment(FRAGMENT frag) {
+    private void refreshFragment(FRAGMENT fragment) {
         mPlayerLayout.setVisibility(View.GONE);
         mLoadingLayout.setVisibility(View.GONE);
         mMenuLayout.setVisibility(View.GONE);
@@ -242,16 +240,12 @@ public class MainActivity extends AutoLayoutActivity implements View.OnClickList
 
         mRadioGroup.setVisibility(View.VISIBLE);
 
-        if (mPrevFragment == FRAGMENT.PLAYER) {
+        if (mPrevFragment != mCurrFragment) {
             mPrevFragment = mCurrFragment;
-        } else {
-            if (mPrevFragment != mCurrFragment) {
-                mPrevFragment = mCurrFragment;
-            }
         }
-        mCurrFragment = frag;
+        mCurrFragment = fragment;
 
-        switch (frag) {
+        switch (fragment) {
             case DASHBOARD:
                 mRadioGroup.check(R.id.rb_dashboard);
                 mDashboardlayout.setVisibility(View.VISIBLE);
@@ -259,10 +253,12 @@ public class MainActivity extends AutoLayoutActivity implements View.OnClickList
                 break;
             case LIVE:
                 mRadioGroup.check(R.id.rb_live);
+                mMenuLayout.loadMenuLayout();
                 mMenuLayout.setVisibility(View.VISIBLE);
                 break;
             case VOD:
                 mRadioGroup.check(R.id.rb_vod);
+                mVodLayout.loadVodLayout();
                 mVodLayout.setVisibility(View.VISIBLE);
                 break;
             case HISTORY:
@@ -290,28 +286,24 @@ public class MainActivity extends AutoLayoutActivity implements View.OnClickList
 
     private void initMessageHandler() {
         mMsgHandler = new Handler(Looper.getMainLooper()) {
-            @Override // android.os.Handler
+            @Override
             public void handleMessage(Message message) {
                 switch (message.what) {
                     case Constant.MSG_CHANNEL_LOADED:
                         mLoaded |= 0b0001;
                         checkLoaded();
-                        PrefUtils.ToastShort("CHANNEL Loaded!");
                         break;
                     case Constant.MSG_EPG_LOADED:
                         mLoaded |= 0b0010;
                         checkLoaded();
-                        PrefUtils.ToastShort("EPG Loaded!");
                         break;
                     case Constant.MSG_VOD_LOADED:
                         mLoaded |= 0b0100;
                         checkLoaded();
-                        PrefUtils.ToastShort("VOD Loaded!");
                         break;
                     case Constant.MSG_PLAYER_LOADED:
                         mLoaded |= 0b1000;
                         checkLoaded();
-                        PrefUtils.ToastShort("PLAYER Loaded!");
                         break;
                     case Constant.MSG_PLAYER_PLAY_VIDEO:
                         showPlayerLayout();
@@ -347,12 +339,10 @@ public class MainActivity extends AutoLayoutActivity implements View.OnClickList
 
     @Override
     public void onBackPressed() {
-        Log.d(TAG, "onBackPressed() - mCurrFragment: " + mCurrFragment);
-        Log.d(TAG, "onBackPressed() - mPrevFragment: " + mPrevFragment);
         if (mCurrFragment == FRAGMENT.PROFILE) {
             refreshFragment(FRAGMENT.DASHBOARD);
         } else if (mCurrFragment == FRAGMENT.PLAYER) {
-            mPlayerLayout.stopVideoPlaying();
+            mPlayerLayout.stopPlayer();
             refreshFragment(mPrevFragment);
         } else {
             //PrefUtils.logout(this);

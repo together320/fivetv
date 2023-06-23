@@ -68,6 +68,7 @@ public class MenuLayout extends RelativeLayout {
     public boolean f13823B = true;
 
     public boolean f13824C = false;
+    public boolean isLoaded = false;
 
     public MenuLayout(Context context) {
         super(context);
@@ -103,7 +104,6 @@ public class MenuLayout extends RelativeLayout {
         };
 
         initComponents();
-        loadGroup();
     }
 
     private void initComponents() {
@@ -112,24 +112,19 @@ public class MenuLayout extends RelativeLayout {
         mEpgListView = (ExpandableListView) findViewById(R.id.epg_listview);
     }
 
-    public void loadGroup() {
+    public void loadMenuLayout() {
+        Config.isPlayStarted = false;
+        mGroupListView.requestFocusFromTouch();
+
+        if (isLoaded)
+            return;
+        isLoaded = true;
+
         mGroupListView.setVisibility(VISIBLE);
         mChannelListView.setVisibility(GONE);
         mEpgListView.setVisibility(GONE);
 
         loadGroupData();
-    }
-
-    public void loadChannel() {
-        mGroupListView.setVisibility(VISIBLE);
-        mChannelListView.setVisibility(VISIBLE);
-        mEpgListView.setVisibility(GONE);
-    }
-
-    public void loadEpg() {
-        mGroupListView.setVisibility(VISIBLE);
-        mChannelListView.setVisibility(VISIBLE);
-        mEpgListView.setVisibility(VISIBLE);
     }
 
     public void loadGroupData() {
@@ -481,7 +476,7 @@ public class MenuLayout extends RelativeLayout {
 
             }
         });
-        mEpgListView.setOnGroupClickListener(new ExpandableListView.OnGroupClickListener() { //C3540c
+        mEpgListView.setOnGroupClickListener(new ExpandableListView.OnGroupClickListener() {
             @Override
             public boolean onGroupClick(ExpandableListView parent, View v, int groupPosition, long id) {
                 if (groupPosition == mEpgAdapter.epgSelectedGroupPosition) {
@@ -500,7 +495,7 @@ public class MenuLayout extends RelativeLayout {
                 return true;
             }
         });
-        mEpgListView.setOnChildClickListener(new ExpandableListView.OnChildClickListener() { //C3541d
+        mEpgListView.setOnChildClickListener(new ExpandableListView.OnChildClickListener() {
             @Override
             public boolean onChildClick(ExpandableListView parent, View v, int groupPosition, int childPosition, long id) {
                 if (mEpgListView != null && v != null) {
@@ -510,6 +505,10 @@ public class MenuLayout extends RelativeLayout {
                     if (epg != null) {
                         String playbackUrl = epg.getPlaybackUrl();
                         if ((playbackUrl != null) && !playbackUrl.equals("")) {
+                            if (Config.isPlayStarted == true)
+                                return true;
+                            Config.isPlayStarted = true;
+
                             Message msg = new Message();
                             msg.what = Constant.MSG_PLAYER_START_PLAYBACK;
                             Bundle bundle = new Bundle();
@@ -570,6 +569,11 @@ public class MenuLayout extends RelativeLayout {
 //            helper.create().show();
 //            return;
 //        }
+
+        if (Config.isPlayStarted == true)
+            return;
+        Config.isPlayStarted = true;
+
         Message msg = new Message();
         msg.what = Constant.MSG_PLAYER_START_PLAYBACK;
         Bundle params = new Bundle();

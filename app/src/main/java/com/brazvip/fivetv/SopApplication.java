@@ -161,9 +161,9 @@ public class SopApplication extends Application implements InvocationHandler {
         interceptor.setPrintLevel(HttpLoggingInterceptor.Level.NONE);
         interceptor.setColorLevel(Level.INFO);
         builder.addInterceptor(interceptor);
-        builder.readTimeout(200000, TimeUnit.MILLISECONDS);
-        builder.writeTimeout(200000, TimeUnit.MILLISECONDS);
-        builder.connectTimeout(200000, TimeUnit.MILLISECONDS);
+        builder.readTimeout(30000, TimeUnit.MILLISECONDS);
+        builder.writeTimeout(30000, TimeUnit.MILLISECONDS);
+        builder.connectTimeout(30000, TimeUnit.MILLISECONDS);
         HttpsUtils.SSLParams sslSocketFactory = HttpsUtils.getSslSocketFactory();
         builder.sslSocketFactory(sslSocketFactory.sSLSocketFactory, sslSocketFactory.trustManager);
         OkGo.getInstance().init(this).setOkHttpClient(builder.build())

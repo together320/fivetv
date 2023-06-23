@@ -671,6 +671,13 @@ public class PlayerLayout extends FrameLayout {
         }
     }
 
+    public void stopPlayer() {
+        if (mTVCore != null) {
+            mTVCore.stop();
+        }
+        stopVideoPlaying();
+    }
+
     public void stopVideoPlaying() {
         if (mPlayerMode == 0 && SYS_PLAYER != null) {
             SYS_PLAYER.stopPlayback();

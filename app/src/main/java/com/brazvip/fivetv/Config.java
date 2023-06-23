@@ -590,4 +590,6 @@ public class Config {
         f8893M = 3;
     }
 
+    public static boolean isPlayStarted = false;
+
 }
