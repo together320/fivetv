@@ -39,11 +39,14 @@ import com.brazvip.fivetv.layouts.SettingLayout;
 import com.brazvip.fivetv.layouts.VodLayout;
 import com.brazvip.fivetv.utils.PrefUtils;
 import com.brazvip.fivetv.utils.Utils;
+import com.google.android.exoplayer2.Player;
 import com.zhy.autolayout.AutoLayoutActivity;
 
 import java.util.ArrayList;
 
 public class MainActivity extends AutoLayoutActivity implements View.OnClickListener, View.OnKeyListener {
+
+    public String TAG = "MainActivity";
 
     public enum FRAGMENT {
         NONE,
@@ -115,6 +118,8 @@ public class MainActivity extends AutoLayoutActivity implements View.OnClickList
         initMessageHandler();
 
         ChannelInstance.getAllChannels();
+        EPGInstance.getAllEPGs();
+        VodChannelInstance.getAllVodGroups();
 
         if (Constant.OFFLINE_TEST == true) {
             Message msg = new Message();
@@ -237,8 +242,13 @@ public class MainActivity extends AutoLayoutActivity implements View.OnClickList
 
         mRadioGroup.setVisibility(View.VISIBLE);
 
-        if (mPrevFragment != mCurrFragment)
+        if (mPrevFragment == FRAGMENT.PLAYER) {
             mPrevFragment = mCurrFragment;
+        } else {
+            if (mPrevFragment != mCurrFragment) {
+                mPrevFragment = mCurrFragment;
+            }
+        }
         mCurrFragment = frag;
 
         switch (frag) {
@@ -250,12 +260,10 @@ public class MainActivity extends AutoLayoutActivity implements View.OnClickList
             case LIVE:
                 mRadioGroup.check(R.id.rb_live);
                 mMenuLayout.setVisibility(View.VISIBLE);
-                mMenuLayout.loadGroup();
                 break;
             case VOD:
                 mRadioGroup.check(R.id.rb_vod);
                 mVodLayout.setVisibility(View.VISIBLE);
-                mVodLayout.handler.sendMessage(Message.obtain(this.mMsgHandler, 1, 0, 0));
                 break;
             case HISTORY:
                 mRadioGroup.check(R.id.rb_history);
@@ -289,13 +297,11 @@ public class MainActivity extends AutoLayoutActivity implements View.OnClickList
                         mLoaded |= 0b0001;
                         checkLoaded();
                         PrefUtils.ToastShort("CHANNEL Loaded!");
-                        EPGInstance.getAllEPGs();
                         break;
                     case Constant.MSG_EPG_LOADED:
                         mLoaded |= 0b0010;
                         checkLoaded();
                         PrefUtils.ToastShort("EPG Loaded!");
-                        VodChannelInstance.getAllVodGroups();
                         break;
                     case Constant.MSG_VOD_LOADED:
                         mLoaded |= 0b0100;
@@ -341,9 +347,12 @@ public class MainActivity extends AutoLayoutActivity implements View.OnClickList
 
     @Override
     public void onBackPressed() {
+        Log.d(TAG, "onBackPressed() - mCurrFragment: " + mCurrFragment);
+        Log.d(TAG, "onBackPressed() - mPrevFragment: " + mPrevFragment);
         if (mCurrFragment == FRAGMENT.PROFILE) {
             refreshFragment(FRAGMENT.DASHBOARD);
         } else if (mCurrFragment == FRAGMENT.PLAYER) {
+            mPlayerLayout.stopVideoPlaying();
             refreshFragment(mPrevFragment);
         } else {
             //PrefUtils.logout(this);

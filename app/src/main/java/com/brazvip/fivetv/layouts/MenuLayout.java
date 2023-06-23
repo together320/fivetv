@@ -103,6 +103,7 @@ public class MenuLayout extends RelativeLayout {
         };
 
         initComponents();
+        loadGroup();
     }
 
     private void initComponents() {

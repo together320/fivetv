@@ -51,8 +51,6 @@ public class VodLayout extends RelativeLayout implements View.OnKeyListener, Vie
 
     private static Context mContext = null;
 
-    public boolean init = false;
-
     public static RecyclerView channelRView = null;
 
     public static RecyclerView groupL1RView = null;
@@ -223,9 +221,8 @@ public class VodLayout extends RelativeLayout implements View.OnKeyListener, Vie
             }
         };
 
-        this.init = true;
-
-        m2358f();
+        initComponent();
+        loadGroupData();
     }
 
     public boolean isGroupRViewNull() {
@@ -238,43 +235,41 @@ public class VodLayout extends RelativeLayout implements View.OnKeyListener, Vie
     }
 
     public void loadGroupData() {
-        if (this.init) {
-            if (groupL1RView != null && groupRView != null && VodChannelInstance.newVodL1L2Groups != null && VodChannelInstance.newVodL1L2Groups.size() != 0) {
-                try {
-                    this.vodGroupL1Adapter = new VodGroupL1Adapter(VodChannelInstance.newVodL1L2Groups, mContext, handler, this.vodL1NavListener);
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-                groupL1RView.setAdapter(this.vodGroupL1Adapter);
-                if (groupL1RView.getVisibility() == View.GONE) {
-                    groupL1RView.setVisibility(View.VISIBLE);
-                }
-                try {
-                    this.vodGroupAdapter = new VodGroupAdapter(VodChannelInstance.newVodL1L2Groups.get(SopApplication.getSopContext().getString(R.string.All)),
-                            mContext, handler, vodL2NavListener);
-                } catch (Exception e2) {
-                    e2.printStackTrace();
-                }
-                ProgressBar progressBar = this.loadingProgress;
-                if (progressBar != null && progressBar.getVisibility() == View.VISIBLE) {
-                    this.loadingProgress.setVisibility(View.GONE);
-                }
-                groupRView.setAdapter(this.vodGroupAdapter);
-                if (groupRView.getVisibility() == View.GONE) {
-                    groupRView.setVisibility(View.VISIBLE);
-                }
-                loadFirstVodGroupL2();
+        if (groupL1RView != null && groupRView != null && VodChannelInstance.newVodL1L2Groups != null && VodChannelInstance.newVodL1L2Groups.size() != 0) {
+            try {
+                this.vodGroupL1Adapter = new VodGroupL1Adapter(VodChannelInstance.newVodL1L2Groups, mContext, handler, this.vodL1NavListener);
+            } catch (Exception e) {
+                e.printStackTrace();
             }
-            if (IS_SEARCH_STATE) {
-                this.keyboardLayout.setVisibility(View.VISIBLE);
-                groupL1RView.setVisibility(View.GONE);
-                groupRView.setVisibility(View.GONE);
-                return;
+            groupL1RView.setAdapter(this.vodGroupL1Adapter);
+            if (groupL1RView.getVisibility() == View.GONE) {
+                groupL1RView.setVisibility(View.VISIBLE);
             }
-            this.keyboardLayout.setVisibility(View.GONE);
-            groupL1RView.setVisibility(View.VISIBLE);
-            groupRView.setVisibility(View.VISIBLE);
+            try {
+                this.vodGroupAdapter = new VodGroupAdapter(VodChannelInstance.newVodL1L2Groups.get(SopApplication.getSopContext().getString(R.string.All)),
+                        mContext, handler, vodL2NavListener);
+            } catch (Exception e2) {
+                e2.printStackTrace();
+            }
+            ProgressBar progressBar = this.loadingProgress;
+            if (progressBar != null && progressBar.getVisibility() == View.VISIBLE) {
+                this.loadingProgress.setVisibility(View.GONE);
+            }
+            groupRView.setAdapter(this.vodGroupAdapter);
+            if (groupRView.getVisibility() == View.GONE) {
+                groupRView.setVisibility(View.VISIBLE);
+            }
+            loadFirstVodGroupL2();
         }
+        if (IS_SEARCH_STATE) {
+            this.keyboardLayout.setVisibility(View.VISIBLE);
+            groupL1RView.setVisibility(View.GONE);
+            groupRView.setVisibility(View.GONE);
+            return;
+        }
+        this.keyboardLayout.setVisibility(View.GONE);
+        groupL1RView.setVisibility(View.VISIBLE);
+        groupRView.setVisibility(View.VISIBLE);
     }
 
     private void loadFirstVodGroupL2() {
@@ -361,7 +356,7 @@ public class VodLayout extends RelativeLayout implements View.OnKeyListener, Vie
 
     /* renamed from: f */
     @SuppressLint("ClickableViewAccessibility")
-    private void m2358f() {
+    private void initComponent() {
         this.vodMenu = findViewById(R.id.vod_menu);
         this.vodMenu.setOnKeyListener(this);
         MyItemDecoration decor = new MyItemDecoration(0, 0, 0, 0);

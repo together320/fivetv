@@ -21,7 +21,7 @@ public final class DialogOnClickListener2 implements View.OnClickListener {
     public void onClick(View view) {
         switch (this.type) {
             case 0:
-                MovieDialog.RecommendationAdapter.getVodInfo((MovieDialog.RecommendationAdapter) this.obj1, (MovieDialog.RecommendationAdapter.ViewHolder) this.obj2, view);
+                ((MovieDialog.RecommendationAdapter) this.obj1).onCreateView((MovieDialog.RecommendationAdapter.ViewHolder) this.obj2, view);
                 break;
             default:
                 //ProfilePinDialog.Builder.m1718a((ProfilePinDialog.Builder) this.f8666s, (ProfilePinDialog) this.f8667t, view);

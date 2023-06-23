@@ -277,7 +277,6 @@ public class VodChannelInstance {
                 String decrypt = m1441b != null ? BaseCrypt.decrypt(m1441b) : null;
                 if (decrypt != null) {
                     parseVodGroups(decrypt);
-                    return;
                 }
             } else {
                 parseVodGroups(cacheVodGroups);

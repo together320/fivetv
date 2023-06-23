@@ -583,10 +583,11 @@ public class Config {
     public static void initializeConfig() {
         if (Constant.LOGIN_BY_LIB) {
             initLibTV();
-            f8909g = false;
-            f8924v = true;
-            f8893M = 3;
         }
+
+        f8909g = false;
+        f8924v = true;
+        f8893M = 3;
     }
 
 }

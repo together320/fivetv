@@ -47,7 +47,13 @@ public class MovieDialog extends VodDialog {
         private View.OnFocusChangeListener itemFocusListener = new View.OnFocusChangeListener() {
             @Override // android.view.View.OnFocusChangeListener
             public final void onFocusChange(View view, boolean z) {
-                MovieDialog.RecommendationAdapter.focusChange(view, z);
+                try {
+                    View findViewById = view.findViewById(R.id.dark_tint_20_percent);
+                    if (findViewById != null) {
+                        findViewById.setVisibility(z ? View.INVISIBLE : View.VISIBLE);
+                    }
+                } catch (Exception unused) {
+                }
             }
         };
         private Context mContext;
@@ -66,20 +72,6 @@ public class MovieDialog extends VodDialog {
         public RecommendationAdapter(List<VodChannelBean> list, Context context) {
             this.recommendations = list;
             this.mContext = context;
-        }
-
-        public static void focusChange(View view, boolean z) {
-            try {
-                View findViewById = view.findViewById(R.id.dark_tint_20_percent);
-                if (findViewById != null) {
-                    findViewById.setVisibility(z ? View.INVISIBLE : View.VISIBLE);
-                }
-            } catch (Exception unused) {
-            }
-        }
-
-        public static void getVodInfo(final RecommendationAdapter recommendationAdapter, final ViewHolder viewHolder, final View view) {
-            recommendationAdapter.onCreateView(viewHolder, view);
         }
 
         public void onCreateView(ViewHolder viewHolder, View view) {

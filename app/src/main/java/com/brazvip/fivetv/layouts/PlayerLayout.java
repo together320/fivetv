@@ -66,7 +66,7 @@ import io.binstream.libtvcar.Libtvcar;
 
 public class PlayerLayout extends FrameLayout {
     public static final String TAG = "PlayerLayout";
-    public static Context context;
+    public static Context mContext;
     public static TVCore mTVCore = null;
     public static StyledPlayerView exoPlayerView = null;
     public static VideoView SYS_PLAYER = null;
@@ -114,6 +114,8 @@ public class PlayerLayout extends FrameLayout {
     }
 
     private void init(Context context) {
+        mContext = context;
+
         LayoutInflater.from(context).inflate(R.layout.player_layout, this, true);
 
         EventBus.getDefault().register(this);
@@ -155,7 +157,7 @@ public class PlayerLayout extends FrameLayout {
                         resumePlayer();
                         break;
                     case Constant.MSG_PLAYER_STOP:
-                        showAuthError(message.arg1);
+                        showError(message.arg1);
                         break;
                 }
                 super.handleMessage(message);
@@ -175,7 +177,7 @@ public class PlayerLayout extends FrameLayout {
         this.playerDurationTime = (TextView) findViewById(R.id.player_duration_time);
         this.playerSeekbar = (SeekBar) findViewById(R.id.player_seekbar);
         this.playerStatus = (ImageView) findViewById(R.id.player_status);
-        rootFrameLayout = this.findViewById(R.id.root);
+        rootFrameLayout = findViewById(R.id.root);
     }
 
     private void initExoPlayer() {
@@ -313,8 +315,13 @@ public class PlayerLayout extends FrameLayout {
             AuthInfo.ServiceBean serviceBean = AuthInstance.mAuthInfo.service;
             if (serviceBean != null && serviceBean.auth_url_sdk != null) {
                 mTVCore.setAuthUrl(serviceBean.auth_url_sdk);
-                mTVCore.setUsername(Utils.getValue(Config.HASH_USERNAME, ""));
-                mTVCore.setPassword(Utils.getValue(Config.HASH_PASSWORD, ""));
+                if (Constant.LOGIN_BY_LIB) {
+                    mTVCore.setUsername(Utils.getValue(Config.HASH_USERNAME, ""));
+                    mTVCore.setPassword(Utils.getValue(Config.HASH_PASSWORD, ""));
+                } else {
+                    mTVCore.setUsername(Utils.getValue(Config.USERNAME, "") + Constant.DEFAULT_MAIL_SUFFIX);
+                    mTVCore.setPassword(Utils.getValue(Config.PASSWORD, ""));
+                }
             }
         } else {
             String str;
@@ -331,9 +338,9 @@ public class PlayerLayout extends FrameLayout {
         mTVCore.setTVListener(new TVListener() { //C3647k
             @Override // com.tvbus.engine.TVListener
             public void onInfo(String result) {
+                Log.i(TAG, "[TVCore] onInfo ... " + result);
                 boolean isOk = onTVCoreEvent("onInfo", result);
                 if (isOk) {
-                    //text = "TVCore onInfo ... " + result;
                     mMsgHandler.sendEmptyMessage(Constant.MSG_PLAYER_REFRESHINFO);
                 }
                 mMsgHandler.sendEmptyMessage(Constant.MSG_PLAYER_CHECKPLAYER);
@@ -341,8 +348,8 @@ public class PlayerLayout extends FrameLayout {
 
             @Override // com.tvbus.engine.TVListener
             public void onInited(String result) {
+                Log.i(TAG, "[TVCore] onInited ... " + result);
                 boolean isOk = onTVCoreEvent("onInited", result);
-
                 if (isOk) {
                     Message msg = new Message();
                     msg.what = Constant.MSG_PLAYER_LOADED;
@@ -352,6 +359,7 @@ public class PlayerLayout extends FrameLayout {
 
             @Override // com.tvbus.engine.TVListener
             public void onPrepared(String result) {
+                Log.i(TAG, "[TVCore] onPrepared ... " + result);
                 boolean isOk = onTVCoreEvent("onPrepared", result);
                 if (isOk) {
                     Message msg = new Message();
@@ -363,24 +371,23 @@ public class PlayerLayout extends FrameLayout {
                     mMsgHandler.sendMessage(msg);
                     mIsEnded = false;
                 }
-                //text = "TVCore onPrepared ... " + text;
             }
 
             @Override // com.tvbus.engine.TVListener
             public void onQuit(String result) {
-                //text = "TVCore onQuit ... " + text;
+                Log.i(TAG, "[TVCore] onQuit ... " + result);
             }
 
             @Override // com.tvbus.engine.TVListener
             public void onStart(String result) {
                 onTVCoreEvent("onStart", result);
-                //text = "TVCore onStart ... " + text;
+                Log.i(TAG, "[TVCore] onStart ... " + result);
             }
 
             @Override // com.tvbus.engine.TVListener
             public void onStop(String result) {
                 onTVCoreEvent("onStop", result);
-                //text = "TVCore onStop ... " + text;
+                Log.e(TAG, "TVCore onStop ... " + result);
             }
         });
 
@@ -743,13 +750,13 @@ public class PlayerLayout extends FrameLayout {
     public final void showError(final int errCode) {
         String strError = "";
         if (errCode == Config.Errors.CHANNEL_OFFLINE.code) {
-            strError = context.getString(R.string.channel_offline);
+            strError = mContext.getString(R.string.channel_offline);
         }
         else if (errCode == Config.Errors.NEED_AUTH.code) {
-            strError = context.getString(R.string.user_no_login);
+            strError = mContext.getString(R.string.user_no_login);
         }
         else if (errCode == Config.Errors.MULTIPLE_LOGIN.code) {
-            strError = context.getString(R.string.user_repeated_logon);
+            strError = mContext.getString(R.string.user_repeated_logon);
         }
         if (!strError.equals("")) {
             final StringBuilder sb = new StringBuilder();
@@ -757,7 +764,8 @@ public class PlayerLayout extends FrameLayout {
             sb.append(" (");
             sb.append(errCode);
             sb.append(")");
-            new PopMsg(context.getApplicationContext(), context.getString(R.string.errorTitle), sb.toString()).showAtLocation((View)this.rootFrameLayout, 17, 0, 0);
+            new PopMsg(mContext.getApplicationContext(), mContext.getString(R.string.errorTitle), sb.toString())
+                    .showAtLocation((View)this.rootFrameLayout, 17, 0, 0);
         }
     }
 
@@ -932,7 +940,7 @@ public class PlayerLayout extends FrameLayout {
                     this.playerCurrentTime.setText("00:00");
                     this.playerDurationTime.setText("00:00");
                     final StringBuilder sb3 = new StringBuilder();
-                    sb3.append(context.getString(R.string.video_play_back));
+                    sb3.append(mContext.getString(R.string.video_play_back));
                     sb3.append(": ");
                     sb3.append(string2);
                     sb3.append(" - ");
@@ -952,7 +960,7 @@ public class PlayerLayout extends FrameLayout {
                     this.playerCurrentTime.setText(R.string.buffer);
                     this.playerDurationTime.setText((CharSequence)"0/100");
                     sb4 = new StringBuilder();
-                    sb4.append(context.getString(R.string.video_live));
+                    sb4.append(mContext.getString(R.string.video_live));
                     sb4.append(": ");
                     sb4.append(string2);
                 }
