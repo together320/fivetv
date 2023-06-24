@@ -200,8 +200,8 @@ public class TVCarService {
     }
 
     /* renamed from: a */
-    public static boolean runServiceWithInit() {
-        Libtvcar.setListener(new Listener() { //C3446F e.b.a.F
+    public static boolean start() {
+        Libtvcar.setListener(new Listener() {
             @Override // io.binstream.libtvcar.Listener
             public void onInfo(String result) {
                 //String text = "onInfo:" + key;

@@ -91,7 +91,6 @@ public class PlayerLayout extends FrameLayout {
     private long mMPCheckTime = 0;
     public static final long MP_START_CHECK_INTERVAL = 8000000000L;
     public static boolean mIsEnded = true;
-    public static int vod_ecode = 0;
     public Config.BS_MODE mBsMode = Config.BS_MODE.BSLIVE;
     public int mPlayerCurrentPos;
     public int mPlayerDuration;
@@ -296,14 +295,16 @@ public class PlayerLayout extends FrameLayout {
     }
 
     public void initTVCarService() {
-        Libtvcar.setAuthURL(AuthInstance.mAuthInfo.service.auth_url_sdk);
-        String username = PrefUtils.getPrefString("username", "");
-        String password = PrefUtils.getPrefString("password", "");
-        if (!username.contains("@"))
-            username += Constant.DEFAULT_MAIL_SUFFIX;
-        Libtvcar.setUsername(username);
-        Libtvcar.setPassword(password);
-        TVCarService.runServiceWithInit();
+        if (Config.enableVodFragment) {
+            Libtvcar.setAuthURL(AuthInstance.mAuthInfo.service.auth_url_sdk);
+            String username = PrefUtils.getPrefString(Config.HASH_USERNAME, "");
+            String password = PrefUtils.getPrefString(Config.HASH_PASSWORD, "");
+            if (!username.contains("@"))
+                username += Constant.DEFAULT_MAIL_SUFFIX;
+            Libtvcar.setUsername(username);
+            Libtvcar.setPassword(password);
+            TVCarService.start();
+        }
     }
 
     public void initTVCore() {
@@ -440,32 +441,31 @@ public class PlayerLayout extends FrameLayout {
 
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onMessageEvent(TVCarService.InitedEvent event) {
-        vod_ecode = event.errno;
-        //String msg = "##### initMsg:" + event.errno;
+        Log.i(TAG, "[TVCarService] onMessageEvent - InitedEvent - errno: [" + event.errno + "]");
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onMessageEvent(TVCarService.StartEvent event) {
-        String log = "##### StartMessage:" + event.errno + " url:" + event.url;
-        Log.e(TAG, log);
+        Log.i(TAG, "[TVCarService] onMessageEvent - StartEvent - errno: [" + event.errno + "], url: " + event.url);
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onMessageEvent(TVCarService.StopEvent event) {
-        String log = "##### StopMessage:" + event.errno + " url:" + event.url;
-        Log.e(TAG, log);
+        Log.e(TAG, "[TVCarService] onMessageEvent - StopEvent - errno: [" + event.errno + "], url: " + event.url);
 
-        vod_ecode = event.errno;
-        if (vod_ecode != 0) {
+        VOD_AUTH_ECODE = event.errno;
+        if (VOD_AUTH_ECODE != 0) {
             Message msg = new Message();
             msg.what = Constant.MSG_PLAYER_STOP;
-            msg.arg1 = vod_ecode;
+            msg.arg1 = VOD_AUTH_ECODE;
             mMsgHandler.sendMessage(msg);
         }
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onMessageEvent(TVCarService.PreparedEvent event) {
+        Log.i(TAG, "[TVCarService] PreparedEvent - PreparedEvent - errno: [" + event.errno + "], url: " + event.url);
+        
         String url = event.url;
         Message msg = new Message();
         Bundle data = new Bundle();
@@ -477,7 +477,9 @@ public class PlayerLayout extends FrameLayout {
 
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onMessageEvent(TVCarService.InfoEvent event) {
-        vod_ecode = event.errno;
+        Log.i(TAG, "[TVCarService] PreparedEvent - InfoEvent - errno: [" + event.errno + "]");
+        
+        VOD_AUTH_ECODE = event.errno;
         if (mBsMode == Config.BS_MODE.BSPALYBACK || mBsMode == Config.BS_MODE.BSVOD) {
             mMsgHandler.sendEmptyMessage(Constant.MSG_PLAYER_CHECKPLAYER);
             SetDownloadRate(PrefUtils.m2251a(event.download_rate));
@@ -499,8 +501,7 @@ public class PlayerLayout extends FrameLayout {
 
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onMessageEvent(TVCarService.QuitEvent event) {
-        String log = "##### QuitMessage:" + event.errno;
-        Log.e(TAG, log);
+        Log.i(TAG, "[TVCarService] PreparedEvent - QuitEvent - errno: [" + event.errno + "]");
     }
 
     public void startChannel(String videoURL, String videoName, Config.BS_MODE bsMode) {
@@ -513,7 +514,7 @@ public class PlayerLayout extends FrameLayout {
         }
         if (mBsMode == Config.BS_MODE.BSLIVE) {
             //String log5 = "mTVCore.start " + videoURL;
-            if (vod_ecode == Config.ErrorTypes.Err_210.value) {
+            if (VOD_AUTH_ECODE == Config.ErrorTypes.Err_210.value) {
                 Message msg = new Message();
                 msg.what = Constant.MSG_PLAYER_STOP;
                 msg.arg1 = Config.ErrorTypes.Err_210.value;
@@ -523,7 +524,7 @@ public class PlayerLayout extends FrameLayout {
             mMPCheckTime = Long.MAX_VALUE;
             mTVCore.start(videoURL);
         } else if (mBsMode == Config.BS_MODE.BSPALYBACK || mBsMode == Config.BS_MODE.BSVOD) {
-            if (vod_ecode == Config.ErrorTypes.Err_210.value) {
+            if (VOD_AUTH_ECODE == Config.ErrorTypes.Err_210.value) {
                 Message msg = new Message();
                 msg.what = Constant.MSG_PLAYER_STOP;
                 msg.arg1 = Config.ErrorTypes.Err_210.value;

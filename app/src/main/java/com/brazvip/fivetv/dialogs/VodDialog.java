@@ -10,6 +10,7 @@ import android.os.Message;
 import androidx.annotation.NonNull;
 import androidx.fragment.app.DialogFragment;
 
+import com.brazvip.fivetv.Constant;
 import com.brazvip.fivetv.MainActivity;
 import com.brazvip.fivetv.R;
 import com.lzy.okgo.cookie.SerializableCookie;
@@ -95,7 +96,7 @@ public class VodDialog extends Dialog implements DialogInterface.OnCancelListene
 
     public void requestVideoPlayback(String str, String str2, String str3, String str4, String str5, Boolean bool) {
         Message message = new Message();
-        message.what = 80;
+        message.what = Constant.MSG_PLAYER_PLAY_VIDEO;
         Bundle bundle = new Bundle();
         bundle.putString(Progress.URL, str3);
         bundle.putString("chid", this.channel.getId());
