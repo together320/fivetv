@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android" android:gravity="center" android:id="@+id/group_name_line" android:background="@drawable/dash_group_bg_selector" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginRight="25px" android:minHeight="36px">
+    <TextView android:textSize="22px" android:textColor="@color/white" android:id="@+id/l2_dash_title" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginLeft="14px" android:layout_marginTop="7px" android:layout_marginRight="14px" android:layout_marginBottom="7px" android:text="group" android:maxLines="1" android:fontFamily="@font/open_sans_semibold"/>
+</RelativeLayout>

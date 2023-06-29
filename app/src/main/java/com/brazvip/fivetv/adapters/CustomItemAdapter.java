@@ -4,7 +4,6 @@ import android.util.DisplayMetrics;
 import android.view.KeyEvent;
 import android.view.View;
 
-import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.recyclerview.widget.LinearSmoothScroller;
 import com.brazvip.fivetv.Config;
@@ -12,8 +11,8 @@ import com.brazvip.fivetv.Config;
 public abstract class CustomItemAdapter<VH extends RecyclerView.ViewHolder> extends RecyclerView.Adapter<VH> {
     public Config.MenuType menuType;
 
-    /* renamed from: rv */
-    public RecyclerView f8614rv;
+    public RecyclerView recyclerView;
+
     public int mSelectedItem = 0;
     public int nextSelectItem = -1;
     public View.OnFocusChangeListener onFocusChangeListener = new ViewOnFocusChangeListener(this, 2);
@@ -27,7 +26,7 @@ public abstract class CustomItemAdapter<VH extends RecyclerView.ViewHolder> exte
     }
 
     public boolean lambda$new$1(View view, int i, KeyEvent keyEvent) {
-        RecyclerView.LayoutManager layoutManager = this.f8614rv.getLayoutManager();
+        RecyclerView.LayoutManager layoutManager = this.recyclerView.getLayoutManager();
         if (keyEvent.getAction() == 0) {
             if (i == 20) {
                 return tryMoveSelection(layoutManager, 1);
@@ -37,7 +36,7 @@ public abstract class CustomItemAdapter<VH extends RecyclerView.ViewHolder> exte
             }
             return false;
         } else if (keyEvent.getAction() == 1 && HRecyclerViewAdapter2.isReturnKeycode(keyEvent) && (keyEvent.getFlags() & 128) != 128) {
-            RecyclerView.ViewHolder findViewHolderForAdapterPosition = this.f8614rv.findViewHolderForAdapterPosition(this.mSelectedItem);
+            RecyclerView.ViewHolder findViewHolderForAdapterPosition = this.recyclerView.findViewHolderForAdapterPosition(this.mSelectedItem);
             if (findViewHolderForAdapterPosition != null) {
                 findViewHolderForAdapterPosition.itemView.performClick();
             }
@@ -49,7 +48,7 @@ public abstract class CustomItemAdapter<VH extends RecyclerView.ViewHolder> exte
 
     @Override // androidx.recyclerview.widget.RecyclerView.Adapter<VH>
     public void onAttachedToRecyclerView(RecyclerView recyclerView) {
-        this.f8614rv = recyclerView;
+        this.recyclerView = recyclerView;
         recyclerView.setOnFocusChangeListener(this.onFocusChangeListener);
         recyclerView.setOnKeyListener(this.onKeyListener);
     }
@@ -67,7 +66,7 @@ public abstract class CustomItemAdapter<VH extends RecyclerView.ViewHolder> exte
 
     public boolean tryMoveSelection(RecyclerView.LayoutManager layoutManager, int i) {
         int i2 = this.mSelectedItem + i;
-        LinearSmoothScroller LinearSmoothScroller = new LinearSmoothScroller(this.f8614rv.getContext()) {
+        LinearSmoothScroller LinearSmoothScroller = new LinearSmoothScroller(this.recyclerView.getContext()) {
             private static final float SPEED = 50.0f;
 
             @Override // androidx.recyclerview.widget.LinearSmoothScroller

@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/l1_title"
+    android:layout_width="wrap_content"
+    android:layout_height="0px"
+    android:layout_marginRight="10dp"
+    android:background="@drawable/dash_group_bg_selector"
+    android:gravity="center"
+    android:minWidth="175px"
+    android:padding="3dp"
+    android:theme="@style/Vod"
+    android:visibility="gone">
+
+    <TextView
+        android:id="@+id/l1_name"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="12px"
+        android:layout_marginRight="12px"
+        android:maxLines="1"
+        android:text="l1Group"
+        android:textSize="32px" />
+</RelativeLayout>

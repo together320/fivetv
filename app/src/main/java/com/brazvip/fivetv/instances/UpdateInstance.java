@@ -1,21 +1,13 @@
 package com.brazvip.fivetv.instances;
 
-import android.os.Handler;
-import android.os.Message;
-import android.util.Log;
-
 import com.alibaba.fastjson.JSON;
 import com.brazvip.fivetv.Config;
-import com.brazvip.fivetv.Constant;
 import com.brazvip.fivetv.MainActivity;
 import com.brazvip.fivetv.SopApplication;
-import com.brazvip.fivetv.beans.AuthInfo;
 import com.brazvip.fivetv.beans.UpdateInfo;
-import com.brazvip.fivetv.utils.PrefUtils;
 import com.lzy.okgo.cache.CacheMode;
 import com.lzy.okgo.callback.StringCallback;
 import com.lzy.okgo.model.HttpHeaders;
-import com.lzy.okgo.model.HttpParams;
 import com.lzy.okgo.model.Response;
 import com.lzy.okgo.request.PostRequest;
 
@@ -42,16 +34,16 @@ public class UpdateInstance {
                             if (response.isSuccessful()) {
                                 try {
                                     UpdateInstance.updateInfo = (UpdateInfo) JSON.parseObject(response.body(), UpdateInfo.class);
-                                    MainActivity.mMsgHandler.sendEmptyMessage(60);
+                                    MainActivity.handler.sendEmptyMessage(60);
                                     return;
                                 } catch (Exception unused) {
                                 }
                             }
-                            MainActivity.mMsgHandler.sendEmptyMessage(61);
+                            MainActivity.handler.sendEmptyMessage(61);
                         }
                     });
                 } catch (Exception unused) {
-                    MainActivity.mMsgHandler.sendEmptyMessage(61);
+                    MainActivity.handler.sendEmptyMessage(61);
                 }
             }
         }.start();

@@ -4,6 +4,7 @@ import android.os.Message;
 import android.util.Log;
 
 import com.alibaba.fastjson.JSON;
+import com.brazvip.fivetv.BSCF;
 import com.brazvip.fivetv.Constant;
 import com.brazvip.fivetv.MainActivity;
 import com.brazvip.fivetv.R;
@@ -12,7 +13,9 @@ import com.brazvip.fivetv.beans.ChannelBean;
 import com.brazvip.fivetv.beans.Group;
 import com.brazvip.fivetv.Config;
 import com.brazvip.fivetv.utils.PrefUtils;
+import com.lzy.okgo.cache.CacheMode;
 import com.lzy.okgo.callback.StringCallback;
+import com.lzy.okgo.model.HttpHeaders;
 import com.lzy.okgo.model.Response;
 import com.lzy.okgo.request.GetRequest;
 
@@ -51,8 +54,13 @@ public class ChannelInstance {
                     }
                 }
 
-                ((GetRequest) ((GetRequest) new GetRequest(url).tag(this)).cacheKey(mCacheKey)).execute(
-                    new StringCallback() {
+                new GetRequest(url)
+                        .removeHeader(HttpHeaders.HEAD_KEY_USER_AGENT)
+                        .headers(HttpHeaders.HEAD_KEY_USER_AGENT, BSCF.userAgent)
+                        .tag(this)
+                        .cacheMode(CacheMode.NO_CACHE)
+                        .execute(new StringCallback() {
+                //((GetRequest) ((GetRequest) new GetRequest(url).tag(this)).cacheKey(mCacheKey)).execute(new StringCallback() {
                         @Override
                         public void onCacheSuccess(Response<String> response) {
                             Log.d("ChannelInstance", "onCacheSuccess");

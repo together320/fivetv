@@ -43,7 +43,7 @@ public class TVService extends Service {
     @Override // android.app.Service
     public void onCreate() {
         super.onCreate();
-        showNotification();
+        //showNotification();
         Thread thread = new Thread(new TVServer());
         thread.setName("tvcore");
         thread.start();

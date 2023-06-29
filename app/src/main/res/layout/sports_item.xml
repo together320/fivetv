@@ -1,0 +1,227 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="276dp"
+    android:layout_height="wrap_content"
+    android:layout_marginTop="10dp"
+    android:layout_marginBottom="10dp"
+    android:background="@drawable/sports_item_bg_selector"
+    android:minHeight="94dp"
+    android:theme="@style/WhiteOpenSans">
+
+    <LinearLayout
+        android:id="@+id/x_team1_layout"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="10dp"
+        android:layout_marginBottom="10dp"
+        android:gravity="center_horizontal"
+        android:orientation="vertical"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toStartOf="@+id/x_center"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <ImageView
+            android:id="@+id/team1_logo"
+            android:layout_width="@dimen/team_detail_width"
+            android:layout_height="@dimen/team_detail_height"
+            android:layout_marginStart="10dp"
+            android:focusable="false"
+            android:scaleType="fitCenter" />
+
+        <com.brazvip.fivetv.view.AlwaysMarqueeTextView
+            android:id="@+id/team1_name"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="5dp"
+            android:ellipsize="marquee"
+            android:fontFamily="@font/open_sans_semibold"
+            android:maxWidth="@dimen/team_detail_width"
+            android:maxHeight="@dimen/team_detail_height"
+            android:singleLine="true"
+            android:text="team 1"
+            android:textSize="9sp" />
+    </LinearLayout>
+
+    <com.brazvip.fivetv.view.AlwaysMarqueeTextView
+        android:id="@+id/league_name"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="6dp"
+        android:layout_marginEnd="6dp"
+        android:maxLines="1"
+        android:textSize="11sp"
+        app:layout_constrainedWidth="true"
+        app:layout_constraintBottom_toTopOf="@+id/x_center"
+        app:layout_constraintEnd_toStartOf="@+id/x_team2_layout"
+        app:layout_constraintStart_toEndOf="@+id/x_team1_layout"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/x_center"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        app:layout_constraintBottom_toTopOf="@+id/time_layout"
+        app:layout_constraintEnd_toStartOf="@+id/x_team2_layout"
+        app:layout_constraintStart_toEndOf="@+id/x_team1_layout"
+        app:layout_constraintTop_toBottomOf="@+id/league_name"
+        app:layout_constraintVertical_weight="1">
+
+        <TextView
+            android:id="@+id/team1_score"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="10dp"
+            android:layout_marginEnd="10dp"
+            android:fontFamily="@font/open_sans_bold"
+            android:text="0"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <LinearLayout
+            android:id="@+id/x_ll1"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="5dp"
+            android:layout_marginEnd="5dp"
+            android:gravity="center_horizontal"
+            android:orientation="vertical"
+            app:layout_constrainedWidth="true"
+            app:layout_constraintBottom_toTopOf="@+id/remind_me_button"
+            app:layout_constraintEnd_toStartOf="@+id/team2_score"
+            app:layout_constraintHorizontal_weight="1"
+            app:layout_constraintStart_toEndOf="@+id/team1_score"
+            app:layout_constraintTop_toTopOf="parent">
+
+            <com.brazvip.fivetv.view.AlwaysMarqueeTextView
+                android:id="@+id/channel_name"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:ellipsize="marquee"
+                android:singleLine="true"
+                android:textAlignment="center"
+                android:textSize="9sp" />
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="4dp"
+                android:layout_marginStart="10dp"
+                android:layout_marginTop="4dp"
+                android:layout_marginEnd="10dp"
+                android:background="@drawable/sports_green_line" />
+        </LinearLayout>
+
+        <RelativeLayout
+            android:id="@+id/remind_me_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:background="@drawable/sports_remind_me_bg_selector"
+            android:focusable="true"
+            android:paddingStart="5dp"
+            android:paddingTop="2dp"
+            android:paddingEnd="5dp"
+            android:paddingBottom="3dp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/x_ll1">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_centerInParent="true"
+                android:text="Lembrar - me"
+                android:textSize="8sp" />
+        </RelativeLayout>
+
+        <TextView
+            android:id="@+id/team2_score"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="10dp"
+            android:layout_marginEnd="10dp"
+            android:fontFamily="@font/open_sans_bold"
+            android:text="0"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+    <LinearLayout
+        android:id="@+id/x_team2_layout"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="10dp"
+        android:layout_marginBottom="10dp"
+        android:gravity="center_horizontal"
+        android:orientation="vertical"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toEndOf="@+id/x_center"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <ImageView
+            android:id="@+id/team2_logo"
+            android:layout_width="@dimen/team_detail_width"
+            android:layout_height="@dimen/team_detail_height"
+            android:layout_marginEnd="10dp"
+            android:focusable="false"
+            android:scaleType="fitCenter" />
+
+        <com.brazvip.fivetv.view.AlwaysMarqueeTextView
+            android:id="@+id/team2_name"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="5dp"
+            android:ellipsize="marquee"
+            android:fontFamily="@font/open_sans_semibold"
+            android:maxWidth="@dimen/team_detail_width"
+            android:maxHeight="@dimen/team_detail_height"
+            android:singleLine="true"
+            android:text="team 2"
+            android:textSize="9sp" />
+    </LinearLayout>
+
+    <View
+        android:id="@+id/x_ls"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toStartOf="@+id/time_layout"
+        app:layout_constraintHorizontal_weight="3"
+        app:layout_constraintStart_toStartOf="parent" />
+
+    <RelativeLayout
+        android:id="@+id/time_layout"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="2dp"
+        android:background="@drawable/sports_time_bg_sel"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toStartOf="@+id/x_rs"
+        app:layout_constraintHorizontal_weight="4"
+        app:layout_constraintStart_toEndOf="@+id/x_ls">
+
+        <TextView
+            android:id="@+id/match_date_time"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerInParent="true"
+            android:layout_marginStart="2dp"
+            android:layout_marginTop="2dp"
+            android:layout_marginEnd="2dp"
+            android:layout_marginBottom="2dp"
+            android:maxLines="1"
+            android:textSize="8sp" />
+    </RelativeLayout>
+
+    <View
+        android:id="@+id/x_rs"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_weight="3"
+        app:layout_constraintStart_toEndOf="@+id/time_layout" />
+</androidx.constraintlayout.widget.ConstraintLayout>

@@ -4,7 +4,6 @@ import android.annotation.SuppressLint;
 import android.content.Context;
 import android.os.Bundle;
 import android.os.Message;
-import android.util.Log;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -15,18 +14,18 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.fragment.app.FragmentManager;
-import androidx.recyclerview.widget.RecyclerView.ViewHolder;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.brazvip.fivetv.MainActivity;
 import com.brazvip.fivetv.dialogs.VodDialog;
 import com.brazvip.fivetv.layouts.VodLayout;
 import com.bumptech.glide.Glide;
-import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.brazvip.fivetv.R;
-import java.util.List;
 import com.brazvip.fivetv.Config;
 import com.brazvip.fivetv.beans.vod.VodChannelBean;
 import com.brazvip.fivetv.instances.VodChannelInstance;
+
+import java.util.List;
 
 public class VodChannelAdapter extends GridRecyclerViewAdapter<VodChannelAdapter.ViewHolder> {
 
@@ -43,7 +42,7 @@ public class VodChannelAdapter extends GridRecyclerViewAdapter<VodChannelAdapter
         public ImageView favorite;
         public ImageView image;
 
-        public ViewHolder(VodChannelAdapter vodChannelAdapter, View view) {
+        public ViewHolder(VodChannelAdapter adapter, View view) {
             super(view);
             this.image = (ImageView) view.findViewById(R.id.image);
             this.channelName = (TextView) view.findViewById(R.id.channel_name);
@@ -86,8 +85,8 @@ public class VodChannelAdapter extends GridRecyclerViewAdapter<VodChannelAdapter
 
             @Override // android.widget.Filter
             public void publishResults(CharSequence charSequence, Filter.FilterResults filterResults) {
-                VodChannelAdapter.this.channels = (List) filterResults.values;
-                VodChannelAdapter.this.notifyDataSetChanged();
+                channels = (List) filterResults.values;
+                notifyDataSetChanged();
             }
         };
     }
@@ -126,7 +125,7 @@ public class VodChannelAdapter extends GridRecyclerViewAdapter<VodChannelAdapter
                     .placeholder(R.mipmap.loading)
                     .error(R.mipmap.load_error)
                     .into(viewHolder.image);
-        } catch (Exception unused) {
+        } catch (Exception ex) {
         }
         viewHolder.itemView.setOnFocusChangeListener(new ViewOnFocusChangeListener(viewHolder, 0));
         viewHolder.itemView.setOnLongClickListener(new View.OnLongClickListener() {
@@ -134,23 +133,21 @@ public class VodChannelAdapter extends GridRecyclerViewAdapter<VodChannelAdapter
             public boolean onLongClick(View view) {
                 String id = vodChannelBean.getId();
                 if (VodChannelInstance.isFavoriteVod(id)) {
-                    Context context = VodChannelAdapter.this.context;
-                    Toast.makeText(context, vodChannelBean.getTitle() + " " + VodChannelAdapter.this.context.getString(R.string.remove_fav), Toast.LENGTH_SHORT).show();
+                    Toast.makeText(context, vodChannelBean.getTitle() + " " + context.getString(R.string.remove_fav), Toast.LENGTH_SHORT).show();
                     VodChannelInstance.removeFavoriteChannel(id);
-                    if (VodChannelInstance.FAVORITES_GROUP_ID.equals(VodChannelAdapter.this.groupKey)) {
-                        VodChannelAdapter.this.channels = VodChannelInstance.getFavoriteChannels();
-                        VodChannelAdapter.this.notifyItemRemoved(viewHolder.getAbsoluteAdapterPosition());
-                        VodChannelAdapter.this.notifyDataSetChanged();
+                    if (VodChannelInstance.FAVORITES_GROUP_ID.equals(groupKey)) {
+                        channels = VodChannelInstance.getFavoriteChannels();
+                        notifyItemRemoved(viewHolder.getAbsoluteAdapterPosition());
+                        notifyDataSetChanged();
                         int adapterPosition = viewHolder.getAbsoluteAdapterPosition() - 1;
-                        if (viewHolder.getAbsoluteAdapterPosition() == 0 && VodChannelAdapter.this.channels.size() > 0) {
+                        if (viewHolder.getAbsoluteAdapterPosition() == 0 && channels.size() > 0) {
                             adapterPosition = 0;
                         }
                         if (adapterPosition >= 0) {
-                            VodChannelAdapter.this.notifyItemChanged(adapterPosition);
-                            VodChannelAdapter vodChannelAdapter = VodChannelAdapter.this;
-                            vodChannelAdapter.nextSelectItem = adapterPosition;
-                            vodChannelAdapter.mSelectedItem = adapterPosition;
-                            vodChannelAdapter.notifyItemChanged(adapterPosition);
+                            notifyItemChanged(adapterPosition);
+                            nextSelectItem = adapterPosition;
+                            mSelectedItem = adapterPosition;
+                            notifyItemChanged(adapterPosition);
                         } else {
                             VodLayout.handler.removeMessages(3);
                             Message obtainMessage = VodLayout.handler.obtainMessage();
@@ -160,8 +157,8 @@ public class VodChannelAdapter extends GridRecyclerViewAdapter<VodChannelAdapter
                             bundle.putBoolean("restrictedAccess", false);
                             obtainMessage.setData(bundle);
                             VodLayout.handler.sendMessage(obtainMessage);
-//                            SopCast.handler.sendEmptyMessage(108);
-//                            VodLayout.menuType = Config.MenuType.f8635d;
+                            MainActivity.handler.sendEmptyMessage(108);
+                            VodLayout.menuType = Config.MenuType.f8635d;
                         }
                     } else {
                         notifyItemChanged(mSelectedItem);
@@ -171,10 +168,9 @@ public class VodChannelAdapter extends GridRecyclerViewAdapter<VodChannelAdapter
                     }
                     viewHolder.favorite.setImageResource(0);
                 } else {
-                    Context context2 = VodChannelAdapter.this.context;
-                    Toast.makeText(context2, vodChannelBean.getTitle() + " " + VodChannelAdapter.this.context.getString(R.string.favorited), Toast.LENGTH_SHORT).show();
+                    Toast.makeText(context, vodChannelBean.getTitle() + " " + context.getString(R.string.favorited), Toast.LENGTH_SHORT).show();
                     VodChannelInstance.addFavoriteChannel(id);
-                    VodChannelAdapter.this.notifyDataSetChanged();
+                    notifyDataSetChanged();
 
                     notifyItemChanged(mSelectedItem);
                     nextSelectItem = recyclerView.getChildLayoutPosition(view);
@@ -192,8 +188,7 @@ public class VodChannelAdapter extends GridRecyclerViewAdapter<VodChannelAdapter
                 nextSelectItem = recyclerView.getChildLayoutPosition(view);
                 mSelectedItem = recyclerView.getChildLayoutPosition(view);
                 notifyItemChanged(mSelectedItem);
-                Config.MenuType menuType = Config.MenuType.VOD;
-                VodLayout.menuType = menuType;
+                VodLayout.menuType = Config.MenuType.VOD;
                 VodChannelBean fullChannelBean = VodChannelInstance.getFullChannelBean(vodChannelBean.getId());
                 if (fullChannelBean == null || fullChannelBean.getEpisodes() == null || fullChannelBean.getEpisodes().isEmpty()) {
                     return;

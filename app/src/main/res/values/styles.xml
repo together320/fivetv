@@ -3454,7 +3454,7 @@
     <style name="roundItemDashboard">
         <item name="color">#ff9e9e9e</item>
         <item name="cornerFamily">rounded</item>
-        <item name="cornerSize">3.0dip</item>
+        <item name="cornerSize">10.0dip</item>
     </style>
     <style name="roundimageview">
         <item name="color">@color/white</item>

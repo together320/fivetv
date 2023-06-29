@@ -338,7 +338,7 @@ public class MenuLayout extends RelativeLayout {
                                     mChannelListAdapter.notifyDataSetChanged();
                                     return true;
                                 }
-                                MainActivity.mMsgHandler.sendEmptyMessage(111);
+                                MainActivity.handler.sendEmptyMessage(111);
                             } else
                                 mChannelListAdapter.notifyDataSetChanged();
                             return true;
@@ -516,7 +516,7 @@ public class MenuLayout extends RelativeLayout {
                             bundle.putString("name", epg.getName());
                             bundle.putString("type", Config.BS_MODE.BSPALYBACK.name());
                             msg.setData(bundle);
-                            MainActivity.mMsgHandler.sendMessage(msg);
+                            MainActivity.handler.sendMessage(msg);
                             if (mChannelListAdapter != null) {
                                 ChannelAdapter.mChild = 0;
                                 mChannelListAdapter.notifyDataSetChanged();
@@ -585,6 +585,6 @@ public class MenuLayout extends RelativeLayout {
         }
         params.putString("type", Config.BS_MODE.BSLIVE.name());
         msg.setData(params);
-        MainActivity.mMsgHandler.sendMessage(msg);
+        MainActivity.handler.sendMessage(msg);
     }
 }

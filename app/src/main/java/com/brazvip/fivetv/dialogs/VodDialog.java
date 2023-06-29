@@ -7,12 +7,8 @@ import android.content.DialogInterface;
 import android.os.Bundle;
 import android.os.Message;
 
-import androidx.annotation.NonNull;
-import androidx.fragment.app.DialogFragment;
-
 import com.brazvip.fivetv.Constant;
 import com.brazvip.fivetv.MainActivity;
-import com.brazvip.fivetv.R;
 import com.lzy.okgo.cookie.SerializableCookie;
 import com.lzy.okgo.model.Progress;
 import java.lang.annotation.Retention;
@@ -109,7 +105,7 @@ public class VodDialog extends Dialog implements DialogInterface.OnCancelListene
         bundle.putString("type", (str3.contains("tvcar://") ? Config.VIDEO_TYPE.BSVOD : Config.VIDEO_TYPE.f8646d).name());
         bundle.putString("menuType", MENU_TYPE.name());
         message.setData(bundle);
-        MainActivity.mMsgHandler.sendMessage(message);
+        MainActivity.handler.sendMessage(message);
         dismissAll();
     }
 }

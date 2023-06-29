@@ -12,16 +12,12 @@ import android.widget.Filter;
 import android.widget.Filterable;
 import android.widget.ImageView;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.brazvip.fivetv.Config;
 import com.brazvip.fivetv.MainActivity;
-import com.brazvip.fivetv.instances.VodChannelInstance;
-import com.brazvip.fivetv.layouts.VodLayout;
-import com.bumptech.glide.Glide;
 import com.brazvip.fivetv.R;
 import com.zhy.autolayout.attr.Attrs;
 import com.zhy.autolayout.attr.AutoAttr;
@@ -29,7 +25,6 @@ import com.zhy.autolayout.utils.AutoUtils;
 
 import com.brazvip.fivetv.beans.ChannelBean;
 import com.brazvip.fivetv.dialogs.PasswordChangeDialog;
-import com.brazvip.fivetv.utils.PrefUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -263,7 +258,7 @@ public class DashboardChannelAdapter extends GridRecyclerViewAdapter<DashboardCh
         bundle.putString("name", name);
         bundle.putString("type", (url.contains("tvcar://") ? Config.BS_MODE.BSVOD : Config.BS_MODE.STATIC).name());
         msg.setData(bundle);
-        MainActivity.mMsgHandler.sendMessage(msg);
+        MainActivity.handler.sendMessage(msg);
     }
 
     @Override 

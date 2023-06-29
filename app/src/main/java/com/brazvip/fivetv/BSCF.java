@@ -42,8 +42,6 @@ public class BSCF {
         Locale locale = Build.VERSION.SDK_INT >= 24 ? LocaleList.getDefault().get(0) : Locale.getDefault();
         language = locale.getLanguage();
         countryCode = locale.getCountry();
-        String str = Build.MODEL;
-        String str2 = Build.BOARD;
         packageName = this.context.getPackageName();
         try {
             appVersionName = this.context.getPackageManager().getPackageInfo(packageName, 0).versionName;

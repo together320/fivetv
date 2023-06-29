@@ -932,12 +932,12 @@ public class PlayerLayout extends FrameLayout {
                     data.putString("videoPath", string5);
                     message2.what = 81;
                     message2.setData(data);
-                    MainActivity.mMsgHandler.sendMessage(message2);
+                    MainActivity.handler.sendMessage(message2);
                     break Label_1086;
                 }
                 message.what = 99;
                 message.arg1 = errors.code;
-                MainActivity.mMsgHandler.sendMessage(message);
+                MainActivity.handler.sendMessage(message);
                 return;
             }
             ((View)this.loadingProgress).setVisibility(View.VISIBLE);
@@ -979,7 +979,7 @@ public class PlayerLayout extends FrameLayout {
             playerSeekbar.setSecondaryProgress(0);
             this.updateDlRate("0B/S");
             this.showProcessBar(0);
-            MainActivity.mMsgHandler.sendEmptyMessage(100);
+            MainActivity.handler.sendEmptyMessage(100);
 //            if (this.videoType == Config.VIDEO_TYPE.BSVOD && this.subtitles != null) {
 //                this.showSubtitle();
 //            }
@@ -1008,8 +1008,8 @@ public class PlayerLayout extends FrameLayout {
     public void showProcessBar(int i) {
         this.playerProcessBar.setVisibility(View.VISIBLE);
         if (i > 0) {
-            MainActivity.mMsgHandler.removeMessages(96);
-            MainActivity.mMsgHandler.sendEmptyMessageDelayed(96, i);
+            MainActivity.handler.removeMessages(96);
+            MainActivity.handler.sendEmptyMessageDelayed(96, i);
         }
     }
 

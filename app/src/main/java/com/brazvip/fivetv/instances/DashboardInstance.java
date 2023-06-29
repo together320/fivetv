@@ -1,5 +1,7 @@
 package com.brazvip.fivetv.instances;
 
+import android.util.Log;
+
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONException;
 import com.alibaba.fastjson.TypeReference;
@@ -14,9 +16,10 @@ import com.brazvip.fivetv.beans.DashboardInfo;
 
 /* loaded from: classes.dex */
 public class DashboardInstance {
+    public static String TAG = "DashboardInstance";
     private static DashboardInstance INSTANCE;
     private List<DashboardInfo> dashboardJson = null;
-    public Map<String, List<String>> groupL1L2Map = new LinkedHashMap();
+    public Map<String, List<String>> groupL1L2Map = null;
     public Map<String, List<DashboardInfo.Line>> groupL2LinesMap = new LinkedHashMap();
 
     /* loaded from: classes.dex */
@@ -60,9 +63,8 @@ public class DashboardInstance {
         if (INSTANCE == null) {
             INSTANCE = new DashboardInstance();
         }
-        DashboardInstance DashboardInstance = INSTANCE;
-        if (DashboardInstance.groupL1L2Map == null) {
-            DashboardInstance.getDashboardCache();
+        if (INSTANCE.groupL1L2Map == null) {
+            INSTANCE.getDashboardCache();
         }
         return INSTANCE;
     }
@@ -77,24 +79,22 @@ public class DashboardInstance {
             ArrayList arrayList = new ArrayList();
             for (DashboardInfo.DashBoardGroup dashBoardGroup : dashboardInfo.groups) {
                 arrayList.add(dashBoardGroup.title);
-                this.groupL2LinesMap.put(dashBoardGroup.title, dashBoardGroup.lines);
+                groupL2LinesMap.put(dashBoardGroup.title, dashBoardGroup.lines);
             }
-            this.groupL1L2Map.put(dashboardInfo.title, arrayList);
+            groupL1L2Map.put(dashboardInfo.title, arrayList);
         }
     }
 
     public boolean getDashboardCache() {
-        if (this.dashboardJson == null) {
+        if (dashboardJson == null) {
             try {
-                this.dashboardJson = (List) JSON.parseObject(LibTvServiceClient.getInstance().getCacheDashboard(), new TypeReference<List<DashboardInfo>>() { // from class: org.sopcast.android.p220b.DashboardInstance.1
-                }, new Feature[0]);
+                dashboardJson = JSON.parseObject(LibTvServiceClient.getInstance().getCacheDashboard(), new TypeReference<List<DashboardInfo>>() { });
             } catch (JSONException e) {
                 System.err.println(e.getMessage());
             }
         }
-        List<DashboardInfo> list = this.dashboardJson;
-        if (list != null) {
-            levelGrouping(list);
+        if (dashboardJson != null) {
+            levelGrouping(dashboardJson);
             return true;
         }
         return false;

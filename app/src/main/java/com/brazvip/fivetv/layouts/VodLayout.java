@@ -33,15 +33,14 @@ import com.brazvip.fivetv.adapters.VodChannelAdapter;
 import com.brazvip.fivetv.adapters.VodGroupAdapter;
 import com.brazvip.fivetv.adapters.VodGroupL1Adapter;
 import com.brazvip.fivetv.beans.vod.VodChannelBean;
-import com.brazvip.fivetv.beans.vod.VodGroupL2;
 import com.brazvip.fivetv.dialogs.MyItemDecoration;
 import com.brazvip.fivetv.instances.VodChannelInstance;
 import com.brazvip.fivetv.keyboard.custom.MyKeyBoardView;
+import com.brazvip.fivetv.utils.PrefUtils;
 import com.brazvip.fivetv.utils.RestApiUtils;
 import com.zhy.autolayout.utils.AutoUtils;
 
 import java.util.List;
-import java.util.Objects;
 
 public class VodLayout extends RelativeLayout implements View.OnKeyListener, View.OnFocusChangeListener,
                                                      View.OnClickListener, View.OnTouchListener {
@@ -82,10 +81,12 @@ public class VodLayout extends RelativeLayout implements View.OnKeyListener, Vie
     /* renamed from: k */
     public static boolean IS_SEARCH_STATE = false;
 
+    private static int restrictedGroupPressCount = 0;
+
     /* renamed from: l */
     public static View mVodChannelView = null;
 
-    private String currentVodGroupL2 = null;
+    private String currentVodGroupL2 = "";
 
     /* renamed from: m */
     public static int f13909m = 0;
@@ -222,6 +223,7 @@ public class VodLayout extends RelativeLayout implements View.OnKeyListener, Vie
         };
 
         initComponent();
+        focusDefaultView();
     }
 
     public boolean isGroupRViewNull() {
@@ -231,6 +233,27 @@ public class VodLayout extends RelativeLayout implements View.OnKeyListener, Vie
     public final boolean focusVodButton() {
         //handler.sendEmptyMessage(SopHandler.EVENT_FOCUS_VOD_BUTTON);
         return true;
+    }
+
+    public void focusDefaultView() {
+        if (groupRView != null && groupRView.getVisibility() == View.VISIBLE) {
+            if (menuType != Config.MenuType.f8635d) {
+                if (groupRView == null)
+                    return;
+                if (IS_SEARCH_STATE) {
+                    searchEt.requestFocus();
+                    searchEt.requestFocusFromTouch();
+                    return;
+                } else if (channelRView.getVisibility() != View.GONE) {
+                    channelRView.requestFocusFromTouch();
+                    return;
+                } else if (searchEt.getVisibility() != View.VISIBLE) {
+                    groupRView.requestFocusFromTouch();
+                    return;
+                }
+            }
+            searchBtnRoot.requestFocusFromTouch();
+        }
     }
 
     public void loadVodLayout() {
@@ -292,84 +315,97 @@ public class VodLayout extends RelativeLayout implements View.OnKeyListener, Vie
     }
 
     private void loadFirstVodGroupL2() {
-        List<VodGroupL2> list;
-        VodGroupAdapter vodGroupAdapter = this.vodGroupAdapter;
-        if (vodGroupAdapter == null || (list = vodGroupAdapter.vodL2Groups) == null || list.isEmpty()) {
+        if (vodGroupAdapter == null)
             return;
-        }
-        VodGroupL2 vodGroupL2 = vodGroupAdapter.vodL2Groups.get(0);
-        loadVodChannelData(vodGroupL2.getId(), vodGroupL2.isRestricted());
+        if (vodGroupAdapter.vodL2Groups == null)
+            return;
+        if (vodGroupAdapter.vodL2Groups.isEmpty())
+            return;
+
+        loadVodChannelData(
+                vodGroupAdapter.vodL2Groups.get(0).getId(),
+                vodGroupAdapter.vodL2Groups.get(0).isRestricted()
+        );
     }
 
     public final void loadVodChannelData(String str, boolean z) {
-        if (channelRView == null || VodChannelInstance.newVodL1L2Groups == null) {
-            Objects.toString(channelRView);
-            Objects.toString(VodChannelInstance.newVodL1L2Groups);
+        if (channelRView == null || VodChannelInstance.newVodL1L2Groups == null)
             return;
-        }
-        if (str != "search" && currentVodGroupL2 == "search") {
+        if (!str.equals("search") && currentVodGroupL2.equals("search"))
             toggleSearchMode("hide");
-        }
-        List<VodChannelBean> favoriteChannels = VodChannelInstance.FAVORITES_GROUP_ID.equals(str) ? VodChannelInstance.getFavoriteChannels() : VodChannelInstance.RESULTS_GROUP_ID.equals(str) ? VodChannelInstance.getChannelsByGroupKey(VodChannelInstance.RESULTS_GROUP_ID, z) : VodChannelInstance.getChannelsByGroupKey(str, z);
+
+        List<VodChannelBean> listVodChannel;
+        if (VodChannelInstance.FAVORITES_GROUP_ID.equals(str))
+            listVodChannel = VodChannelInstance.getFavoriteChannels();
+        else if (VodChannelInstance.RESULTS_GROUP_ID.equals(str))
+            listVodChannel = VodChannelInstance.getChannelsByGroupKey(VodChannelInstance.RESULTS_GROUP_ID, z);
+        else
+            listVodChannel = VodChannelInstance.getChannelsByGroupKey(str, z);
         currentVodGroupL2 = str;
-        if ((favoriteChannels == null || favoriteChannels.size() == 0) && str != "search") {
+        if ((listVodChannel == null || listVodChannel.size() == 0) && !currentVodGroupL2.equals("search")) {
             channelRView.setVisibility(View.GONE);
             if (VodChannelInstance.FAVORITES_GROUP_ID.equals(str)) {
                 favoriteHint.setVisibility(View.VISIBLE);
+            }
+            return;
+        }
+
+        if (!MainActivity.restrictedGroupsUnlocked) {
+            if (z) {
+                if (channelRView.hasFocus()) {
+                    groupRView.requestFocus();
+                    menuType = Config.MenuType.f8632a;
+                }
+                channelRView.setVisibility(View.GONE);
+                if (restrictedGroupPressCount < Config.restrictedGroupMinPress) {
+                    restrictedGroupPressCount++;
+                    PrefUtils.ToastShort(R.string.Click_Restricted_Group);
+                }
                 return;
             }
-            return;
         }
-        favoriteChannels.size();
-        if (MainActivity.restrictedGroupsUnlocked || !z) {
-            try {
-                vodChannelAdapter = new VodChannelAdapter(favoriteChannels, mContext, str, null, new NavigationListener() {
-                    @Override
-                    public boolean navigateAbove() {
-                        if (VodLayout.groupRView.requestFocus()) {
-                            return true;
-                        }
+
+        try {
+            vodChannelAdapter = new VodChannelAdapter(listVodChannel, mContext, str, null, new NavigationListener() {
+                @Override
+                public boolean navigateAbove() {
+                    if (!VodLayout.groupRView.requestFocus())
                         VodLayout.groupL1RView.requestFocus();
-                        return true;
-                    }
+                    return true;
+                }
 
-                    @Override
-                    public boolean navigateBelow() {
-                        return true;
-                    }
+                @Override
+                public boolean navigateBelow() {
+                    return true;
+                }
 
-                    @Override
-                    public boolean navigateLeft() {
-                        if (VodLayout.IS_SEARCH_STATE) {
-                            return VodLayout.this.searchEt.requestFocus();
-                        }
-                        //SopCast.handler.sendEmptyMessage(SopHandler.EVENT_FOCUS_VOD_BUTTON);
-                        return true;
+                @Override
+                public boolean navigateLeft() {
+                    if (VodLayout.IS_SEARCH_STATE) {
+                        return searchEt.requestFocus();
                     }
+                    //SopCast.handler.sendEmptyMessage(SopHandler.EVENT_FOCUS_VOD_BUTTON);
+                    return true;
+                }
 
-                    @Override
-                    public boolean navigateRight() {
-                        return true;
-                    }
-                });
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-            favoriteHint.setVisibility(View.GONE);
-            channelRView.setAdapter(vodChannelAdapter);
-            if (channelRView.getVisibility() == View.GONE) {
-                channelRView.setVisibility(View.VISIBLE);
-            }
-            channelRView.setItemAnimator(null);
-            return;
+                @Override
+                public boolean navigateRight() {
+                    return true;
+                }
+            });
+        } catch (Exception e) {
+            e.printStackTrace();
         }
-
-        groupRView.requestFocus();
-        channelRView.setVisibility(View.GONE);
+        favoriteHint.setVisibility(View.GONE);
+        channelRView.setAdapter(vodChannelAdapter);
+        if (channelRView.getVisibility() == View.GONE) {
+            channelRView.setVisibility(View.VISIBLE);
+        }
+        channelRView.setItemAnimator(null);
     }
 
     private boolean m2359e() {
-        MainActivity.mMsgHandler.sendEmptyMessage(105);
+        MainActivity.handler.sendEmptyMessage(105);
         return true;
     }
 
@@ -431,8 +467,15 @@ public class VodLayout extends RelativeLayout implements View.OnKeyListener, Vie
 
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
+                if (vodChannelAdapter == null || !currentVodGroupL2.equals("search")) {
+                    loadVodChannelData("search", false);
+                }
                 if (vodChannelAdapter != null) {
                     vodChannelAdapter.getFilter().filter(s);
+                    vodChannelAdapter.mSelectedItem = 0;
+                    vodChannelAdapter.nextSelectItem = -1;
+                    vodChannelAdapter.notifyDataSetChanged();
+                    channelRView.scrollToPosition(0);
                 }
             }
 
@@ -456,7 +499,7 @@ public class VodLayout extends RelativeLayout implements View.OnKeyListener, Vie
     public void onClick(View view) {
         int id = view.getId();
         if (id == searchBtnRoot.getId()) {
-            toggleSearchMode(new String[0]);
+            toggleSearchMode();
         } else if (id != backspaceBtn.getId()) {
             if (id == deleteBtn.getId()) {
                 searchEt.setText("");

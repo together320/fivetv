@@ -95,7 +95,7 @@ public class VodChannelInstance {
 
     public static List<VodChannelBean> getChannelsByGroupKey(String str, boolean z) {
         String cacheVodSubgroups;
-        if (cacheVodsSubGroups == null || !cacheVodsSubGroups.containsKey(str) || cacheVodsSubGroups.get(str).size() <= 0) {
+        if (cacheVodsSubGroups == null || !cacheVodsSubGroups.containsKey(str) || cacheVodsSubGroups.get(str).size() == 0) {
             LibTvServiceClient libTvServiceClient = LibTvServiceClient.getInstance();
             synchronized (libTvServiceClient) {
                 cacheVodSubgroups = libTvServiceClient.getCacheVodSubgroups(str);
@@ -104,8 +104,7 @@ public class VodChannelInstance {
                 return new ArrayList();
             }
             try {
-                List<VodChannelBean> list = (List) JSON.parseObject(cacheVodSubgroups, new TypeReference<List<VodChannelBean>>() { // from class: org.sopcast.android.p220b.BSVodChannel.1
-                }, new Feature[0]);
+                List<VodChannelBean> list = (List) JSON.parseObject(cacheVodSubgroups, new TypeReference<List<VodChannelBean>>() { }, new Feature[0]);
                 if (list != null && list.size() > 0) {
                     for (VodChannelBean vodChannelBean : list) {
                         list.get(list.indexOf(vodChannelBean)).restricted = z;

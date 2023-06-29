@@ -26,6 +26,7 @@ import com.brazvip.fivetv.cache.CacheManager;
 import com.brazvip.fivetv.dialogs.LogoutDialog;
 import com.brazvip.fivetv.instances.AuthInstance;
 import com.brazvip.fivetv.instances.ChannelInstance;
+import com.brazvip.fivetv.instances.DashboardInstance;
 import com.brazvip.fivetv.instances.EPGInstance;
 import com.brazvip.fivetv.instances.HistoryInstance;
 import com.brazvip.fivetv.instances.VodChannelInstance;
@@ -58,7 +59,7 @@ public class MainActivity extends AutoLayoutActivity implements View.OnClickList
         PROFILE
     }
 
-    public static Handler mMsgHandler = null;
+    public static Handler handler = null;
 
     private RadioGroup mRadioGroup = null;
     private ImageView mProfileAvatar = null;
@@ -71,7 +72,7 @@ public class MainActivity extends AutoLayoutActivity implements View.OnClickList
     private FrameLayout mLoadingLayout;
     private PlayerLayout mPlayerLayout;
     private MenuLayout mMenuLayout;
-    private DashboardLayout mDashboardlayout;
+    private DashboardLayout mDashlayout;
     private ProfileLayout mProfileLayout;
     private SettingLayout mSettingLayout;
     private RelativeLayout mUserLayout;
@@ -115,11 +116,12 @@ public class MainActivity extends AutoLayoutActivity implements View.OnClickList
         initComponents();
         initMessageHandler();
 
+        DashboardInstance.getInstance();
         ChannelInstance.getAllChannels();
         EPGInstance.getAllEPGs();
         VodChannelInstance.getAllVodGroups();
 
-        if (Constant.OFFLINE_TEST == true) {
+        if (Constant.OFFLINE_TEST) {
             Message msg = new Message();
             msg.what = Constant.MSG_PLAYER_LOADED;
             MainActivity.SendMessage(msg);
@@ -139,7 +141,7 @@ public class MainActivity extends AutoLayoutActivity implements View.OnClickList
         mLoadingLayout = (FrameLayout) findViewById(R.id.loading_layout);
         mPlayerLayout = (PlayerLayout) findViewById(R.id.player_layout);
         mMenuLayout = (MenuLayout) findViewById(R.id.menu_layout);
-        mDashboardlayout = (DashboardLayout) findViewById(R.id.dashboard_layout);
+        mDashlayout = (DashboardLayout) findViewById(R.id.dashboard_layout);
         mProfileLayout = (ProfileLayout) findViewById(R.id.profile_layout);
         mSettingLayout = (SettingLayout) findViewById(R.id.setting_layout);
         mUserLayout = (RelativeLayout) findViewById(R.id.user_info_root);
@@ -232,7 +234,7 @@ public class MainActivity extends AutoLayoutActivity implements View.OnClickList
         mPlayerLayout.setVisibility(View.GONE);
         mLoadingLayout.setVisibility(View.GONE);
         mMenuLayout.setVisibility(View.GONE);
-        mDashboardlayout.setVisibility(View.GONE);
+        mDashlayout.setVisibility(View.GONE);
         mProfileLayout.setVisibility(View.GONE);
         mSettingLayout.setVisibility(View.GONE);
         mHistoryLayout.setVisibility(View.GONE);
@@ -248,18 +250,24 @@ public class MainActivity extends AutoLayoutActivity implements View.OnClickList
         switch (fragment) {
             case DASHBOARD:
                 mRadioGroup.check(R.id.rb_dashboard);
-                mDashboardlayout.setVisibility(View.VISIBLE);
-                mDashboardlayout.mMsgHandler.sendMessage(Message.obtain(this.mMsgHandler, 1, 0, 0));
+                if (checkLoadedValue()) {
+                    mDashlayout.loadDashLayout();
+                    mDashlayout.setVisibility(View.VISIBLE);
+                }
                 break;
             case LIVE:
                 mRadioGroup.check(R.id.rb_live);
-                mMenuLayout.loadMenuLayout();
-                mMenuLayout.setVisibility(View.VISIBLE);
+                if (checkLoadedValue()) {
+                    mMenuLayout.loadMenuLayout();
+                    mMenuLayout.setVisibility(View.VISIBLE);
+                }
                 break;
             case VOD:
                 mRadioGroup.check(R.id.rb_vod);
-                mVodLayout.loadVodLayout();
-                mVodLayout.setVisibility(View.VISIBLE);
+                if (checkLoadedValue()) {
+                    mVodLayout.loadVodLayout();
+                    mVodLayout.setVisibility(View.VISIBLE);
+                }
                 break;
             case HISTORY:
                 mRadioGroup.check(R.id.rb_history);
@@ -285,7 +293,7 @@ public class MainActivity extends AutoLayoutActivity implements View.OnClickList
     }
 
     private void initMessageHandler() {
-        mMsgHandler = new Handler(Looper.getMainLooper()) {
+        handler = new Handler(Looper.getMainLooper()) {
             @Override
             public void handleMessage(Message message) {
                 switch (message.what) {
@@ -337,6 +345,12 @@ public class MainActivity extends AutoLayoutActivity implements View.OnClickList
             refreshFragment(FRAGMENT.DASHBOARD);
     }
 
+    private boolean checkLoadedValue() {
+        if (mLoaded == 0b1111)
+            return true;
+        return false;
+    }
+
     @Override
     public void onBackPressed() {
         if (mCurrFragment == FRAGMENT.PROFILE) {
@@ -385,14 +399,14 @@ public class MainActivity extends AutoLayoutActivity implements View.OnClickList
 
 
     public static void SendMessage(Message msg) {
-        mMsgHandler.sendMessage(msg);
+        handler.sendMessage(msg);
     }
 
     public static void SendMessage(int what) {
         Message msg = new Message();
         msg.what = what;
         msg.arg1 = 0;
-        mMsgHandler.sendMessage(msg);
+        handler.sendMessage(msg);
     }
 
     public static boolean logMemoryStats() {
@@ -421,8 +435,8 @@ public class MainActivity extends AutoLayoutActivity implements View.OnClickList
         params.putString("text", text);
         msg.setData(params);
         msg.arg2 = 1;
-        if (mMsgHandler != null) {
-            mMsgHandler.sendMessage(msg);
+        if (handler != null) {
+            handler.sendMessage(msg);
         }
     }
 
@@ -468,7 +482,7 @@ public class MainActivity extends AutoLayoutActivity implements View.OnClickList
         dialogBuilder.negativeOption = context.getResources().getString(R.string.quit_now);
         dialogBuilder.cancelListener = (dialogInterface, n) -> {
             dialogInterface.dismiss();
-            MainActivity.mMsgHandler.sendEmptyMessage(9999);
+            MainActivity.handler.sendEmptyMessage(9999);
         };
         dialogBuilder.build().show();
     }
