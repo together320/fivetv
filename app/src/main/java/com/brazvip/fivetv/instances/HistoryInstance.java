@@ -17,24 +17,35 @@ import com.brazvip.fivetv.utils.CustomQueue;
 public class HistoryInstance {
     public static final String TAG = "HistoryInstance";
     public static CustomQueue<HistoryBean> liveHistory;
+    public static CustomQueue<HistoryBean> playbackHistory;
     public static CustomQueue<HistoryBean> vodHistory;
+
+    public static int SAVE_ID = 315360000;
 
     public HistoryInstance(Context context) {
         try {
-            Object savedObject = MainActivity.cacheManager.getSavedObject("liveHistory");
-            liveHistory = savedObject != null ? (CustomQueue) savedObject : new CustomQueue<>(Priority.UI_LOW);
-            Object savedObject2 = MainActivity.cacheManager.getSavedObject("vodHistory");
-            vodHistory = savedObject2 != null ? (CustomQueue) savedObject2 : new CustomQueue<>(Priority.UI_NORMAL);
+            liveHistory = (CustomQueue)MainActivity.cacheManager.getSavedObject("liveHistory");
+            if (liveHistory == null)
+                liveHistory = new CustomQueue<>(Priority.UI_LOW);
+
+            playbackHistory = (CustomQueue)MainActivity.cacheManager.getSavedObject("playbackHistory");
+            if (playbackHistory == null)
+                playbackHistory = new CustomQueue<>(Priority.UI_NORMAL);
+
+            vodHistory = (CustomQueue)MainActivity.cacheManager.getSavedObject("vodHistory");
+            if (vodHistory == null)
+                vodHistory = new CustomQueue<>(Priority.UI_NORMAL);
         } catch (IOException ex) {
         }
     }
 
     public static HistoryBean GetLastHistory(String str, String str2) {
-        CustomQueue<HistoryBean> customQueue = vodHistory;
-        if (customQueue == null) {
-            return null;
+        for (HistoryBean historyBean : getList(playbackHistory.toArray())) {
+            if (historyBean.channelId.equals(str) && historyBean.subId.equals(str2)) {
+                return historyBean;
+            }
         }
-        for (HistoryBean historyBean : doNotUse__1(customQueue.toArray())) {
+        for (HistoryBean historyBean : getList(vodHistory.toArray())) {
             if (historyBean.channelId.equals(str) && historyBean.subId.equals(str2)) {
                 return historyBean;
             }
@@ -42,31 +53,46 @@ public class HistoryInstance {
         return null;
     }
 
-    private static List<HistoryBean> doNotUse__1(Object[] objArr) {
-        return m1328a(objArr);
+    private static List<HistoryBean> getList(Object[] objArr) {
+        return doReverse(objArr);
     }
 
     public static HistoryBean getLastHistoryEpisode(String str) {
         CustomQueue<HistoryBean> customQueue;
-        int parseInt;
         HistoryBean historyBean = null;
-        if (str != null && (customQueue = vodHistory) != null) {
-            int i = 0;
+        if (str != null) {
             try {
-                for (HistoryBean historyBean2 : doNotUse__1(customQueue.toArray())) {
-                    if (str.equals(historyBean2.channelId) && (parseInt = Integer.parseInt(historyBean2.subId)) > i) {
-                        historyBean = historyBean2;
+                int i = 0;
+                int parseInt;
+                for (HistoryBean history : getList(playbackHistory.toArray())) {
+                    if (str.equals(history.channelId) && (parseInt = Integer.parseInt(history.subId)) > i) {
+                        historyBean = history;
                         i = parseInt;
                     }
                 }
             } catch (Exception e) {
                 e.printStackTrace();
             }
+
+            if (historyBean == null) {
+                try {
+                    int i = 0;
+                    int parseInt;
+                    for (HistoryBean history : getList(vodHistory.toArray())) {
+                        if (str.equals(history.channelId) && (parseInt = Integer.parseInt(history.subId)) > i) {
+                            historyBean = history;
+                            i = parseInt;
+                        }
+                    }
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
         }
         return historyBean;
     }
 
-    private static <T> List<T> m1328a(Object[] objArr) {
+    private static <T> List<T> doReverse(Object[] objArr) {
         List<T> asList = (List<T>) Arrays.asList(objArr);
         Collections.reverse(asList);
         return asList;
@@ -74,7 +100,21 @@ public class HistoryInstance {
 
     public static void addLiveHistory(HistoryBean historyBean) {
         liveHistory.offer(historyBean);
-        MainActivity.cacheManager.saveObject("liveHistory", liveHistory, 315360000);
+        MainActivity.cacheManager.saveObject("liveHistory", liveHistory, SAVE_ID);
+    }
+
+    public static void addPlaybackHistory(HistoryBean historyBean) {
+        ArrayList arrayList = new ArrayList();
+        Iterator<HistoryBean> it = playbackHistory.iterator();
+        while (it.hasNext()) {
+            HistoryBean next = it.next();
+            if (next.subId.equals(historyBean.subId)) {
+                arrayList.add(next);
+            }
+        }
+        playbackHistory.removeAll(arrayList);
+        playbackHistory.offer(historyBean);
+        MainActivity.cacheManager.saveObject("playbackHistory", playbackHistory, SAVE_ID);
     }
 
     public static void addVodHistory(HistoryBean historyBean) {
@@ -88,19 +128,24 @@ public class HistoryInstance {
         }
         vodHistory.removeAll(arrayList);
         vodHistory.offer(historyBean);
-        MainActivity.cacheManager.saveObject("vodHistory", vodHistory, 315360000);
+        MainActivity.cacheManager.saveObject("vodHistory", vodHistory, SAVE_ID);
     }
 
     public List<HistoryBean> getLiveHistory() {
-        return m1328a(liveHistory.toArray());
+        return doReverse(liveHistory.toArray());
+    }
+
+    public List<HistoryBean> getPlaybackHistory() {
+        return doReverse(playbackHistory.toArray());
     }
 
     public List<HistoryBean> getVodHistory() {
-        return m1328a(vodHistory.toArray());
+        return doReverse(vodHistory.toArray());
     }
 
     public static void saveUpdate() {
-        MainActivity.cacheManager.saveObject("liveHistory", liveHistory, 315360000);
-        MainActivity.cacheManager.saveObject("vodHistory", vodHistory, 315360000);
+        MainActivity.cacheManager.saveObject("liveHistory", liveHistory, SAVE_ID);
+        MainActivity.cacheManager.saveObject("playbackHistory", playbackHistory, SAVE_ID);
+        MainActivity.cacheManager.saveObject("vodHistory", vodHistory, SAVE_ID);
     }
 }

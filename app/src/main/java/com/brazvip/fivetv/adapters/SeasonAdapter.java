@@ -37,11 +37,7 @@ public class SeasonAdapter extends CustomItemAdapter<SeasonAdapter.ViewHolder> {
         this.context = context;
     }
 
-    public static void m1732c(final SeasonAdapter seasonAdapter, final ViewHolder viewHolder, final View view) {
-        seasonAdapter.lambda$onBindViewHolder$0(viewHolder, view);
-    }
-
-    public void lambda$onBindViewHolder$0(ViewHolder viewHolder, View view) {
+    public void selectItem(ViewHolder viewHolder, View view) {
         if (SeriesDialog.getInstance() != null) {
             SeriesDialog.getInstance().episodeAdapter.showEpisodesForSeason(viewHolder.seasonNumber);
         }
@@ -80,7 +76,12 @@ public class SeasonAdapter extends CustomItemAdapter<SeasonAdapter.ViewHolder> {
         if (i == 0 && this.mSelectedItem == 0 && SeriesDialog.getInstance() != null) {
             SeriesDialog.getInstance().episodeAdapter.showEpisodesForSeason(viewHolder.seasonNumber);
         }
-        viewHolder.itemView.setOnClickListener(new ViewOnClickListener2(this, viewHolder, 3));
+        viewHolder.itemView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                selectItem(viewHolder, view);
+            }
+        });
     }
 
     @Override

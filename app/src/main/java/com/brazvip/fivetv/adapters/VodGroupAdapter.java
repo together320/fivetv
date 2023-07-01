@@ -54,11 +54,7 @@ public class VodGroupAdapter extends HRecyclerViewAdapter2<VodGroupAdapter.ViewH
     }
 
     public static int compare(VodGroupL2 vodGroupL2, VodGroupL2 vodGroupL22) {
-        return Integer.valueOf(Integer.parseInt(vodGroupL2._id)).compareTo(Integer.valueOf(Integer.parseInt(vodGroupL22._id)));
-    }
-
-    public static void onFocusChange(ViewHolder viewHolder, View view, boolean z) {
-        viewHolder.itemView.setSelected(z);
+        return Integer.compare(Integer.parseInt(vodGroupL2._id), Integer.parseInt(vodGroupL22._id));
     }
 
     public void sendLoadChannelEvent(VodGroupL2 vodGroupL2) {
@@ -75,13 +71,13 @@ public class VodGroupAdapter extends HRecyclerViewAdapter2<VodGroupAdapter.ViewH
     public void showUnlockDialog(final ViewHolder viewHolder, final VodGroupL2 vodGroupL2) {
         PasswordDialog.Builder builder = new PasswordDialog.Builder(this.context);
         builder.positiveClickListener = new DialogInterface.OnClickListener() {
-            @Override // android.content.DialogInterface.OnClickListener
+            @Override
             public void onClick(DialogInterface dialogInterface, int i) {
                 MainActivity.restrictedGroupsUnlocked = true;
                 viewHolder.grouptypeIcon.setImageResource(R.mipmap.group_type_lock_0);
                 VodGroupAdapter vodGroupAdapter = VodGroupAdapter.this;
                 vodGroupAdapter.notifyItemChanged(vodGroupAdapter.mSelectedItem);
-                VodGroupAdapter.this.sendLoadChannelEvent(vodGroupL2);
+                sendLoadChannelEvent(vodGroupL2);
             }
         };
         builder.build().show();
@@ -126,10 +122,6 @@ public class VodGroupAdapter extends HRecyclerViewAdapter2<VodGroupAdapter.ViewH
             viewHolder.groupName.setTextColor(-1879048193);
         }
         viewHolder.itemView.setOnClickListener(new View.OnClickListener() {
-            public VodGroupAdapter this$0;
-            public VodGroupL2 val$groupL2;
-            public ViewHolder val$holder;
-
             public void onClick(final View view) {
                 notifyItemChanged(mSelectedItem);
                 nextSelectItem = recyclerView.getChildLayoutPosition(view);
@@ -138,18 +130,22 @@ public class VodGroupAdapter extends HRecyclerViewAdapter2<VodGroupAdapter.ViewH
                 if (vodGroupL2.isRestricted()) {
                     if (MainActivity.restrictedGroupsUnlocked) {
                         MainActivity.restrictedGroupsUnlocked = false;
-                        final VodGroupAdapter this$5 = this.this$0;
-                        this$5.notifyItemChanged(this$5.mSelectedItem);
+                        notifyItemChanged(mSelectedItem);
                         viewHolder.grouptypeIcon.setImageResource(R.mipmap.group_type_lock_1);
-                        VodGroupAdapter.this.sendLoadChannelEvent(vodGroupL2);
+                        sendLoadChannelEvent(vodGroupL2);
                     }
                     else {
-                        VodGroupAdapter.this.showUnlockDialog(viewHolder, vodGroupL2);
+                        showUnlockDialog(viewHolder, vodGroupL2);
                     }
                 }
             }
         });
-        viewHolder.itemView.setOnFocusChangeListener((View.OnFocusChangeListener)new ViewOnFocusChangeListener(viewHolder, 1));
+        viewHolder.itemView.setOnFocusChangeListener(new View.OnFocusChangeListener() {
+            @Override
+            public void onFocusChange(View view, boolean b) {
+                viewHolder.itemView.setSelected(b);
+            }
+        });
     }
 
     @Override

@@ -9,7 +9,11 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
+import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
+
+import com.brazvip.fivetv.Constant;
+import com.brazvip.fivetv.MainActivity;
 import com.brazvip.fivetv.R;
 import java.util.List;
 
@@ -50,16 +54,16 @@ public class DashboardGroupL2Adapter extends CustomItemAdapter<DashboardGroupL2A
     
             @Override // android.view.View.OnKeyListener
             public boolean onKey(View view, int i, KeyEvent keyEvent) {
-                return lambda$new$0(this.context, view, i, keyEvent);
+                return onAdapterKey(this.context, view, i, keyEvent);
             }
         }
 
 
-    public static void m1740d(final DashboardGroupL2Adapter dashboardGroupL2Adapter, final int n, final View view) {
-        dashboardGroupL2Adapter.lambda$onBindViewHolder$1(n, view);
+    public static void selectItem(final DashboardGroupL2Adapter dashboardGroupL2Adapter, int index, View view) {
+        dashboardGroupL2Adapter.onItemSelected(index);;
     }
 
-    public boolean lambda$new$0(Context context, View view, int i, KeyEvent keyEvent) {
+    public boolean onAdapterKey(Context context, View view, int i, KeyEvent keyEvent) {
         RecyclerView.LayoutManager layoutManager = this.recyclerView.getLayoutManager();
         if (keyEvent.getAction() != 0) {
             if (keyEvent.getAction() == 1 && HRecyclerViewAdapter2.isReturnKeycode(keyEvent) && (keyEvent.getFlags() & 128) != 128) {
@@ -70,8 +74,8 @@ public class DashboardGroupL2Adapter extends CustomItemAdapter<DashboardGroupL2A
                 return true;
             }
             return false;
-        } else if (i == 4) {
-            //Utils.showQuitDialog(context);
+        } else if (i == KeyEvent.KEYCODE_BACK) {
+            MainActivity.SendMessage(Constant.MSG_SHOW_QUIT_DIALOG);
             return true;
         } else {
             switch (i) {
@@ -95,12 +99,8 @@ public class DashboardGroupL2Adapter extends CustomItemAdapter<DashboardGroupL2A
         }
     }
 
-    public void lambda$onBindViewHolder$1(int i, View view) {
-        onItemSelected(i);
-    }
-
     private void loadItemAt(int i) {
-        Message obtainMessage = DashboardLayout.dashboardHandler.obtainMessage(21);
+        Message obtainMessage = DashboardLayout.dashboardHandler.obtainMessage(DashboardLayout.L2_GROUP_SELECTED);
         Bundle bundle = new Bundle();
         bundle.putString("title", this.l2Titles.get(i));
         obtainMessage.setData(bundle);
@@ -113,7 +113,7 @@ public class DashboardGroupL2Adapter extends CustomItemAdapter<DashboardGroupL2A
     }
 
     @Override
-    public void onBindViewHolder(DashboardGroupL2Adapter.ViewHolder viewHolder, int position) {
+    public void onBindViewHolder(@NonNull DashboardGroupL2Adapter.ViewHolder viewHolder, int position) {
         super.onBindViewHolder(viewHolder, position);
         if (position == 0 && this.mSelectedItem == 0) {
             loadItemAt(0);
@@ -134,12 +134,13 @@ public class DashboardGroupL2Adapter extends CustomItemAdapter<DashboardGroupL2A
 
             @Override
             public void onClick(View view) {
-                DashboardGroupL2Adapter.m1740d((DashboardGroupL2Adapter) this.adapter, this.position, view);
+                DashboardGroupL2Adapter.selectItem((DashboardGroupL2Adapter) this.adapter, this.position, view);
             }
         }
 
+    @NonNull
     @Override // androidx.recyclerview.widget.RecyclerView.Adapter<VH>
-    public ViewHolder onCreateViewHolder(ViewGroup viewGroup, int i) {
+    public ViewHolder onCreateViewHolder(@NonNull ViewGroup viewGroup, int i) {
         return new ViewHolder(LayoutInflater.from(this.mContext).inflate(R.layout.dash_group_l2_item, viewGroup, false));
     }
 

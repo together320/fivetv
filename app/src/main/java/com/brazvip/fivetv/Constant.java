@@ -16,6 +16,8 @@ public class Constant {
     public static final String REGISTER_URL = "https://auth1.braz.vip/api/v2/register";
     public static final String DEFAULT_MAIL_SUFFIX = "@p2five.com";
 
+    public static final int MSG_SHOW_QUIT_DIALOG = -10;
+    public static final int MSG_QUIT_APP = -1;
     public static final int MSG_LOGIN_SUCCESS = 1;
     public static final int MSG_LOGIN_FAIL = 2;
     public static final int MSG_CHANNEL_LOADED = 3;
@@ -29,11 +31,18 @@ public class Constant {
     public static final int MSG_PLAYER_RESUME = 84;
     public static final int MSG_PLAYER_HIDEPROCESSBAR = 96;
     public static final int MSG_PLAYER_CHECKPLAYER = 201;
+    public static final int MSG_SHOW_TOAST = 250;
     public static final int MSG_LIBTV_SERVICE_CONNECTED = 300;
     public static final int MSG_LIVTV_SERVICE_DISCONNECTED = 301;
     public static final int MSG_LIVTV_SERVICE_BINDING_DIED = 302;
     public static final int MSG_LIVTV_SERVICE_BINDING_NULL = 303;
+    public static final int EVENT_RELOAD_VOD_GROUPS = 405;
 
+    public static final int EVENT_FOCUS_DASH_BUTTON = 1010;
+    public static final int EVENT_FOCUS_LIVE_BUTTON = 1011;
+    public static final int EVENT_FOCUS_VOD_BUTTON = 1012;
+    public static final int EVENT_FOCUS_HISTORY_BUTTON = 1013;
+    public static final int EVENT_FOCUS_SETTINGS_BUTTON = 1014;
     public static final int GROUP_FAVORITE = -5;
     public static final int GROUP_PLAYBACK = -4;
     public static final int GROUP_ALL = -3;

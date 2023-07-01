@@ -5,6 +5,10 @@ import android.view.KeyEvent;
 import android.view.View;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.brazvip.fivetv.Constant;
+import com.brazvip.fivetv.MainActivity;
+import com.brazvip.fivetv.layouts.PlayerLayout;
+
 
 public abstract class HRecyclerViewAdapter<VH extends RecyclerView.ViewHolder> extends RecyclerView.Adapter<VH> {
 
@@ -50,11 +54,11 @@ public abstract class HRecyclerViewAdapter<VH extends RecyclerView.ViewHolder> e
             public boolean onKey(View view, int keyCode, KeyEvent keyEvent) {
                 RecyclerView.LayoutManager layoutManager = recyclerView.getLayoutManager();
                 if (keyEvent.getAction() == 0 && keyCode == 4) {
-//                    if (SopCast.isPlaying() && SopCast.isMenuDisplayed) {
-//                        SopCast.handler.sendEmptyMessage(100);
-//                        return true;
-//                    }
-//                    Utils.showQuitDialog(HRecyclerViewAdapter.this.context);
+                    if (PlayerLayout.isPlaying()) { // && MainActivity.isMenuDisplayed) {
+                        //SopCast.handler.sendEmptyMessage(100);
+                        return true;
+                    }
+                    MainActivity.SendMessage(Constant.MSG_SHOW_QUIT_DIALOG);
                     return true;
                 } else if (keyEvent.getAction() != 0) {
                     if (keyEvent.getAction() == 1 && HRecyclerViewAdapter.m1383a(keyEvent) && (keyEvent.getFlags() & 128) != 128) {

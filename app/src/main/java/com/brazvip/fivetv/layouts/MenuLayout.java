@@ -7,6 +7,7 @@ import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
 import android.util.AttributeSet;
+import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.AdapterView;
@@ -23,52 +24,59 @@ import com.brazvip.fivetv.R;
 import com.brazvip.fivetv.adapters.GroupAdapter;
 import com.brazvip.fivetv.adapters.ChannelAdapter;
 import com.brazvip.fivetv.adapters.EpgAdapter;
+import com.brazvip.fivetv.adapters.MenuAdapter;
 import com.brazvip.fivetv.beans.Group;
 import com.brazvip.fivetv.beans.ChannelBean;
 import com.brazvip.fivetv.beans.EpgBeans;
-import com.brazvip.fivetv.dialogs.PasswordChangeDialog;
+import com.brazvip.fivetv.dialogs.PasswordDialog;
 import com.brazvip.fivetv.instances.ChannelInstance;
 import com.brazvip.fivetv.instances.EPGInstance;
-import com.brazvip.fivetv.utils.PrefUtils;
+import com.brazvip.fivetv.utils.Utils;
+import com.lzy.okgo.cookie.SerializableCookie;
+import com.lzy.okgo.model.Progress;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 
-public class MenuLayout extends RelativeLayout {
-    public ListView mGroupListView;
-    public ListView mChannelListView;
-    public ExpandableListView mEpgListView;
+public class MenuLayout extends RelativeLayout implements View.OnKeyListener {
+    public ListView groupListView;
+    public ListView channelListView;
+    public ExpandableListView epgListView;
 
-    public GroupAdapter mGroupListAdapter;
+    public GroupAdapter groupListAdapter;
 
-    public ChannelAdapter mChannelListAdapter;
+    public ChannelAdapter channelAdapter;
 
-    public EpgAdapter mEpgAdapter;
+    public EpgAdapter epgAdapter;
 
-    public static Handler mMsgHandler = null;
+    public static Handler handler = null;
 
-    public HashMap<Integer, Group> mGroupMap;
+    public MenuAdapter menuAdapter;
+    public Config.MenuType menuType;
 
-    public View mSelectedGroupView;
-    public View mSelectedChannelView = null;
+    public HashMap<Integer, Group> groupChannelMap;
 
-    public View mSelectedEPGView = null;
-
-    public Config.CHANNEL_TYPE mChannelType;
-    
-    public static int mSelectedChannelChild = 0;
-
-    public static boolean mTouchFlag = false;
-
-    public boolean isItemSelected = true;
+    public View selectedGroupView;
+    public View selectedChannelView = null;
+    public View selectedEpgView = null;
 
     public boolean f13823B = true;
 
-    public boolean f13824C = false;
-    public boolean isLoaded = false;
+    public boolean f9007pa = true;
+
+    public boolean f9009ra = true;
+    public boolean f9010sa = true;
+    public boolean inited = false;
+
+    public static int currentCHID = 0;
+    public static int f8992aa = 0;
+    public static int f8993ba = 0;
+    public static boolean fromTouch = false;
 
     public MenuLayout(Context context) {
         super(context);
@@ -88,7 +96,7 @@ public class MenuLayout extends RelativeLayout {
     private void init(Context context) {
         LayoutInflater.from(context).inflate(R.layout.menu_layout, this, true);
 
-        mMsgHandler = new Handler(Looper.getMainLooper()) {
+        handler = new Handler(Looper.getMainLooper()) {
             @Override // android.os.Handler
             public void handleMessage(Message message) {
                 int code = message.what;
@@ -97,7 +105,7 @@ public class MenuLayout extends RelativeLayout {
                 } else if (code == 2) {
                     loadChannelData(message.arg1);
                 } else if (code == 3) {
-                    loadEpgListChannel(message.arg1);
+                    loadEPGData(message.arg1);
                 }
                 super.handleMessage(message);
             }
@@ -107,119 +115,117 @@ public class MenuLayout extends RelativeLayout {
     }
 
     private void initComponents() {
-        mGroupListView = (ListView) findViewById(R.id.group_listview);
-        mChannelListView = (ListView) findViewById(R.id.channel_listview);
-        mEpgListView = (ExpandableListView) findViewById(R.id.epg_listview);
+        groupListView = (ListView) findViewById(R.id.group_listview);
+        channelListView = (ListView) findViewById(R.id.channel_listview);
+        epgListView = (ExpandableListView) findViewById(R.id.epg_listview);
     }
 
     public void loadMenuLayout() {
         Config.isPlayStarted = false;
-        mGroupListView.requestFocusFromTouch();
+        groupListView.requestFocusFromTouch();
 
-        if (isLoaded)
+        if (inited)
             return;
-        isLoaded = true;
+        inited = true;
 
-        mGroupListView.setVisibility(VISIBLE);
-        mChannelListView.setVisibility(GONE);
-        mEpgListView.setVisibility(GONE);
+        groupListView.setVisibility(VISIBLE);
+        channelListView.setVisibility(GONE);
+        epgListView.setVisibility(GONE);
 
         loadGroupData();
     }
 
     public void loadGroupData() {
-        try {
-            mGroupMap = ChannelInstance.groupChannelMap;
-            if (mGroupMap == null || mGroupMap.size() == 0) {
+        if (this.inited) {
+            HashMap<Integer, Group> hashMap = ChannelInstance.groupChannelMap;
+            this.groupChannelMap = hashMap;
+            if (hashMap == null || hashMap.size() == 0) {
                 return;
             }
-
-            mGroupListAdapter = new GroupAdapter(getContext(), mGroupMap, mGroupListView);
-            mGroupListView.setAdapter(mGroupListAdapter);
-            if (this.mGroupListView.getVisibility() == View.GONE) {
-                this.mGroupListView.setVisibility(View.VISIBLE);
+            try {
+                this.groupChannelMap.size();
+                this.menuAdapter = new MenuAdapter(getContext(), this.groupChannelMap, this.groupListView);
+            } catch (Exception e) {
+                e.printStackTrace();
             }
+            this.groupListView.setAdapter((ListAdapter) this.menuAdapter);
+            if (this.groupListView.getVisibility() == View.GONE) {
+                this.groupListView.setVisibility(View.VISIBLE);
+            }
+            this.groupListView.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+                public boolean f8976a = true;
 
-            mGroupListView.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
-
-                public boolean isSelected = true;
-
-                @Override
-                public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                @Override // android.widget.AdapterView.OnItemSelectedListener
+                public void onItemSelected(AdapterView<?> adapterView, View view, int i, long j) {
                     if (view != null) {
-                        mSelectedGroupView = view;
-                        isItemSelected = true;
-
-                        int arg = ((Integer) view.getTag()).intValue();
-                        MenuLayout.mMsgHandler.removeMessages(2);
-                        MenuLayout.mMsgHandler.sendMessage(Message.obtain(MenuLayout.mMsgHandler, 2, arg, 0));
-
-                        if (isSelected) {
-                            isSelected = false;
+                        selectedGroupView = view;
+                        int intValue = (Integer) view.getTag();
+                        if (ChannelInstance.groupChannelMap != null) {
+                            MainActivity.groupType = ChannelInstance.groupChannelMap.get(intValue).type;
+                        }
+                        f9009ra = true;
+                        handler.removeMessages(2);
+                        handler.sendMessage(Message.obtain(handler, 2, intValue, 0));
+                        if (this.f8976a) {
+                            this.f8976a = false;
                         } else {
                             view.setBackgroundResource(R.drawable.group_focus_bg);
                         }
                     }
                 }
 
-                @Override
-                public void onNothingSelected(AdapterView<?> parent) {
-
+                @Override // android.widget.AdapterView.OnItemSelectedListener
+                public void onNothingSelected(AdapterView<?> adapterView) {
                 }
             });
-
-            mGroupListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-                @Override
-                public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                    mGroupListView.requestFocusFromTouch();
-                    mGroupListView.setSelection(position);
-                    mChannelType = Config.CHANNEL_TYPE.GROUP;
-                    mSelectedGroupView = view;
-
-                    Integer tag = (Integer) view.getTag();
-                    if (tag != null) {
-                        int index = tag.intValue();
-                        if (mGroupMap != null) {
-                            Group group = mGroupMap.get(tag);
-                            if ((group != null) && group.restrictedAccess) {
-                                if (MainActivity.isRestrictedAccess) {
-                                    MainActivity.isRestrictedAccess = false;
-                                    mGroupListAdapter.notifyDataSetChanged();
-                                    MenuLayout.mMsgHandler.removeMessages(2);
-                                    MenuLayout.mMsgHandler.sendMessage(Message.obtain(MenuLayout.mMsgHandler, 2, index, 0));
-                                } else {
-                                    PasswordChangeDialog.Helper helper = new PasswordChangeDialog.Helper(getContext());
-                                    helper.setClickListener(new DialogInterface.OnClickListener() { //DialogInterface$OnClickListenerC3544g(this, index, position, view)
-                                        @Override
-                                        public void onClick(DialogInterface dialog, int which) {
-                                            MainActivity.isRestrictedAccess = true;
-                                            mGroupListAdapter.notifyDataSetChanged();
-                                            MenuLayout.mMsgHandler.removeMessages(2);
-                                            MenuLayout.mMsgHandler.sendMessage(Message.obtain(MenuLayout.mMsgHandler, 2, index, 0));
-                                            mGroupListView.requestFocusFromTouch();
-                                            mGroupListView.setSelection(position);
-                                            view.setBackgroundResource(R.drawable.group_focus_bg);
-                                        }
-                                    });
-                                    helper.create().show();
-                                }
+            this.groupListView.setOnItemClickListener(new AdapterView.OnItemClickListener() { // from class: org.sopcast.android.fragment.3
+                @Override // android.widget.AdapterView.OnItemClickListener
+                public void onItemClick(AdapterView<?> adapterView, final View view, final int i, long j) {
+                    groupListView.requestFocusFromTouch();
+                    groupListView.setSelection(i);
+                    menuType = Config.MenuType.f8632a;
+                    selectedGroupView = view;
+                    if (view.getTag() != null) {
+                        final int key = (Integer) view.getTag();
+                        Group group;
+                        if (groupChannelMap != null && (group = groupChannelMap.get(key)) != null && group.restrictedAccess) {
+                            if (MainActivity.restrictedGroupsUnlocked) {
+                                f8993ba = 0;
+                                MainActivity.restrictedGroupsUnlocked = false;
+                                menuAdapter.notifyDataSetChanged();
+                                handler.removeMessages(2);
+                                handler.sendMessage(Message.obtain(handler, 2, key, 0));
+                            } else {
+                                PasswordDialog.Builder builder = new PasswordDialog.Builder(getContext());
+                                builder.positiveClickListener = new DialogInterface.OnClickListener() {
+                                    @Override // android.content.DialogInterface.OnClickListener
+                                    public void onClick(DialogInterface dialogInterface, int i2) {
+                                        MainActivity.restrictedGroupsUnlocked = true;
+                                        menuAdapter.notifyDataSetChanged();
+                                        handler.removeMessages(2);
+                                        handler.sendMessage(Message.obtain(handler, 2, key, 0));
+                                        groupListView.requestFocusFromTouch();
+                                        groupListView.setSelection(i);
+                                        view.setBackgroundResource(R.drawable.group_focus_bg);
+                                    }
+                                };
+                                builder.build().show();
                             }
                         }
-                        MenuLayout.mMsgHandler.removeMessages(2);
-                        MenuLayout.mMsgHandler.sendMessage(Message.obtain(MenuLayout.mMsgHandler, 2, index, 0));
-                        mGroupListAdapter.notifyDataSetChanged();
+                        handler.removeMessages(2);
+                        handler.sendMessage(Message.obtain(handler, 2, key, 0));
+                        menuAdapter.notifyDataSetChanged();
                     }
                     view.setBackgroundResource(R.drawable.group_focus_bg);
                 }
             });
-            mGroupListView.setVerticalScrollBarEnabled(false);
-
-            Integer[] numArr = (Integer[]) this.mGroupMap.keySet().toArray(new Integer[0]);
+            this.groupListView.setVerticalScrollBarEnabled(false);
+            Integer[] numArr = (Integer[]) this.groupChannelMap.keySet().toArray(new Integer[0]);
             if (numArr == null || numArr.length <= 0) {
                 return;
             }
             Arrays.sort(numArr, new Comparator<Integer>() {
-                @Override
+                @Override // java.util.Comparator
                 public int compare(Integer num, Integer num2) {
                     if (num == null && num2 == null) {
                         return 0;
@@ -237,184 +243,184 @@ public class MenuLayout extends RelativeLayout {
             if (num == null) {
                 return;
             }
-            int arg = num.intValue();
-            MenuLayout.mMsgHandler.removeMessages(2);
-            MenuLayout.mMsgHandler.sendMessage(Message.obtain(MenuLayout.mMsgHandler, 2, arg, 0));
-        } catch (Exception e) {
-            e.printStackTrace();
+            int intValue = num.intValue();
+            handler.removeMessages(2);
+            Handler handler2 = handler;
+            handler2.sendMessage(Message.obtain(handler2, 2, intValue, 0));
         }
     }
 
-    public void loadChannelData(int key) {
-        if (mChannelListView == null)
+    public void loadChannelData(int index) {
+        if (this.channelListView == null) {
             return;
-        Group group = mGroupMap.get(key);
-        List<ChannelBean> channels = loadChannelByGroup(key);
-        if (channels != null && channels.size() > 0) {
-            if (!MainActivity.isRestrictedAccess && group.restrictedAccess) {
-                //String log = "restrictedAccess: " + mShowGroups.get(key).name;
-                if (!MainActivity.f16805n || mChannelListView.hasFocus() || mEpgListView.hasFocus()) {
-                    mGroupListView.requestFocus();
-                    mChannelType = Config.CHANNEL_TYPE.GROUP;
-                }
-                mChannelListView.setVisibility(View.GONE);
-                mEpgListView.setVisibility(View.GONE);
-                return;
+        }
+        List<ChannelBean> channelList = new ArrayList<>();
+        Group group = this.groupChannelMap.get(index);
+        if (this.groupChannelMap != null && group != null) {
+            channelList = group.channnels;
+        }
+        if (channelList == null || channelList.size() == 0) {
+            this.channelListView.hasFocus();
+            this.epgListView.hasFocus();
+            if (this.channelListView.hasFocus() || this.epgListView.hasFocus()) {
+                this.menuType = Config.MenuType.f8632a;
             }
+            this.channelListView.setVisibility(View.GONE);
+            this.epgListView.setVisibility(View.GONE);
+        } else if (!MainActivity.restrictedGroupsUnlocked && group.restrictedAccess) {
+            if (this.channelListView.hasFocus() || this.epgListView.hasFocus()) {
+                this.menuType = Config.MenuType.f8632a;
+            }
+            this.channelListView.setVisibility(View.GONE);
+            this.epgListView.setVisibility(View.GONE);
+            if (f8993ba < Config.restrictedGroupMinPress) {
+                f8993ba++;
+                MainActivity.prepareToast(R.string.Click_Restricted_Group);
+            }
+        } else {
             try {
-                mChannelListAdapter = new ChannelAdapter(key, channels, getContext(), mChannelListView);
+                this.channelAdapter = new ChannelAdapter(index, channelList, getContext(), this.channelListView);
             } catch (Exception e) {
                 e.printStackTrace();
             }
-            if (mChannelListAdapter == null) {
+            if (channelAdapter == null) {
                 return;
             }
-            mChannelListView.setAdapter((ListAdapter) mChannelListAdapter);
-            if (mChannelListView.getVisibility() == View.GONE) {
-                mChannelListView.setVisibility(View.VISIBLE);
+            this.channelListView.setAdapter(channelAdapter);
+            if (this.channelListView.getVisibility() == View.GONE) {
+                this.channelListView.setVisibility(View.VISIBLE);
             }
-            mChannelListView.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() { //C3546i
-                @Override
-                public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+            this.channelListView.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+                @Override // android.widget.AdapterView.OnItemSelectedListener
+                public void onItemSelected(AdapterView<?> adapterView, View view, int i2, long j) {
                     if (view != null) {
-                        mSelectedChannelView = view;
-                        MenuLayout.mMsgHandler.removeMessages(3);
-                        f13823B = true;
-                        ChannelBean channel = (ChannelBean) view.getTag();
-                        if (channel != null) {
-                            //int epg = channel.getEpgSameAs() > 0 ? channel.getEpgSameAs() : channel.getChid();
-                            int epg = channel.getEpgSameAs();
-                            if (epg < 1) epg = channel.getChid();
-                            Message msg = new Message();
-                            msg.what = 3;
-                            msg.arg1 = epg;
-                            MenuLayout.mMsgHandler.sendMessage(msg);
-                            if (isItemSelected) {
-                                isItemSelected = false;
-                                view.clearFocus();
-                            } else {
-                                view.setBackgroundResource(R.drawable.channel_focus_bg);
+                        selectedChannelView = view;
+                        handler.removeMessages(3);
+                        f9010sa = true;
+                        ChannelBean channelBean = (ChannelBean) view.getTag();
+                        if (channelBean != null) {
+                            int chid = channelBean.getChid();
+                            if (channelBean.getEpgSameAs() > 0 && ChannelInstance.liveChannels.get(channelBean.getEpgSameAs()) != null) {
+                                chid = channelBean.getEpgSameAs();
                             }
+                            Message message = new Message();
+                            message.what = 3;
+                            message.arg1 = chid;
+                            handler.sendMessage(message);
+                            if (!f9009ra) {
+                                view.setBackgroundResource(R.drawable.channel_focus_bg);
+                                return;
+                            }
+                            f9009ra = false;
+                            view.clearFocus();
                         }
                     }
                 }
 
-                @Override
-                public void onNothingSelected(AdapterView<?> parent) {
-
+                @Override // android.widget.AdapterView.OnItemSelectedListener
+                public void onNothingSelected(AdapterView<?> adapterView) {
                 }
             });
-
-            mChannelListView.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
-                @Override
-                public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
-                    mChannelListView.requestFocusFromTouch();
-                    mChannelListView.setSelection(position);
-
-                    ChannelBean channel = (ChannelBean) view.getTag();
-                    if (channel != null) {
-//                        List<ChannelBean.SourcesBean> sources = channel.getSources();
-//                        if (sources == null || sources.size() == 0)
-//                            return false;
-//                        String source = sources.get(0).getAddress();
-//                        if ((source == null) || source.isEmpty())
-//                            return false;
-                        mChannelListAdapter.notifyDataSetChanged();
-                        if (mEpgAdapter != null) {
-                            EpgAdapter.selectedChildId = "";
-                            mEpgAdapter.notifyDataSetChanged();
-                        }
-                        int child = channel.getChid();
-                        if (ChannelInstance.favoriteLiveChannels.contains("" + child)) {
-                            Toast.makeText(getContext(), channel.getName().getInit() + " " +
-                                    getContext().getString(R.string.remove_fav), Toast.LENGTH_SHORT).show();
-                            ChannelInstance.favoriteLiveChannels.remove("" + child);
-                            PrefUtils.setPrefStringSet(Config.SP_FAV_LIVE_CHANNEL, ChannelInstance.favoriteLiveChannels);
-                            ChannelInstance.channelGrouping();
-                            if (key == Constant.GROUP_FAVORITE) {
-                                List<ChannelBean> list2 = ChannelInstance.groupChannelMap.get(Constant.GROUP_FAVORITE).channnels;
-                                if (list2 != null && list2.size() > 0) {
-                                    mChannelListAdapter.mList = list2;
-                                    mChannelListAdapter.notifyDataSetChanged();
-                                    return true;
-                                }
-                                MainActivity.handler.sendEmptyMessage(111);
-                            } else
-                                mChannelListAdapter.notifyDataSetChanged();
-                            return true;
-                        }
-                        Toast.makeText(getContext(), channel.getName().getInit() + " " +
-                                getContext().getString(R.string.favorite_added), Toast.LENGTH_SHORT).show();
-                        ChannelInstance.favoriteLiveChannels.add("" + child);
-                        PrefUtils.setPrefStringSet(Config.SP_FAV_LIVE_CHANNEL, ChannelInstance.favoriteLiveChannels);
+            this.channelListView.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
+                @Override // android.widget.AdapterView.OnItemLongClickListener
+                public boolean onItemLongClick(AdapterView<?> adapterView, View view, int i2, long j) {
+                    channelListView.requestFocusFromTouch();
+                    channelListView.setSelection(index);
+                    ChannelBean channelBean = (ChannelBean) view.getTag();
+                    if (channelBean == null) {
+                        return true;
+                    }
+                    if (channelBean.getSources() == null || channelBean.getSources().size() == 0 || channelBean.getSources().get(0).getAddress() == null) {
+                        return false;
+                    }
+                    channelAdapter.notifyDataSetChanged();
+                    if (epgAdapter != null) {
+                        EpgAdapter.f8722a = "";
+                        epgAdapter.notifyDataSetChanged();
+                    }
+                    int chid = channelBean.getChid();
+                    Set<String> set = ChannelInstance.favoriteLiveChannels;
+                    if (!set.contains("" + chid)) {
+                        Context context = getContext();
+                        Toast.makeText(context, channelBean.getName().getInit() + " " + getContext().getString(R.string.favorited), Toast.LENGTH_SHORT).show();
+                        Set<String> set2 = ChannelInstance.favoriteLiveChannels;
+                        set2.add("" + chid);
+                        Utils.saveSPStringSet(Config.SP_FAV_LIVE_CHANNEL, ChannelInstance.favoriteLiveChannels);
                         ChannelInstance.channelGrouping();
-                        if ((mGroupMap != null) && (mGroupMap.size() > 0)) {
-                            mGroupListAdapter.mGroupData = mGroupMap;
-                            mGroupListAdapter.notifyDataSetChanged();
+                        groupChannelMap = ChannelInstance.groupChannelMap;
+                        HashMap<Integer, Group> hashMap = groupChannelMap;
+                        if (hashMap != null && hashMap.size() > 0) {
+                            menuAdapter.groupedMenus = groupChannelMap;
+                            menuAdapter.notifyDataSetChanged();
                             return true;
                         }
                         return true;
                     }
+                    Context context2 = getContext();
+                    Toast.makeText(context2, channelBean.getName().getInit() + " " + getContext().getString(R.string.remove_fav), Toast.LENGTH_SHORT).show();
+                    Set<String> set3 = ChannelInstance.favoriteLiveChannels;
+                    set3.remove("" + chid);
+                    Utils.saveSPStringSet(Config.SP_FAV_LIVE_CHANNEL, ChannelInstance.favoriteLiveChannels);
+                    ChannelInstance.channelGrouping();
+                    if (i2 != -5) {
+                        channelAdapter.notifyDataSetChanged();
+                        return true;
+                    }
+
+                    List<ChannelBean> list = ChannelInstance.groupChannelMap.get(-5).channnels;
+                    if (list == null || list.size() == 0) {
+                        MainActivity.handler.sendEmptyMessage(Constant.EVENT_FOCUS_LIVE_BUTTON);
+                        return true;
+                    }
+                    channelAdapter.channels = list;
+                    channelAdapter.notifyDataSetChanged();
                     return true;
                 }
             });
-
-            mChannelListView.setOnItemClickListener(new AdapterView.OnItemClickListener() { //C3548k
-                @Override
-                public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                    mChannelListView.requestFocusFromTouch();
-                    mChannelListView.setSelection(position);
-                    //String log = "################## onItemClick " + position + " from touch: " + MenuLayout.mTouchFlag;
-                    ChannelBean channel = (ChannelBean) view.getTag();
-                    if (MenuLayout.mTouchFlag && MenuLayout.mSelectedChannelChild != channel.getChid()) {
-                        MenuLayout.mSelectedChannelChild = channel.getChid();
-                        //int epg = channel.getEpgSameAs() > 0 ? channel.getEpgSameAs() : channel.getChid();
-                        int epg = channel.getEpgSameAs();
-                        if (epg < 1) epg = channel.getChid();
-                        MenuLayout.sendLoadEpgEvent(epg);
-                    } else if (channel != null) { //cond_1
-                        List<ChannelBean.SourcesBean> sources = channel.getSources();
-                        if (sources == null || sources.size() == 0 || sources.get(0) == null)
-                            return; //cond_5, goto_1
-                        String address = sources.get(0).getAddress();
-                        if (address == null || address.isEmpty())
+            this.channelListView.setOnItemClickListener(new AdapterView.OnItemClickListener() { // from class: org.sopcast.android.fragment.7
+                @Override // android.widget.AdapterView.OnItemClickListener
+                public void onItemClick(AdapterView<?> adapterView, View view, int i2, long j) {
+                    channelListView.requestFocusFromTouch();
+                    channelListView.setSelection(i2);
+                    ChannelBean channelBean = (ChannelBean) view.getTag();
+                    if (fromTouch && channelBean != null && currentCHID != channelBean.getChid()) {
+                        currentCHID = channelBean.getChid();
+                        int epgSameAs = channelBean.getEpgSameAs() > 0 ? channelBean.getEpgSameAs() : channelBean.getChid();
+                        Message message = new Message();
+                        message.what = 3;
+                        message.arg1 = epgSameAs;
+                        handler.sendMessage(message);
+                    } else if (channelBean != null) {
+                        if (channelBean.getSources() == null || channelBean.getSources().size() == 0 || channelBean.getSources().get(0).getAddress() == null) {
                             return;
-                        ChannelAdapter.mChild = channel.getChid();
-                        if (mEpgAdapter != null) {
-                            EpgAdapter.selectedChildId = "";
-                            mEpgAdapter.notifyDataSetChanged();
                         }
-                        /*address = channel.getSources().get(0).getAddress();
+                        ChannelAdapter.f8718a = channelBean.getChid();
+                        if (epgAdapter != null) {
+                            EpgAdapter.f8722a = "";
+                            epgAdapter.notifyDataSetChanged();
+                        }
+                        String address = channelBean.getSources().get(0).getAddress();
                         if (address == null || address.equals("")) {
                             return;
-                        }*/
-                        startLiveChannel(channel);
-                        mChannelType = Config.CHANNEL_TYPE.CHANNEL;
-                        mSelectedChannelView = view;
+                        }
+                        playLive(channelBean);
+                        menuType = Config.MenuType.LIVE;
+                        selectedChannelView = view;
                     }
-                    //cond_6, goto_2
-                    MenuLayout.mTouchFlag = false;
-                    mChannelListAdapter.notifyDataSetChanged();
+                    fromTouch = false;
+                    channelAdapter.notifyDataSetChanged();
                     view.setBackgroundResource(R.drawable.channel_focus_bg);
                 }
             });
-
-            int epg = ((ChannelBean) channels.get(0)).getEpgSameAs() > 0 ?
-                    ((ChannelBean) channels.get(0)).getEpgSameAs() :
-                    ((ChannelBean) channels.get(0)).getChid();
+            int chid = (channelList.get(0)).getChid();
+            if ((channelList.get(0)).getEpgSameAs() > 0 && ChannelInstance.liveChannels.get((channelList.get(0)).getEpgSameAs()) != null) {
+                chid = (channelList.get(0)).getEpgSameAs();
+            }
             Message message = new Message();
             message.what = 3;
-            message.arg1 = epg;
-            mMsgHandler.sendMessage(message);
-            return;
+            message.arg1 = chid;
+            handler.sendMessage(message);
         }
-
-        if (!MainActivity.f16805n || mChannelListView.hasFocus() || mEpgListView.hasFocus()) {
-            mGroupListView.requestFocus();
-            mChannelType = Config.CHANNEL_TYPE.GROUP;
-        }
-        mChannelListView.setVisibility(View.GONE);
-        mEpgListView.setVisibility(View.GONE);
     }
 
     public List<ChannelBean> loadChannelByGroup(int groupId) {
@@ -427,19 +433,17 @@ public class MenuLayout extends RelativeLayout {
                 }
             }
         } else {
-            channels = mGroupMap.get(groupId).channnels;
+            channels = groupChannelMap.get(groupId).channnels;
         }
 
         return channels;
     }
 
-    public void loadEpgListChannel(int index) {
-        if (mEpgListView == null ||
-            EPGInstance.liveEpgsMap == null ||
-            EPGInstance.liveEpgsMap.get(Integer.valueOf(index)) == null ||
-            ((HashMap) EPGInstance.liveEpgsMap.get(Integer.valueOf(index))).size() == 0) {
-
-            ExpandableListView expandableListView = mEpgListView;
+    public void loadEPGData(int index) {
+        if (epgListView == null || EPGInstance.liveEpgsMap == null ||
+                EPGInstance.liveEpgsMap.get(index) == null ||
+                EPGInstance.liveEpgsMap.get(index).size() == 0) {
+            ExpandableListView expandableListView = epgListView;
             if (expandableListView != null) {
                 expandableListView.setVisibility(View.GONE);
                 return;
@@ -447,144 +451,241 @@ public class MenuLayout extends RelativeLayout {
             return;
         }
         try {
-            mEpgAdapter = new EpgAdapter((HashMap) EPGInstance.liveEpgsMap.get(Integer.valueOf(index)), mEpgListView, true, index);
+            epgAdapter = new EpgAdapter(EPGInstance.liveEpgsMap.get(index), epgListView, f9007pa, index);
         } catch (Exception e) {
             e.printStackTrace();
         }
-        if (mEpgAdapter == null)
-            return;
-
-        mEpgListView.setAdapter(mEpgAdapter);
-        if (mEpgListView.getVisibility() == View.GONE)
-            mEpgListView.setVisibility(View.VISIBLE);
-        mEpgListView.setGroupIndicator(null);
-        mEpgListView.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() { //C3551n
-            @Override
-            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                if (view != null) {
-                    mSelectedEPGView = view;
-                    if (!f13823B) {
-                        view.setBackgroundResource(R.drawable.epg_focus_bg);
-                    } else {
-                        f13823B = false;
-                    }
-                }
+        if (epgAdapter != null) {
+            epgListView.setAdapter(epgAdapter);
+            if (epgListView.getVisibility() == View.GONE) {
+                epgListView.setVisibility(View.VISIBLE);
             }
-
-            @Override
-            public void onNothingSelected(AdapterView<?> parent) {
-
-            }
-        });
-        mEpgListView.setOnGroupClickListener(new ExpandableListView.OnGroupClickListener() {
-            @Override
-            public boolean onGroupClick(ExpandableListView parent, View v, int groupPosition, long id) {
-                if (groupPosition == mEpgAdapter.epgSelectedGroupPosition) {
-                    if (parent.isGroupExpanded(mEpgAdapter.epgSelectedGroupPosition)) {
-                        parent.collapseGroup(mEpgAdapter.epgSelectedGroupPosition);
-                        mEpgAdapter.isExpandGroup = false;
-                    } else {
-                        parent.expandGroup(mEpgAdapter.epgSelectedGroupPosition);
-                        mEpgAdapter.isExpandGroup = true;
-                    }
-                } else if (parent.isGroupExpanded(groupPosition)) {
-                    parent.collapseGroup(groupPosition);
-                } else {
-                    parent.expandGroup(groupPosition);
-                }
-                return true;
-            }
-        });
-        mEpgListView.setOnChildClickListener(new ExpandableListView.OnChildClickListener() {
-            @Override
-            public boolean onChildClick(ExpandableListView parent, View v, int groupPosition, int childPosition, long id) {
-                if (mEpgListView != null && v != null) {
-                    mEpgListView.requestFocusFromTouch();
-                    mEpgListView.setSelectedChild(groupPosition, childPosition, true);
-                    EpgBeans.EpgBean epg = (EpgBeans.EpgBean) v.getTag();
-                    if (epg != null) {
-                        String playbackUrl = epg.getPlaybackUrl();
-                        if ((playbackUrl != null) && !playbackUrl.equals("")) {
-                            if (Config.isPlayStarted == true)
-                                return true;
-                            Config.isPlayStarted = true;
-
-                            Message msg = new Message();
-                            msg.what = Constant.MSG_PLAYER_START_PLAYBACK;
-                            Bundle bundle = new Bundle();
-                            bundle.putString("url", playbackUrl);
-                            bundle.putString("name", epg.getName());
-                            bundle.putString("type", Config.BS_MODE.BSPALYBACK.name());
-                            msg.setData(bundle);
-                            MainActivity.handler.sendMessage(msg);
-                            if (mChannelListAdapter != null) {
-                                ChannelAdapter.mChild = 0;
-                                mChannelListAdapter.notifyDataSetChanged();
-                            }
-                            EpgAdapter.selectedChildId = epg.getId();
-                            mEpgAdapter.notifyDataSetChanged();
-                            //mChannelType = Config.CHANNEL_TYPE.EPG;
-                            mSelectedEPGView = v;
-                            return false;
+            epgListView.setGroupIndicator(null);
+            epgListView.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() { // from class: org.sopcast.android.fragment.LiveFragment.1.1
+                @Override // android.widget.AdapterView.OnItemSelectedListener
+                public void onItemSelected(AdapterView<?> adapterView, View view, int i3, long j) {
+                    if (view != null) {
+                        selectedEpgView = view;
+                        if (f9010sa) {
+                            f9010sa = false;
+                        } else {
+                            view.setBackgroundResource(R.drawable.epg_focus_bg);
                         }
                     }
                 }
-                return true;
-            }
-        });
-    }
 
-    public List<EpgBeans> loadEpgById(int id) {
-        List<EpgBeans> epgs = new ArrayList<>();
-        for (EpgBeans epg : EPGInstance.mEpgs) {
-            if (epg.getId() == id)
-                epgs.add(epg);
+                @Override // android.widget.AdapterView.OnItemSelectedListener
+                public void onNothingSelected(AdapterView<?> adapterView) {
+                }
+            });
+            epgListView.setOnGroupClickListener(new ExpandableListView.OnGroupClickListener() { // from class: org.sopcast.android.fragment.LiveFragment.1.2
+                @Override // android.widget.ExpandableListView.OnGroupClickListener
+                public boolean onGroupClick(ExpandableListView expandableListView2, View view, int i3, long j) {
+                    int i4 = index;
+                    int i5 = epgAdapter.f8727f;
+                    if (i4 == i5) {
+                        if (expandableListView2.isGroupExpanded(i5)) {
+                            expandableListView2.collapseGroup(epgAdapter.f8727f);
+                            epgAdapter.f8728g = false;
+                        } else {
+                            expandableListView2.expandGroup(epgAdapter.f8727f);
+                            epgAdapter.f8728g = true;
+                        }
+                    } else if (expandableListView2.isGroupExpanded(i3)) {
+                        expandableListView2.collapseGroup(i3);
+                    } else {
+                        expandableListView2.expandGroup(i3);
+                    }
+                    return true;
+                }
+            });
+            epgListView.setOnChildClickListener(new ExpandableListView.OnChildClickListener() {
+                @Override
+                public boolean onChildClick(ExpandableListView listView, View view, int group, int child, long j) {
+                    String playbackUrl;
+                    if (epgListView != null && view != null) {
+                        epgListView.requestFocusFromTouch();
+                        epgListView.setSelectedChild(group, child, true);
+                        EpgBeans.EpgBean epgBean = (EpgBeans.EpgBean) view.getTag();
+                        if (epgBean != null && (playbackUrl = epgBean.getPlaybackUrl()) != null && !playbackUrl.equals("")) {
+                            Message msg = new Message();
+                            msg.what = Constant.MSG_PLAYER_PLAY_VIDEO;
+                            Bundle bundle = new Bundle();
+                            bundle.putString("chid", (String) view.getTag(R.id.chid));
+                            bundle.putString("subId", epgBean.getId());
+                            bundle.putString(Progress.URL, playbackUrl);
+                            bundle.putString(SerializableCookie.NAME, ChannelInstance.liveChannels.get(index).getName().getInit());
+                            bundle.putString("subTitle", epgBean.getName());
+                            bundle.putString("type", Config.VIDEO_TYPE.PLAYBACK.name());
+                            bundle.putBoolean("restricted", false);
+                            bundle.putString("menuType", Config.MenuType.LIVE.name());
+                            msg.setData(bundle);
+                            MainActivity.handler.sendMessage(msg);
+                            if (channelAdapter != null) {
+                                ChannelAdapter.f8718a = 0;
+                                channelAdapter.notifyDataSetChanged();
+                            }
+                            EpgAdapter.f8722a = epgBean.getId();
+                            epgAdapter.notifyDataSetChanged();
+                            menuType = Config.MenuType.f8634c;
+                            selectedEpgView = view;
+                            return false;
+                        }
+                    }
+                    return true;
+                }
+            });
         }
-
-        return epgs;
     }
 
-    public static void sendLoadEpgEvent(int eventCode) {
-        //String text = "sendLoadEpgEvent, " + eventCode;
-        Message message = new Message();
-        message.what = 3;
-        message.arg1 = eventCode;
-        mMsgHandler.sendMessage(message);
-    }
-
-    public void startLiveChannel(ChannelBean channel) {
-//        if (!MainActivity.f16802k && channel.getLevel() >= 18) {
-//            PasswordChangeDialog.Helper helper = new PasswordChangeDialog.Helper(getContext());
-//            final ChannelBean finalChannel = channel;
-//            helper.setClickListener(new DialogInterface.OnClickListener() { //DialogInterface$OnClickListenerC3550m (this, channel)
-//                @Override
-//                public void onClick(DialogInterface dialog, int which) {
-//                    MainActivity.f16802k = true;
-//                    if (mGroupListAdapter != null) {
-//                        mGroupListAdapter.notifyDataSetChanged();
-//                    }
-//                    startLiveChannel(finalChannel);
-//                }
-//            });
-//            helper.create().show();
-//            return;
-//        }
-
-        if (Config.isPlayStarted == true)
+    public void playLive(final ChannelBean channelBean) {
+        boolean z;
+        String init;
+        channelBean.getLevel();
+        if (!MainActivity.restrictedGroupsUnlocked && channelBean.getLevel() >= 18) {
+            PasswordDialog.Builder builder = new PasswordDialog.Builder(getContext());
+            builder.positiveClickListener = new DialogInterface.OnClickListener() {
+                @Override // android.content.DialogInterface.OnClickListener
+                public void onClick(DialogInterface dialogInterface, int i) {
+                    MainActivity.restrictedGroupsUnlocked = true;
+                    if (menuAdapter != null) {
+                        menuAdapter.notifyDataSetChanged();
+                    }
+                    playLive(channelBean);
+                }
+            };
+            builder.build().show();
             return;
-        Config.isPlayStarted = true;
-
-        Message msg = new Message();
-        msg.what = Constant.MSG_PLAYER_START_PLAYBACK;
-        Bundle params = new Bundle();
-        params.putString("url", channel.getSources().get(0).getAddress());
-        if (channel.getSid() > 0) {
-            params.putString("name", channel.getSid() + "." + channel.getName().getInit());
-        } else {
-            params.putString("name", channel.getName().getInit());
         }
-        params.putString("type", Config.BS_MODE.BSLIVE.name());
-        msg.setData(params);
-        MainActivity.handler.sendMessage(msg);
+        Message message = new Message();
+        channelBean.toString();
+        Iterator<ChannelBean.TagsBean> it = channelBean.getTags().iterator();
+        while (true) {
+            if (!it.hasNext()) {
+                z = false;
+                break;
+            } else if (it.next().isRestrictedAccess()) {
+                z = true;
+                break;
+            }
+        }
+        message.what = 80;
+        Bundle bundle = new Bundle();
+        bundle.putString("chid", String.valueOf(channelBean.getChid()));
+        bundle.putString(Progress.URL, channelBean.getSources().get(0).getAddress());
+        if (channelBean.getSid() > 0) {
+            init = channelBean.getSid() + "." + channelBean.getName().getInit();
+        } else {
+            init = channelBean.getName().getInit();
+        }
+        bundle.putString(SerializableCookie.NAME, init);
+        bundle.putString("subId", "");
+        bundle.putString("subTitle", "");
+        bundle.putBoolean("restricted", z);
+        bundle.putString("type", Config.VIDEO_TYPE.BSLIVE.name());
+        bundle.putString("menuType", Config.MenuType.LIVE.name());
+        message.setData(bundle);
+        MainActivity.handler.sendMessage(message);
+    }
+
+    @Override
+    public boolean onKey(View view, int keyCode, KeyEvent keyEvent) {
+        int id = view.getId();
+        if (keyEvent.getRepeatCount() == KeyEvent.ACTION_DOWN && keyEvent.getAction() == KeyEvent.ACTION_DOWN) {
+            if (id == R.id.group_listview) {
+                if (keyCode == KeyEvent.KEYCODE_DPAD_RIGHT) {
+                    if (channelListView == null || channelListView.getVisibility() != View.VISIBLE) {
+                        if ((channelListView != null || channelListView.getVisibility() == View.GONE) &&
+                                groupListView.getSelectedView() != null &&
+                                groupListView.getSelectedView().getTag() != null &&
+                                (Integer) groupListView.getSelectedView().getTag() == -5 &&
+                                f8992aa < Config.backToExitMinPress) {
+                            f8992aa++;
+                            MainActivity.prepareToast(R.string.Fav_channel);
+                        }
+                    } else {
+                        channelListView.requestFocus();
+                        menuType = Config.MenuType.LIVE;
+                        if (selectedChannelView != null) {
+                            selectedChannelView.setBackgroundResource(R.drawable.channel_focus_bg);
+                        }
+                        ListView listView3 = this.groupListView;
+                        if (listView3 != null) {
+                            listView3.clearFocus();
+                        }
+                        if (groupListView.getSelectedView() != null) {
+                            groupListView.getSelectedView().setBackgroundResource(R.drawable.channel_button_selected_bg);
+                        }
+                    }
+                    return true;
+                } else if (keyCode == KeyEvent.KEYCODE_DPAD_LEFT) {
+                    if (groupListView != null) {
+                        groupListView.clearFocus();
+                        if (groupListView.getSelectedView() != null) {
+                            groupListView.getSelectedView().setBackgroundResource(0);
+                        }
+                    }
+//                    SopCast sopCast = (SopCast) getActivity();
+//                    sopCast.rbLive.requestFocus();
+//                    sopCast.rbLive.setChecked(true);
+                    MainActivity.SendMessage(Constant.EVENT_FOCUS_LIVE_BUTTON);
+                    menuType = null;
+                    return true;
+                }
+            } else if (id == R.id.channel_listview) {
+                if (keyCode == KeyEvent.KEYCODE_DPAD_RIGHT) {
+                    if (epgListView != null && epgListView.getVisibility() != View.GONE) {
+                        if (channelListView != null) {
+                            channelListView.clearFocus();
+                        }
+                        if (channelListView.getSelectedView() != null) {
+                            channelListView.getSelectedView().setBackgroundResource(R.drawable.channel_item_selected_bg);
+                        }
+                        epgListView.requestFocus();
+                        menuType = Config.MenuType.f8634c;
+                        if (selectedEpgView != null) {
+                            selectedEpgView.setBackgroundResource(R.drawable.epg_focus_bg);
+                        }
+                    }
+                    return true;
+                } else if (keyCode == KeyEvent.KEYCODE_DPAD_LEFT) {
+                    if (channelListView != null) {
+                        channelListView.clearFocus();
+                    }
+                    if (selectedChannelView != null) {
+                        selectedChannelView.setBackgroundResource(0);
+                    }
+                    if (groupListView != null) {
+                        groupListView.requestFocus();
+                        if (groupListView.getSelectedView() != null) {
+                            groupListView.getSelectedView().setBackgroundResource(R.drawable.group_focus_bg);
+                        }
+                        menuType = Config.MenuType.f8632a;
+                    }
+                    return true;
+                }
+            } else if (id == R.id.epg_listview) {
+                if (keyCode == KeyEvent.KEYCODE_DPAD_LEFT) {
+                    ExpandableListView expandableListView2 = this.epgListView;
+                    if (epgListView != null) {
+                        epgListView.clearFocus();
+                    }
+                    if (selectedEpgView != null) {
+                        selectedEpgView.setBackgroundResource(0);
+                    }
+                    if (channelListView != null) {
+                        channelListView.requestFocus();
+                        if (channelListView.getSelectedView() != null) {
+                            channelListView.getSelectedView().setBackgroundResource(R.drawable.channel_focus_bg);
+                        }
+                        menuType = Config.MenuType.LIVE;
+                    }
+                    return true;
+                } else if (keyCode == KeyEvent.KEYCODE_DPAD_RIGHT) {
+                    return true;
+                }
+            }
+        }
+        return super.onKeyUp(keyCode, keyEvent);
     }
 }

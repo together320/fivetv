@@ -21,7 +21,7 @@ public class Config {
     public static boolean enableVodFragment = true;
     public static boolean showDownloadRate = true;
     public static boolean isPlayback = true;
-
+    public static int f8899S = 5;
     public static boolean f8896P = true;
     public static boolean FLAG_PLAYBACK_ENABLE = true;
     public static boolean FLAG_FAVORITE_INIT = true;
@@ -35,7 +35,8 @@ public class Config {
     public static boolean f8924v = true;
 
     public static boolean isEpgReverseOrder = false;
-
+    public static boolean f8907e = false;
+    public static boolean f8900T = false;
     public static String socketAddr = "";
 
     public static boolean LoginByLib = true;

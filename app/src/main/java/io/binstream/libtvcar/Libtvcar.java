@@ -72,4 +72,8 @@ public abstract class Libtvcar {
 
     public static void touch() {
     }
+
+    public static void stop() {
+        start("stop");
+    }
 }

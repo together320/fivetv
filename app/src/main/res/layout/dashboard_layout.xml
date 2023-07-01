@@ -59,7 +59,8 @@
                 android:layout_margin="20dp"
                 android:fontFamily="@font/open_sans_bold"
                 android:text="No Items"
-                android:textSize="24sp" />
+                android:textSize="24sp"
+                android:visibility="gone" />
 
             <LinearLayout
                 android:id="@+id/others_grid_ll"

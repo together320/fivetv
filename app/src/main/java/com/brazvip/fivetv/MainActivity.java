@@ -59,9 +59,11 @@ public class MainActivity extends AutoLayoutActivity implements View.OnClickList
         PROFILE
     }
 
+    public Context context = null;
     public static Handler handler = null;
 
     private RadioGroup mRadioGroup = null;
+    private LinearLayout mProfileRoot = null;
     private ImageView mProfileAvatar = null;
     private RadioButton mRadioDashboard = null;
     private RadioButton mRadioLive = null;
@@ -106,12 +108,16 @@ public class MainActivity extends AutoLayoutActivity implements View.OnClickList
 
     public static boolean restrictedGroupsUnlocked = false;
 
+    public static int groupType = 100;
+
     public static ArrayList<String> adultList = new ArrayList<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        context = this;
 
         initComponents();
         initMessageHandler();
@@ -131,6 +137,7 @@ public class MainActivity extends AutoLayoutActivity implements View.OnClickList
     @SuppressLint("UseCompatLoadingForDrawables")
     private void initComponents() {
         mRadioGroup = (RadioGroup) findViewById(R.id.main_rb);
+        mProfileRoot = findViewById(R.id.main_rb_user_button);
         mProfileAvatar = (ImageView) findViewById(R.id.main_rb_profile_avatar);
         mRadioDashboard = (RadioButton) findViewById(R.id.rb_dashboard);
         mRadioLive = (RadioButton) findViewById(R.id.rb_live);
@@ -152,6 +159,8 @@ public class MainActivity extends AutoLayoutActivity implements View.OnClickList
         TextView user_dialog_prof_name = (TextView) findViewById(R.id.user_dialog_prof_name);
         user_dialog_prof_name.setText(AuthInstance.mAuthInfo.user.user_name.split("@")[0]);
         Button btnLogout = (Button) findViewById(R.id.btn_logout);
+
+        mProfileRoot.setVisibility(View.GONE);
 
         mProfileAvatar.setImageResource(R.drawable.profile_avatar_1);
         mProfileAvatar.setOnClickListener(new View.OnClickListener() {
@@ -271,7 +280,10 @@ public class MainActivity extends AutoLayoutActivity implements View.OnClickList
                 break;
             case HISTORY:
                 mRadioGroup.check(R.id.rb_history);
-                mHistoryLayout.setVisibility(View.VISIBLE);
+                if (checkLoadedValue()) {
+                    mHistoryLayout.loadHistoryLayout();
+                    mHistoryLayout.setVisibility(View.VISIBLE);
+                }
                 break;
             case SETTING:
                 mRadioGroup.check(R.id.rb_setting);
@@ -297,6 +309,14 @@ public class MainActivity extends AutoLayoutActivity implements View.OnClickList
             @Override
             public void handleMessage(Message message) {
                 switch (message.what) {
+                    case Constant.MSG_SHOW_QUIT_DIALOG:
+                        showQuitDialog();
+                        break;
+                    case Constant.MSG_QUIT_APP:
+                        finish();
+                        Utils.exitApp();
+                        break;
+
                     case Constant.MSG_CHANNEL_LOADED:
                         mLoaded |= 0b0001;
                         checkLoaded();
@@ -314,15 +334,13 @@ public class MainActivity extends AutoLayoutActivity implements View.OnClickList
                         checkLoaded();
                         break;
                     case Constant.MSG_PLAYER_PLAY_VIDEO:
-                        showPlayerLayout();
-                        mPlayerLayout.playVideo(message.getData());
+                        showPlayVideo(message.getData());
                         break;
                     case Constant.MSG_PLAYER_START_PLAYBACK:
-                        showPlayerLayout();
-                        onStartPlayback(message.getData());
+                        showStartPlayback(message.getData());
                         break;
 
-                    case 250:
+                    case Constant.MSG_SHOW_TOAST:
                         Bundle bd = message.getData();
                         if (bd != null && !bd.getString("text").equals("")) {
                             showToast(bd.getString("text"), message.arg2);
@@ -330,9 +348,25 @@ public class MainActivity extends AutoLayoutActivity implements View.OnClickList
                         }
                         break;
 
-                    case 9999:
-                        finish();
-                        Utils.exitApp();
+                    case Constant.EVENT_FOCUS_DASH_BUTTON:
+                        mRadioDashboard.requestFocus();
+                        mRadioDashboard.setChecked(true);
+                        break;
+                    case Constant.EVENT_FOCUS_LIVE_BUTTON:
+                        mRadioLive.requestFocus();
+                        mRadioLive.setChecked(true);
+                        break;
+                    case Constant.EVENT_FOCUS_VOD_BUTTON:
+                        mRadioVod.requestFocus();
+                        mRadioVod.setChecked(true);
+                        break;
+                    case Constant.EVENT_FOCUS_HISTORY_BUTTON:
+                        mRadioHistory.requestFocus();
+                        mRadioHistory.setChecked(true);
+                        break;
+                    case Constant.EVENT_FOCUS_SETTINGS_BUTTON:
+                        mRadioSetting.requestFocus();
+                        mRadioSetting.setChecked(true);
                         break;
                 }
                 super.handleMessage(message);
@@ -361,7 +395,7 @@ public class MainActivity extends AutoLayoutActivity implements View.OnClickList
         } else {
             //PrefUtils.logout(this);
             //super.onBackPressed();
-            showQuitDialog(this);
+            MainActivity.SendMessage(Constant.MSG_SHOW_QUIT_DIALOG);
         }
     }
 
@@ -386,15 +420,16 @@ public class MainActivity extends AutoLayoutActivity implements View.OnClickList
         finish();
     }
 
-    public void showPlayerLayout() {
+    public void showPlayVideo(Bundle bundle) {
+        if (mCurrFragment == FRAGMENT.PLAYER)
+            return;
+
         refreshFragment(FRAGMENT.PLAYER);
+        mPlayerLayout.playVideo(bundle);
     }
 
-    public void onStartPlayback(Bundle bundle) {
-        String videoURL = bundle.getString("url");
-        String videoName = bundle.getString("name");
-        Config.BS_MODE bsMode = Config.BS_MODE.valueOf(bundle.getString("type"));
-        mPlayerLayout.startChannel(videoURL, videoName, bsMode);
+    public void showStartPlayback(Bundle bundle) {
+        mPlayerLayout.startPlayback(bundle.getString("videoPath"));
     }
 
 
@@ -424,20 +459,8 @@ public class MainActivity extends AutoLayoutActivity implements View.OnClickList
         return memoryInfo.lowMemory;
     }
 
-    public static void showMessageFromResource(int textResId) {
-        showMessage(SopApplication.getAppContext().getString(textResId), 0);
-    }
-
-    public static void showMessage(String text, int value) {
-        Message msg = new Message();
-        msg.what = 250;
-        Bundle params = new Bundle();
-        params.putString("text", text);
-        msg.setData(params);
-        msg.arg2 = 1;
-        if (handler != null) {
-            handler.sendMessage(msg);
-        }
+    public void setSystemFullScreen() {
+        getWindow().getDecorView().setSystemUiVisibility(774);
     }
 
     public void showToast(String text, int type) {
@@ -472,7 +495,27 @@ public class MainActivity extends AutoLayoutActivity implements View.OnClickList
         toastPreTime = toastCurTime;
     }
 
-    public static void showQuitDialog(Context context) {
+    public static void prepareToast(int i) {
+        prepareToast(i, 0);
+    }
+
+    public static void prepareToast(int i, int i2) {
+        sendShowToastEvent(SopApplication.getSopContext().getString(i), i2);
+    }
+
+    public static void sendShowToastEvent(String str, int i) {
+        Message message = new Message();
+        message.what = Constant.MSG_SHOW_TOAST;
+        Bundle bundle = new Bundle();
+        bundle.putString("text", str);
+        message.setData(bundle);
+        message.arg2 = i;
+        if (handler != null) {
+            handler.sendMessage(message);
+        }
+    }
+
+    public void showQuitDialog() {
         final LogoutDialog.Builder dialogBuilder = new LogoutDialog.Builder(context);
         dialogBuilder.message = context.getResources().getString(R.string.confirm_quit);
         dialogBuilder.positiveOption = context.getResources().getString(R.string.quit_later);
@@ -482,7 +525,7 @@ public class MainActivity extends AutoLayoutActivity implements View.OnClickList
         dialogBuilder.negativeOption = context.getResources().getString(R.string.quit_now);
         dialogBuilder.cancelListener = (dialogInterface, n) -> {
             dialogInterface.dismiss();
-            MainActivity.handler.sendEmptyMessage(9999);
+            MainActivity.handler.sendEmptyMessage(Constant.MSG_QUIT_APP);
         };
         dialogBuilder.build().show();
     }

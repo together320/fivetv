@@ -9,9 +9,12 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
+import android.widget.TextView;
+
 import androidx.fragment.app.FragmentManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.brazvip.fivetv.Constant;
 import com.brazvip.fivetv.MainActivity;
 import com.bumptech.glide.Glide;
 import com.brazvip.fivetv.R;
@@ -32,26 +35,41 @@ public class DashboardLineAdapter extends CustomItemAdapter<DashboardLineAdapter
     public NavigationListener navigationListener;
     private LineViewHolder oldHolder = null;
     public int rowNumber;
+    public int allCount;
 
     
     public static class LineViewHolder extends RecyclerView.ViewHolder {
         public ImageView lineItemLiveImg;
         public ImageView lineItemLockImg;
         public ImageView lineItemPosterImg;
+        public TextView[] lineItemNumImg = new TextView[4];
 
         public LineViewHolder(View view) {
             super(view);
-            this.lineItemPosterImg = (ImageView) view.findViewById(R.id.line_item_image);
-            this.lineItemLiveImg = (ImageView) view.findViewById(R.id.dash_item_live_img);
-            this.lineItemLockImg = (ImageView) view.findViewById(R.id.dash_item_lock);
+            lineItemPosterImg = view.findViewById(R.id.line_item_image);
+
+            lineItemLiveImg = view.findViewById(R.id.dash_item_live_img);
+            lineItemLiveImg.setVisibility(View.GONE);
+
+            lineItemLockImg = view.findViewById(R.id.dash_item_lock);
+            lineItemLockImg.setVisibility(View.GONE);
+
+            lineItemNumImg[0] = view.findViewById(R.id.dash_item_num_img);
+            lineItemNumImg[0].setVisibility(View.GONE);
+            lineItemNumImg[1] = view.findViewById(R.id.dash_item_num_img1);
+            lineItemNumImg[1].setVisibility(View.GONE);
+            lineItemNumImg[2] = view.findViewById(R.id.dash_item_num_img2);
+            lineItemNumImg[2].setVisibility(View.GONE);
+            lineItemNumImg[3] = view.findViewById(R.id.dash_item_num_img3);
+            lineItemNumImg[3].setVisibility(View.GONE);
         }
     }
 
-    public DashboardLineAdapter(DashboardInfo.Line line, Context context, NavigationListener navigationListener, int position, FragmentManager FragmentManager) {
+    public DashboardLineAdapter(DashboardInfo.Line line, Context context, NavigationListener navigationListener, int row, FragmentManager FragmentManager) {
         this.data = line;
         this.mContext = context;
         this.navigationListener = navigationListener;
-        this.rowNumber = position;
+        this.rowNumber = row;
         this.fragmentManager = FragmentManager;
         this.onFocusChangeListener = new View.OnFocusChangeListener() {
             @Override
@@ -61,10 +79,12 @@ public class DashboardLineAdapter extends CustomItemAdapter<DashboardLineAdapter
         };
         this.onKeyListener = new View.OnKeyListener() {
             @Override
-            public boolean onKey(View view, int i, KeyEvent keyEvent) {
-                return onLineItemKey(mContext, view, i, keyEvent);
+            public boolean onKey(View view, int keyCode, KeyEvent keyEvent) {
+                return onLineItemKey(mContext, view, keyCode, keyEvent);
             }
         };
+
+        allCount = data.items.size();
     }
 
     public void onLineItemFocusChange(View view, boolean z) {
@@ -72,7 +92,7 @@ public class DashboardLineAdapter extends CustomItemAdapter<DashboardLineAdapter
         notifyItemChanged(this.mSelectedItem);
     }
 
-    public boolean onLineItemKey(Context context, View view, int i, KeyEvent keyEvent) {
+    public boolean onLineItemKey(Context context, View view, int keyCode, KeyEvent keyEvent) {
         RecyclerView.LayoutManager layoutManager = this.recyclerView.getLayoutManager();
         if (keyEvent.getAction() != 0) {
             if (keyEvent.getAction() == 1 && HRecyclerViewAdapter2.isReturnKeycode(keyEvent) && (keyEvent.getFlags() & 128) != 128) {
@@ -83,21 +103,21 @@ public class DashboardLineAdapter extends CustomItemAdapter<DashboardLineAdapter
                 return true;
             }
             return false;
-        } else if (i == 4) {
-            //Utils.showQuitDialog(context);
+        } else if (keyCode == KeyEvent.KEYCODE_BACK) {
+            MainActivity.SendMessage(Constant.MSG_SHOW_QUIT_DIALOG);
             return true;
         } else {
-            switch (i) {
-                case 19:
+            switch (keyCode) {
+                case KeyEvent.KEYCODE_DPAD_UP:
                     return this.navigationListener.navigateAbove();
-                case 20:
+                case KeyEvent.KEYCODE_DPAD_DOWN:
                     return this.navigationListener.navigateBelow();
-                case 21:
+                case KeyEvent.KEYCODE_DPAD_LEFT:
                     if (tryMoveSelection(layoutManager, -1)) {
                         return true;
                     }
                     return this.navigationListener.navigateLeft();
-                case 22:
+                case KeyEvent.KEYCODE_DPAD_RIGHT:
                     if (tryMoveSelection(layoutManager, 1)) {
                         return true;
                     }
@@ -120,8 +140,8 @@ public class DashboardLineAdapter extends CustomItemAdapter<DashboardLineAdapter
 
     @Override // androidx.recyclerview.widget.RecyclerView.Adapter<VH>
     public int getItemCount() {
-        return this.data.items.size();
-        //return Priority.UI_TOP;
+        //return this.data.items.size();
+        return Priority.UI_TOP;
     }
 
     @SuppressLint("WrongConstant")
@@ -131,6 +151,11 @@ public class DashboardLineAdapter extends CustomItemAdapter<DashboardLineAdapter
             lineViewHolder.itemView.setBackgroundResource(R.drawable.dash_item_selected_bg);
         } else {
             lineViewHolder.itemView.setBackgroundResource(R.drawable.dash_item_bg);
+        }
+
+        for (int i = 0; i < 4; i++) {
+            lineViewHolder.lineItemNumImg[i].setText(String.format("%s", (position % allCount) + 1));
+            lineViewHolder.lineItemNumImg[i].setVisibility(View.VISIBLE);
         }
 
         List<DashboardInfo.Item> list = this.data.items;

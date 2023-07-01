@@ -7,6 +7,10 @@ import android.view.View;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.brazvip.fivetv.Constant;
+import com.brazvip.fivetv.MainActivity;
+import com.brazvip.fivetv.layouts.PlayerLayout;
+
 
 public abstract class HRecyclerViewAdapter2<VH extends RecyclerView.ViewHolder> extends RecyclerView.Adapter<VH> {
     public static final String TAG = "HRecyclerViewAdapter";
@@ -59,16 +63,16 @@ public abstract class HRecyclerViewAdapter2<VH extends RecyclerView.ViewHolder> 
         this.recyclerView = recyclerView;
         recyclerView.setOnKeyListener(new View.OnKeyListener() {
             @Override
-            public boolean onKey(View view, int i, KeyEvent keyEvent) {
+            public boolean onKey(View view, int keyCode, KeyEvent keyEvent) {
                 RecyclerView.LayoutManager layoutManager = HRecyclerViewAdapter2.this.recyclerView.getLayoutManager();
-                if (keyEvent.getAction() == 0 && i == 4) {
-//                    if (SopCast.isPlaying() && SopCast.isMenuDisplayed) {
-//                        SopCast.handler.sendEmptyMessage(100);
-//                    } else {
-//                        Utils.showQuitDialog(HRecyclerViewAdapter2.this.context1);
-//                    }
+                if (keyCode == KeyEvent.KEYCODE_BACK && keyEvent.getAction() == KeyEvent.ACTION_DOWN) {
+                    if (PlayerLayout.isPlaying()) { // && SopCast.isMenuDisplayed) {
+                        //SopCast.handler.sendEmptyMessage(100);
+                    } else {
+                        MainActivity.SendMessage(Constant.MSG_SHOW_QUIT_DIALOG);
+                    }
                     return true;
-                } else if (keyEvent.getAction() != 0) {
+                } else if (keyEvent.getAction() != KeyEvent.ACTION_DOWN) {
                     if (keyEvent.getAction() == 1 && HRecyclerViewAdapter2.isReturnKeycode(keyEvent) && (keyEvent.getFlags() & 128) != 128) {
                         HRecyclerViewAdapter2 hRecyclerViewAdapter2 = HRecyclerViewAdapter2.this;
                         if (hRecyclerViewAdapter2.recyclerView.findViewHolderForAdapterPosition(hRecyclerViewAdapter2.mSelectedItem) != null) {
@@ -86,19 +90,19 @@ public abstract class HRecyclerViewAdapter2<VH extends RecyclerView.ViewHolder> 
                         keyEvent.startTracking();
                     }
                     return true;
-                } else if (i == 19) {
+                } else if (keyCode == 19) {
                     nextSelectItem = -100;
                     return navigationListener.navigateAbove();
-                } else if (i == 20) {
+                } else if (keyCode == 20) {
                     //VodFragment.menuType = Config.MenuType.VOD;
                     nextSelectItem = -100;
                     return navigationListener.navigateBelow();
-                } else if (i == 22) {
+                } else if (keyCode == 22) {
                     if (HRecyclerViewAdapter2.this.handleHorizontalScroll(layoutManager, 1)) {
                         return true;
                     }
                     return HRecyclerViewAdapter2.this.navigationListener.navigateRight();
-                } else if (i == 21) {
+                } else if (keyCode == 21) {
                     if (HRecyclerViewAdapter2.this.handleHorizontalScroll(layoutManager, -1)) {
                         return true;
                     }

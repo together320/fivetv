@@ -5,10 +5,12 @@ import android.view.KeyEvent;
 import android.view.View;
 import androidx.recyclerview.widget.RecyclerView;
 import com.brazvip.fivetv.Config;
+import com.brazvip.fivetv.Constant;
 import com.brazvip.fivetv.MainActivity;
+import com.brazvip.fivetv.layouts.HistoryLayout;
 import com.brazvip.fivetv.utils.Utils;
 
-public abstract class HistoryRecyclerViewAdapter<VH extends RecyclerView.ViewHolder> extends RecyclerView.Adapter {
+public abstract class HistoryRecyclerViewAdapter<VH extends RecyclerView.ViewHolder> extends RecyclerView.Adapter<VH> {
     public static String TAG = "HistoryRecyclerViewAdapter";
     public Context context;
     public int mSelectedItem = 0;
@@ -37,90 +39,86 @@ public abstract class HistoryRecyclerViewAdapter<VH extends RecyclerView.ViewHol
         recyclerView.getItemAnimator().setChangeDuration(0);
         recyclerView.setOnKeyListener(new View.OnKeyListener() {
             @Override
-            public boolean onKey(View view, int i, KeyEvent keyEvent) {
+            public boolean onKey(View view, int keyCode, KeyEvent keyEvent) {
                 RecyclerView.LayoutManager layoutManager = HistoryRecyclerViewAdapter.this.recyclerView.getLayoutManager();
-                if (keyEvent.getAction() == 0 && i == 4) {
-                    MainActivity.showQuitDialog(HistoryRecyclerViewAdapter.this.context);
+                if (keyEvent.getAction() == KeyEvent.ACTION_DOWN && keyCode == KeyEvent.KEYCODE_BACK) {
+                    MainActivity.SendMessage(Constant.MSG_SHOW_QUIT_DIALOG);
                     return true;
                 } else if (keyEvent.getAction() != 0) {
                     if (keyEvent.getAction() == 1 && HistoryRecyclerViewAdapter.isReturnKeyCode(keyEvent) && (keyEvent.getFlags() & 128) != 128) {
-                        HistoryRecyclerViewAdapter historyRecyclerViewAdapter = HistoryRecyclerViewAdapter.this;
-                        RecyclerView.ViewHolder findViewHolderForAdapterPosition = historyRecyclerViewAdapter.recyclerView.findViewHolderForAdapterPosition(historyRecyclerViewAdapter.mSelectedItem);
-                        if (findViewHolderForAdapterPosition != null) {
-                            findViewHolderForAdapterPosition.itemView.performClick();
+                        RecyclerView.ViewHolder findViewHolder = recyclerView.findViewHolderForAdapterPosition(mSelectedItem);
+                        if (findViewHolder != null) {
+                            findViewHolder.itemView.performClick();
                         }
                         return true;
                     }
                     return false;
                 } else if (HistoryRecyclerViewAdapter.isReturnKeyCode(keyEvent)) {
                     if ((keyEvent.getFlags() & 128) == 128) {
-                        HistoryRecyclerViewAdapter historyRecyclerViewAdapter2 = HistoryRecyclerViewAdapter.this;
-                        RecyclerView.ViewHolder findViewHolderForAdapterPosition2 = historyRecyclerViewAdapter2.recyclerView.findViewHolderForAdapterPosition(historyRecyclerViewAdapter2.mSelectedItem);
-                        if (findViewHolderForAdapterPosition2 != null) {
-                            findViewHolderForAdapterPosition2.itemView.performLongClick();
+                        RecyclerView.ViewHolder findViewHolder = recyclerView.findViewHolderForAdapterPosition(mSelectedItem);
+                        if (findViewHolder != null) {
+                            findViewHolder.itemView.performLongClick();
                         }
                     } else {
                         keyEvent.startTracking();
                     }
                     return true;
                 } else {
-                    HistoryRecyclerViewAdapter historyRecyclerViewAdapter3 = HistoryRecyclerViewAdapter.this;
-                    Config.VIDEO_TYPE video_type = historyRecyclerViewAdapter3.video_type;
-//                    if (video_type == Config.VIDEO_TYPE.BSLIVE) {
-//                        switch (i) {
-//                            case 19:
-//                                break;
-//                            case 20:
-//                                HistoryFragment.navHandler.sendEmptyMessage(1);
-//                                break;
-//                            case 21:
-//                                if (historyRecyclerViewAdapter3.mSelectedItem == 0) {
-//                                    SopCast.handler.sendEmptyMessage(SopHandler.EVENT_FOCUS_HISTORY_BUTTON);
-//                                    HistoryFragment.lastFocusVideoType = Config.VIDEO_TYPE.BSLIVE;
-//                                    HistoryRecyclerViewAdapter.this.nextSelectItem = -100;
-//                                    return true;
-//                                } else if (historyRecyclerViewAdapter3.tryMoveSelection(layoutManager, -1)) {
-//                                    return true;
-//                                } else {
-//                                    SopCast.handler.sendEmptyMessage(SopHandler.EVENT_FOCUS_HISTORY_BUTTON);
-//                                    return true;
-//                                }
-//                            case 22:
-//                                historyRecyclerViewAdapter3.tryMoveSelection(layoutManager, 1);
-//                                return true;
-//                            default:
-//                                return false;
-//                        }
-//                        return true;
-//                    }
-//                    if (video_type == Config.VIDEO_TYPE.BSVOD) {
-//                        switch (i) {
-//                            case 19:
-//                                HistoryFragment.navHandler.sendEmptyMessage(2);
-//                                return true;
-//                            case 20:
-//                                break;
-//                            case 21:
-//                                if (historyRecyclerViewAdapter3.mSelectedItem % Config.gridSpanCount != 0) {
-//                                    if (!historyRecyclerViewAdapter3.tryMoveSelection(layoutManager, -1)) {
-//                                        SopCast.handler.sendEmptyMessage(SopHandler.EVENT_FOCUS_HISTORY_BUTTON);
-//                                        break;
-//                                    }
-//                                } else {
-//                                    SopCast.handler.sendEmptyMessage(SopHandler.EVENT_FOCUS_HISTORY_BUTTON);
-//                                    HistoryFragment.lastFocusVideoType = Config.VIDEO_TYPE.BSVOD;
-//                                    HistoryRecyclerViewAdapter.this.nextSelectItem = -100;
-//                                    return true;
-//                                }
-//                                break;
-//                            case 22:
-//                                historyRecyclerViewAdapter3.tryMoveSelection(layoutManager, 1);
-//                                return true;
-//                            default:
-//                                return false;
-//                        }
-//                        return true;
-//                    }
+                    if (video_type == Config.VIDEO_TYPE.BSLIVE) {
+                        switch (keyCode) {
+                            case 19:
+                                break;
+                            case 20:
+                                HistoryLayout.navHandler.sendEmptyMessage(HistoryLayout.NAVIGATE_DOWN_FROM_LIVE_RV);
+                                break;
+                            case 21:
+                                if (mSelectedItem == 0) {
+                                    MainActivity.SendMessage(Constant.EVENT_FOCUS_HISTORY_BUTTON);
+                                    HistoryLayout.lastFocusVideoType = Config.VIDEO_TYPE.BSLIVE;
+                                    HistoryRecyclerViewAdapter.this.nextSelectItem = -100;
+                                    return true;
+                                } else if (tryMoveSelection(layoutManager, -1)) {
+                                    return true;
+                                } else {
+                                    MainActivity.SendMessage(Constant.EVENT_FOCUS_HISTORY_BUTTON);
+                                    return true;
+                                }
+                            case 22:
+                                tryMoveSelection(layoutManager, 1);
+                                return true;
+                            default:
+                                return false;
+                        }
+                        return true;
+                    }
+                    if (video_type == Config.VIDEO_TYPE.BSVOD) {
+                        switch (keyCode) {
+                            case 19:
+                                HistoryLayout.navHandler.sendEmptyMessage(HistoryLayout.NAVIGATE_UP_FROM_VOD_RV);
+                                return true;
+                            case 20:
+                                break;
+                            case 21:
+                                if (mSelectedItem % Config.gridSpanCount != 0) {
+                                    if (!tryMoveSelection(layoutManager, -1)) {
+                                        MainActivity.SendMessage(Constant.EVENT_FOCUS_HISTORY_BUTTON);
+                                        break;
+                                    }
+                                } else {
+                                    MainActivity.SendMessage(Constant.EVENT_FOCUS_HISTORY_BUTTON);
+                                    HistoryLayout.lastFocusVideoType = Config.VIDEO_TYPE.BSVOD;
+                                    HistoryRecyclerViewAdapter.this.nextSelectItem = -100;
+                                    return true;
+                                }
+                                break;
+                            case 22:
+                                tryMoveSelection(layoutManager, 1);
+                                return true;
+                            default:
+                                return false;
+                        }
+                        return true;
+                    }
                     return false;
                 }
             }
@@ -171,6 +169,4 @@ public abstract class HistoryRecyclerViewAdapter<VH extends RecyclerView.ViewHol
         this.recyclerView.scrollToPosition(this.mSelectedItem);
         return true;
     }
-
-    public abstract void onBindViewHolder(HistoryAdapter.ViewHolder viewHolder, int backgroundResource);
 }

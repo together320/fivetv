@@ -59,17 +59,6 @@ public class VodChannelAdapter extends GridRecyclerViewAdapter<VodChannelAdapter
         this.navigationKeyListener = navigationListener;
     }
 
-    public static void onFocusChange(ViewHolder viewHolder, View view, boolean z) {
-        View view2 = viewHolder.itemView;
-        if (z) {
-            view2.setSelected(true);
-            viewHolder.image.setBackgroundResource(R.color.background_v3_secondary);
-        } else {
-            view2.setSelected(false);
-            viewHolder.image.setBackgroundResource(0);
-        }
-    }
-
     public Filter getFilter() {
         VodChannelInstance.cancelSearch = true;
         return new Filter() {
@@ -127,7 +116,20 @@ public class VodChannelAdapter extends GridRecyclerViewAdapter<VodChannelAdapter
                     .into(viewHolder.image);
         } catch (Exception ex) {
         }
-        viewHolder.itemView.setOnFocusChangeListener(new ViewOnFocusChangeListener(viewHolder, 0));
+        viewHolder.itemView.setOnFocusChangeListener(new View.OnFocusChangeListener() {
+            @Override
+            public void onFocusChange(View view, boolean b) {
+                View view2 = viewHolder.itemView;
+                if (b) {
+                    view2.setSelected(true);
+                    viewHolder.image.setBackgroundResource(R.color.background_v3_secondary);
+                } else {
+                    view2.setSelected(false);
+                    viewHolder.image.setBackgroundResource(0);
+                }
+            }
+        });
+
         viewHolder.itemView.setOnLongClickListener(new View.OnLongClickListener() {
             @Override
             public boolean onLongClick(View view) {
@@ -206,8 +208,8 @@ public class VodChannelAdapter extends GridRecyclerViewAdapter<VodChannelAdapter
     }
 
     @Override
-    public boolean onKey(View view, int i, KeyEvent keyEvent) {
-        if (i == 4) {
+    public boolean onKey(View view, int keyCode, KeyEvent keyEvent) {
+        if (keyCode == 4) {
             if (keyEvent.getAction() == 1) {
                 this.mSelectedItem = 0;
                 this.nextSelectItem = -1;
@@ -219,6 +221,6 @@ public class VodChannelAdapter extends GridRecyclerViewAdapter<VodChannelAdapter
             }
             return true;
         }
-        return super.onKey(view, i, keyEvent);
+        return super.onKey(view, keyCode, keyEvent);
     }
 }

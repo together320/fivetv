@@ -7,6 +7,9 @@ import android.view.View;
 import androidx.recyclerview.widget.RecyclerView;
 import java.util.Objects;
 import com.brazvip.fivetv.Config;
+import com.brazvip.fivetv.Constant;
+import com.brazvip.fivetv.MainActivity;
+import com.brazvip.fivetv.layouts.PlayerLayout;
 
 
 public abstract class GridRecyclerViewAdapter<VH extends RecyclerView.ViewHolder> extends RecyclerView.Adapter<VH> implements View.OnKeyListener {
@@ -94,24 +97,23 @@ public abstract class GridRecyclerViewAdapter<VH extends RecyclerView.ViewHolder
     }
 
     @Override // android.view.View.OnKeyListener
-    public boolean onKey(View view, int i, KeyEvent keyEvent) {
+    public boolean onKey(View view, int keyCode, KeyEvent keyEvent) {
         NavigationListener navigationListener;
         NavigationListener navigationListener2;
         Handler handler;
         int i2;
         RecyclerView.LayoutManager layoutManager = this.recyclerView.getLayoutManager();
-        Objects.toString(keyEvent);
-        if (i == 4) {
+        if (keyCode == KeyEvent.KEYCODE_BACK) {
             if (keyEvent.getAction() == 0) {
-//                if (SopCast.isPlaying() && SopCast.isMenuDisplayed && this.menuType == Config.MenuType.VOD) {
-//                    SopCast.handler.sendEmptyMessage(100);
-//                } else {
-//                    Utils.showQuitDialog(this.context);
-//                }
+                if (PlayerLayout.isPlaying() && this.menuType == Config.MenuType.VOD) {
+                    //SopCast.handler.sendEmptyMessage(100);
+                } else {
+                    MainActivity.SendMessage(Constant.MSG_SHOW_QUIT_DIALOG);
+                }
             }
             return true;
         } else if (keyEvent.getAction() == 0) {
-            switch (i) {
+            switch (keyCode) {
                 case 19:
                     if ((this.menuType == Config.MenuType.APPS && this.mSelectedItem <= this.columnCount) || tryMoveSelection(this, layoutManager, this.columnCount * (-1)) || (navigationListener = this.navigationKeyListener) == null) {
                         return true;

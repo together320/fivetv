@@ -318,14 +318,6 @@ public class PrefUtils {
         return SopApplication.getAppContext().getSharedPreferences(Config.PREFS_NAME, 0).getStringSet(key, value);
     }
 
-    /* renamed from: d */
-    public static void m2229d() {
-        if (f14037c < RestApiUtils.f13722F) {
-            f14037c++;
-            //SopCast.showMessageFromResource(R.string.Back_twice_to_exit);
-        }
-    }
-
     /* renamed from: a */
     public static String m2249a(Long l) {
         return new SimpleDateFormat("HH:mm", Locale.getDefault()).format(l);

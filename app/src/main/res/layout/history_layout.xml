@@ -73,7 +73,37 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="20dp"
-                android:text="@string/video_playback_vod"
+                android:text="@string/video_play_back"
+                android:textSize="18sp" />
+
+            <include
+                android:id="@+id/playback_history_placehold"
+                layout="@layout/history_item_hold"
+                android:layout_width="@dimen/history_item_width"
+                android:layout_height="@dimen/history_item_height"
+                android:layout_marginTop="7dp"
+                android:layout_marginBottom="7dp"
+                android:visibility="gone" />
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/playback_history_rview"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="7dp"
+                android:clipToPadding="false"
+                android:descendantFocusability="beforeDescendants"
+                android:focusable="true"
+                android:orientation="horizontal"
+                android:scrollbars="none"
+                app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager" />
+
+            <TextView
+                android:id="@+id/textView3"
+                style="@style/history_title_text"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="20dp"
+                android:text="@string/video_vod"
                 android:textSize="18sp" />
 
             <include

@@ -17,6 +17,7 @@
     <color name="background_v3_75_percent">#be202332</color>
     <color name="background_v3_secondary">#525b7a</color>
     <color name="background_v3_secondary2">#80525b7a</color>
+    <color name="black">#ff000000</color>
     <color name="blackAssistText">#ff969696</color>
     <color name="blackMainText">#ff323232</color>
     <color name="bright_foreground_disabled_material_dark">#80ffffff</color>

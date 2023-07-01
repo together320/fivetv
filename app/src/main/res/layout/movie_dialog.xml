@@ -52,7 +52,8 @@
             android:adjustViewBounds="true"
             android:scaleType="fitCenter"
             android:src="@color/background_v3_secondary"
-            app:shapeAppearanceOverlay="@style/roundimageview" />
+            app:shapeAppearanceOverlay="@style/roundimageview"
+            app:strokeColor="@null" />
 
         <LinearLayout
             android:id="@+id/play_button"

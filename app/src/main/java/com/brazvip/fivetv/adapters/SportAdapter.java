@@ -9,6 +9,8 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
+
+import androidx.annotation.NonNull;
 import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -26,15 +28,15 @@ import com.brazvip.fivetv.view.AlwaysMarqueeTextView;
 import p123l2.C2012p;
 
 public class SportAdapter extends CustomItemAdapter<SportAdapter.ViewHolder> {
-    private Context mContext;
+    private final Context mContext;
     private List<DashboardInstance.SportsBean_temp> sportsData;
-    private SimpleDateFormat jsonDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault());
-    private SimpleDateFormat dateAndTimeFormat = new SimpleDateFormat("MM/dd/yyyy hh/mm", Locale.getDefault());
-    private SimpleDateFormat timeOnlyFormat = new SimpleDateFormat("hh/mm", Locale.getDefault());
+    private final SimpleDateFormat jsonDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault());
+    private final SimpleDateFormat dateAndTimeFormat = new SimpleDateFormat("MM/dd/yyyy hh/mm", Locale.getDefault());
+    private final SimpleDateFormat timeOnlyFormat = new SimpleDateFormat("hh/mm", Locale.getDefault());
     private int gridColumns = 3;
 
-    
-    public class ViewHolder extends RecyclerView.ViewHolder {
+
+    public static class ViewHolder extends RecyclerView.ViewHolder {
         public C2012p binding;
         public Date end;
         public Date start;
@@ -48,15 +50,15 @@ public class SportAdapter extends CustomItemAdapter<SportAdapter.ViewHolder> {
     public SportAdapter(List<DashboardInstance.SportsBean_temp> list, Context context) {
         this.sportsData = list;
         this.mContext = context;
-        this.onKeyListener = new View.OnKeyListener() { // new View$OnKeyListenerC2429e(this, 4);
+        this.onKeyListener = new View.OnKeyListener() {
             @Override
             public boolean onKey(View view, int i, KeyEvent keyEvent) {
-                return lambda$new$0(view, i, keyEvent);
+                return onAdapterKey(view, i, keyEvent);
             }
         };
     }
 
-    public boolean lambda$new$0(View view, int i, KeyEvent keyEvent) {
+    public boolean onAdapterKey(View view, int i, KeyEvent keyEvent) {
         int i2;
         RecyclerView.LayoutManager layoutManager = this.recyclerView.getLayoutManager();
         if (keyEvent.getAction() != 0) {
@@ -85,7 +87,7 @@ public class SportAdapter extends CustomItemAdapter<SportAdapter.ViewHolder> {
         }
     }
 
-    public static void lambda$onBindViewHolder$1(View view) {
+    public static void onAdapterClick(View view) {
     }
 
     @Override
@@ -94,7 +96,7 @@ public class SportAdapter extends CustomItemAdapter<SportAdapter.ViewHolder> {
     }
 
     @Override
-    public void onBindViewHolder(ViewHolder viewHolder, int i) {
+    public void onBindViewHolder(@NonNull ViewHolder viewHolder, int i) {
         super.onBindViewHolder(viewHolder, i);
 
         boolean z;
@@ -146,7 +148,7 @@ public class SportAdapter extends CustomItemAdapter<SportAdapter.ViewHolder> {
             if (new Date().after(parse) && new Date().before(parse2)) {
                 z2 = true;
             }
-        } catch (ParseException unused) {
+        } catch (ParseException ignored) {
         }
         if (after) {
             str2 = this.mContext.getString(R.string.match_completed);
@@ -167,11 +169,12 @@ public class SportAdapter extends CustomItemAdapter<SportAdapter.ViewHolder> {
         viewHolder.binding.f7175a.setOnClickListener(new View.OnClickListener() { //new ViewOnClickListenerC2434b(1));
             @Override
             public void onClick(View v) {
-                SportAdapter.lambda$onBindViewHolder$1(v);
+                SportAdapter.onAdapterClick(v);
             }
         });
     }
 
+    @NonNull
     @Override // androidx.recyclerview.widget.RecyclerView.Adapter<VH>
     public ViewHolder onCreateViewHolder(ViewGroup viewGroup, int i) {
         View inflate = LayoutInflater.from(viewGroup.getContext()).inflate(R.layout.sports_item, viewGroup, false);
@@ -192,7 +195,7 @@ public class SportAdapter extends CustomItemAdapter<SportAdapter.ViewHolder> {
 
     public void updateSportsData(List<DashboardInstance.SportsBean_temp> list) {
         if (this.sportsData == null) {
-            this.sportsData = new ArrayList();
+            this.sportsData = new ArrayList<>();
         }
         for (DashboardInstance.SportsBean_temp sportsBean_temp : list) {
             this.sportsData.remove(sportsBean_temp);

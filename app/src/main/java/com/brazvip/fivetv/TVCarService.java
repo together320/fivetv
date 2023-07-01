@@ -12,27 +12,18 @@ import org.greenrobot.eventbus.EventBus;
 /* loaded from: classes.dex */
 public class TVCarService {
 
-    /* renamed from: a 13300 */
     public static final String TAG = "TVCarService";
 
-    /* compiled from: MyApplication */
-    /* renamed from: e.b.a.H$a 3449 */
-    /* loaded from: classes.dex */
     public static class InfoEvent {
 
-        /* renamed from: a 13301 */
         public int errno = -1000;
 
-        /* renamed from: b 13302 */
         public int download_rate;
 
-        /* renamed from: c 13303 */
         public int upload_rate;
 
-        /* renamed from: d 13304 */
         public int download_total;
 
-        /* renamed from: e 13305 */
         public int upload_total;
 
         public InfoEvent(String info) {
@@ -202,39 +193,33 @@ public class TVCarService {
     /* renamed from: a */
     public static boolean start() {
         Libtvcar.setListener(new Listener() {
-            @Override // io.binstream.libtvcar.Listener
+            @Override
             public void onInfo(String result) {
-                //String text = "onInfo:" + key;
                 EventBus.getDefault().post(new TVCarService.InfoEvent(result));
             }
 
-            @Override // io.binstream.libtvcar.Listener
+            @Override
             public void onInited(String result) {
-                //String text = "onInited:" + result;
                 EventBus.getDefault().post(new TVCarService.InitedEvent(result));
             }
 
-            @Override // io.binstream.libtvcar.Listener
+            @Override
             public void onPrepared(String result) {
-                //String text = "onPrepared:" + result;
                 EventBus.getDefault().post(new TVCarService.PreparedEvent(result));
             }
 
-            @Override // io.binstream.libtvcar.Listener
+            @Override
             public void onQuit(String result) {
-                //String text = "onQuit:" + result;
                 EventBus.getDefault().post(new TVCarService.QuitEvent(result));
             }
 
-            @Override // io.binstream.libtvcar.Listener
+            @Override
             public void onStart(String result) {
-                //String text = "onStart:" + result;
                 EventBus.getDefault().post(new TVCarService.StartEvent(result));
             }
 
-            @Override // io.binstream.libtvcar.Listener
+            @Override
             public void onStop(String result) {
-                //String text = "onStop:" + result;
                 EventBus.getDefault().post(new TVCarService.StopEvent(result));
             }
         });
@@ -247,7 +232,7 @@ public class TVCarService {
 
     /* renamed from: b 2518 */
     public static void runService() {
-        new Thread(new Runnable() { //RunnableC3447G
+        new Thread(new Runnable() {
             @Override
             public void run() {
                 Libtvcar.run();

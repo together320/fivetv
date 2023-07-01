@@ -99,8 +99,8 @@ public class ChannelInstance {
                         PrefUtils.setPrefString(Constant.PREFS_CHANNEL_INFO, str);
                     }
 
-                    ChannelInstance.channelList = JSON.parseArray(str, ChannelBean.class);
-                    ChannelInstance.channelGrouping();
+                    channelList = JSON.parseArray(str, ChannelBean.class);
+                    channelGrouping();
 
                     Message msg = new Message();
                     msg.what = Constant.MSG_CHANNEL_LOADED;
@@ -114,41 +114,40 @@ public class ChannelInstance {
     }
 
     public static void channelGrouping() {
-        favoriteLiveChannels = new HashSet(PrefUtils.getPrefStringSet(Config.SP_FAV_LIVE_CHANNEL, new HashSet()));
-        favoriteLiveChannels.toString();
-        liveChannels = new LinkedHashMap();
-        groupChannelMap = new LinkedHashMap();
-        channelListBySID = new LinkedHashMap();
-        channelListByID = new LinkedHashMap();
+        favoriteLiveChannels = new HashSet<>(PrefUtils.getPrefStringSet(Config.SP_FAV_LIVE_CHANNEL, new HashSet<>()));
+        liveChannels = new LinkedHashMap<>();
+        groupChannelMap = new LinkedHashMap<>();
+        channelListBySID = new LinkedHashMap<>();
+        channelListByID = new LinkedHashMap<>();
         if (channelList == null || channelList.isEmpty()) {
             return;
         }
         Group group = new Group();
         group.name = SopApplication.getSopContext().getString(R.string.Favorites_live);
         group.type = Constant.GROUP_FAVORITE;
-        group.channnels = new ArrayList();
+        group.channnels = new ArrayList<>();
         groupChannelMap.put(Constant.GROUP_FAVORITE, group);
         if (Config.isPlayback) {
             Group group2 = new Group();
             group2.name = SopApplication.getSopContext().getString(R.string.Playback);
             group2.type = Constant.GROUP_PLAYBACK;
-            group2.channnels = new ArrayList();
+            group2.channnels = new ArrayList<>();
             groupChannelMap.put(Constant.GROUP_PLAYBACK, group2);
         }
         Group group3 = new Group();
         group3.name = SopApplication.getSopContext().getString(R.string.All_A_Z);
         group3.type = Constant.GROUP_ALL;
-        group3.channnels = new ArrayList();
+        group3.channnels = new ArrayList<>();
         groupChannelMap.put(Constant.GROUP_ALL, group3);
         for (ChannelBean channelBean : channelList) {
             List<ChannelBean.TagsBean> tags = channelBean.getTags();
-            liveChannels.put(Integer.valueOf(channelBean.getChid()), channelBean);
+            liveChannels.put(channelBean.getChid(), channelBean);
             channelListByID.put(channelBean.getId(), channelBean);
             if (channelBean.getSid() > 0) {
-                channelListBySID.put(Integer.valueOf(channelBean.getSid()), channelBean);
+                channelListBySID.put(channelBean.getSid(), channelBean);
             }
             for (ChannelBean.TagsBean tagsBean : tags) {
-                if (groupChannelMap.get(Integer.valueOf(tagsBean.getId())) == null) {
+                if (groupChannelMap.get(tagsBean.getId()) == null) {
                     Group group4 = new Group();
                     group4.name = tagsBean.getName().getInit();
                     boolean isRestrictedAccess = tagsBean.isRestrictedAccess();
@@ -156,10 +155,10 @@ public class ChannelInstance {
                     if (isRestrictedAccess || channelBean.getLevel() != 18) {
                         if (!Config.f8896P || tagsBean.getType() != 104) {
                             group4.type = tagsBean.getType();
-                            ArrayList arrayList = new ArrayList();
+                            List<ChannelBean> arrayList = new ArrayList<>();
                             group4.channnels = arrayList;
                             arrayList.add(channelBean);
-                            groupChannelMap.put(Integer.valueOf(tagsBean.getId()), group4);
+                            groupChannelMap.put(tagsBean.getId(), group4);
                             Set<String> set = favoriteLiveChannels;
                             StringBuilder sb = new StringBuilder();
                             sb.append(channelBean.getChid());
@@ -168,9 +167,9 @@ public class ChannelInstance {
                             }
                         }
                     }
-                } else if (groupChannelMap.get(Integer.valueOf(tagsBean.getId())).restrictedAccess || channelBean.getLevel() != 18) {
+                } else if (groupChannelMap.get(tagsBean.getId()).restrictedAccess || channelBean.getLevel() != 18) {
                     if (!Config.f8896P || tagsBean.getType() != 104) {
-                        groupChannelMap.get(Integer.valueOf(tagsBean.getId())).channnels.add(channelBean);
+                        groupChannelMap.get(tagsBean.getId()).channnels.add(channelBean);
                         Set<String> set2 = favoriteLiveChannels;
                         StringBuilder sb2 = new StringBuilder();
                         sb2.append(channelBean.getChid());

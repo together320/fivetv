@@ -46,12 +46,16 @@ public class Utils {
 
     public static String formatBandwidth(long j) {
         if (j > 1048576) {
-            return String.format("%.1fM/S", Float.valueOf(((float) j) / 1048576.0f));
+            return String.format("%.1fMB/S", Float.valueOf(((float) j) / 1048576.0f));
+        } else if (j > 1024) {
+            return String.format("%.1fKB/S", Float.valueOf(((float) j) / 1024.0f));
+        } else if (j > 0) {
+            return j + "B/S";
         }
 //        if (j > RealWebSocket.DEFAULT_MINIMUM_DEFLATE_SIZE) {
 //            return (j / RealWebSocket.DEFAULT_MINIMUM_DEFLATE_SIZE) + "K/S";
 //        }
-        return j + "B/S";
+        return "0B/S";
     }
 
     public static String generateDeviceId() {

@@ -15,6 +15,7 @@ import android.view.ViewGroup;
 import android.widget.RelativeLayout;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.brazvip.fivetv.Constant;
 import com.brazvip.fivetv.R;
 import com.brazvip.fivetv.instances.HistoryInstance;
 import java.util.List;
@@ -26,7 +27,7 @@ import com.brazvip.fivetv.beans.HistoryBean;
 import com.brazvip.fivetv.dialogs.MyItemDecoration;
 
 /* loaded from: classes.dex */
-public class HistoryLayout extends RelativeLayout implements View.OnFocusChangeListener, View.OnTouchListener {
+public class HistoryLayout extends RelativeLayout implements View.OnFocusChangeListener, View.OnKeyListener, View.OnTouchListener {
     public static final int NAVIGATE_DOWN_FROM_LIVE_RV = 1;
     public static final int NAVIGATE_UP_FROM_VOD_RV = 2;
     private static final String TAG = "HistoryInstance";
@@ -38,6 +39,9 @@ public class HistoryLayout extends RelativeLayout implements View.OnFocusChangeL
     private static HistoryAdapter liveHistoryAdapter;
     private static RelativeLayout liveHistoryPlacehold;
     public static RecyclerView liveHistoryRView;
+    private static HistoryAdapter playbackHistoryAdapter;
+    private static RelativeLayout playbackHistoryPlacehold;
+    public static RecyclerView playbackHistoryRView;
     private static HistoryAdapter vodHistoryAdapter;
     private static RelativeLayout vodHistoryPlacehold;
     public static RecyclerView vodHistoryRView;
@@ -64,54 +68,68 @@ public class HistoryLayout extends RelativeLayout implements View.OnFocusChangeL
         navHandler = new Handler(Looper.getMainLooper()) {
             @Override // android.os.Handler
             public void handleMessage(Message message) {
-                int i = message.what;
-                if (i == 1) {
-                    HistoryLayout.this.navigateDownFromLiveRv();
-                } else if (i != 2) {
-                } else {
-                    HistoryLayout.this.navigateUpFromVodRv();
+                int what = message.what;
+                if (what == NAVIGATE_DOWN_FROM_LIVE_RV) {
+                    navigateDownFromLiveRv();
+                }
+                if (what == NAVIGATE_UP_FROM_VOD_RV) {
+                    navigateUpFromVodRv();
                 }
             }
         };
 
         MyItemDecoration MyItemDecoration = new MyItemDecoration(15, 15, 15, 15);
-        RecyclerView recyclerView = (RecyclerView) findViewById(R.id.history_live_rview);
-        liveHistoryRView = recyclerView;
-        recyclerView.addItemDecoration(MyItemDecoration);
+
+        liveHistoryRView = findViewById(R.id.history_live_rview);
+        liveHistoryRView.addItemDecoration(MyItemDecoration);
         liveHistoryRView.setOnFocusChangeListener(this);
-        RecyclerView recyclerView2 = (RecyclerView) findViewById(R.id.vod_history_rview);
-        vodHistoryRView = recyclerView2;
-        recyclerView2.addItemDecoration(MyItemDecoration);
-        vodHistoryRView.setOnFocusChangeListener(this);
-        liveHistoryPlacehold = (RelativeLayout) findViewById(R.id.live_history_placehold);
-        vodHistoryPlacehold = (RelativeLayout) findViewById(R.id.vod_history_placehold);
+        liveHistoryPlacehold = findViewById(R.id.live_history_placehold);
         liveHistoryPlacehold.setFocusable(true);
+        liveHistoryPlacehold.setOnKeyListener(this);
+
+        playbackHistoryRView = findViewById(R.id.playback_history_rview);
+        playbackHistoryRView.addItemDecoration(MyItemDecoration);
+        playbackHistoryRView.setOnFocusChangeListener(this);
+        playbackHistoryPlacehold = findViewById(R.id.playback_history_placehold);
+        playbackHistoryPlacehold.setFocusable(true);
+        playbackHistoryPlacehold.setOnKeyListener(this);
+
+        vodHistoryRView = findViewById(R.id.vod_history_rview);
+        vodHistoryRView.addItemDecoration(MyItemDecoration);
+        vodHistoryRView.setOnFocusChangeListener(this);
+        vodHistoryPlacehold = findViewById(R.id.vod_history_placehold);
         vodHistoryPlacehold.setFocusable(true);
-        //this.liveHistoryPlacehold.setOnKeyListener(this);
-        //this.vodHistoryPlacehold.setOnKeyListener(this);
-        loadGroupData();
-        //mContext.setRequestedOrientation(0);
+        vodHistoryPlacehold.setOnKeyListener(this);
+
+        focusDefaultView();
+
+        inited = true;
     }
 
-//    @Override
-//    public void focusDefaultView() {
-//        RecyclerView recyclerView;
-//        Objects.toString(lastFocusVideoType);
-//        if ((lastFocusVideoType == Config.VIDEO_TYPE.BSLIVE && (recyclerView = this.liveHistoryRView) != null) || (lastFocusVideoType == Config.VIDEO_TYPE.BSVOD && (recyclerView = this.vodHistoryRView) != null)) {
-//            recyclerView.requestFocusFromTouch();
-//        } else if (this.liveHistoryPlacehold.requestFocus()) {
-//        } else {
-//            this.vodHistoryPlacehold.requestFocus();
-//        }
-//    }
+    public void focusDefaultView() {
+        if (lastFocusVideoType == Config.VIDEO_TYPE.BSLIVE && liveHistoryRView != null) {
+            liveHistoryRView.requestFocusFromTouch();
+        } else if (lastFocusVideoType == Config.VIDEO_TYPE.PLAYBACK && playbackHistoryRView != null) {
+            playbackHistoryRView.requestFocusFromTouch();
+        } else if (lastFocusVideoType == Config.VIDEO_TYPE.BSVOD && vodHistoryRView != null) {
+            vodHistoryRView.requestFocusFromTouch();
+        } else if (liveHistoryPlacehold.requestFocus()) {
+
+        } else {
+            vodHistoryPlacehold.requestFocus();
+        }
+    }
+
+    public static void loadHistoryLayout() {
+        loadGroupData();
+    }
 
     public static void loadGroupData() {
-        HistoryInstance historyInstance;
-        if (!inited || (historyInstance = MainActivity.history) == null) {
+        if (!inited || MainActivity.history == null) {
             return;
         }
-        List<HistoryBean> liveHistory = historyInstance.getLiveHistory();
-        Objects.toString(liveHistory != null ? Integer.valueOf(liveHistory.size()) : "null");
+
+        List<HistoryBean> liveHistory = MainActivity.history.getLiveHistory();
         if (liveHistory == null || liveHistory.size() == 0) {
             liveHistoryRView.setVisibility(View.GONE);
             liveHistoryPlacehold.setVisibility(View.VISIBLE);
@@ -128,38 +146,53 @@ public class HistoryLayout extends RelativeLayout implements View.OnFocusChangeL
             liveHistoryRView.setVisibility(View.VISIBLE);
             liveHistoryPlacehold.setVisibility(View.GONE);
         }
+
+        List<HistoryBean> playbackHistory = MainActivity.history.getPlaybackHistory();
+        if (playbackHistory == null || playbackHistory.size() == 0) {
+            playbackHistoryRView.setVisibility(View.GONE);
+            playbackHistoryPlacehold.setVisibility(View.VISIBLE);
+        } else {
+            try {
+                playbackHistoryAdapter = new HistoryAdapter(playbackHistory, Config.VIDEO_TYPE.PLAYBACK, mContext);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+            playbackHistoryRView.setAdapter(playbackHistoryAdapter);
+            if (lastFocusVideoType == null) {
+                lastFocusVideoType = Config.VIDEO_TYPE.BSLIVE;
+            }
+            playbackHistoryRView.setVisibility(View.VISIBLE);
+            playbackHistoryPlacehold.setVisibility(View.GONE);
+        }
+
         List<HistoryBean> vodHistory = MainActivity.history.getVodHistory();
-        Objects.toString(vodHistory != null ? Integer.valueOf(vodHistory.size()) : "null");
         if (vodHistory == null || vodHistory.size() == 0) {
             vodHistoryRView.setVisibility(View.GONE);
             vodHistoryPlacehold.setVisibility(View.VISIBLE);
-            return;
+        } else {
+            try {
+                vodHistoryAdapter = new HistoryAdapter(vodHistory, Config.VIDEO_TYPE.BSVOD, mContext);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+            vodHistoryRView.setAdapter(vodHistoryAdapter);
+            if (lastFocusVideoType == null) {
+                lastFocusVideoType = Config.VIDEO_TYPE.BSVOD;
+            }
+            vodHistoryRView.setVisibility(View.VISIBLE);
+            vodHistoryPlacehold.setVisibility(View.GONE);
         }
-        try {
-            vodHistoryAdapter = new HistoryAdapter(vodHistory, Config.VIDEO_TYPE.BSVOD, mContext);
-        } catch (Exception e2) {
-            e2.printStackTrace();
-        }
-        vodHistoryRView.setAdapter(vodHistoryAdapter);
-        if (lastFocusVideoType == null) {
-            lastFocusVideoType = Config.VIDEO_TYPE.BSVOD;
-        }
-        vodHistoryRView.setVisibility(View.VISIBLE);
-        vodHistoryPlacehold.setVisibility(View.GONE);
     }
 
     public void navigateDownFromLiveRv() {
-        RecyclerView recyclerView = vodHistoryRView;
-        if (recyclerView == null || !recyclerView.requestFocus()) {
+        if (vodHistoryRView == null || !vodHistoryRView.requestFocus()) {
             vodHistoryPlacehold.requestFocus();
         }
     }
 
     public void navigateUpFromVodRv() {
-        RelativeLayout relativeLayout;
-        RecyclerView recyclerView = this.liveHistoryRView;
-        if ((recyclerView == null || !recyclerView.requestFocus()) && (relativeLayout = this.liveHistoryPlacehold) != null) {
-            relativeLayout.requestFocus();
+        if ((liveHistoryRView == null || !liveHistoryRView.requestFocus()) && liveHistoryPlacehold != null) {
+            liveHistoryPlacehold.requestFocus();
         }
     }
 
@@ -167,72 +200,75 @@ public class HistoryLayout extends RelativeLayout implements View.OnFocusChangeL
     public void onFocusChange(View view, boolean z) {
         RecyclerView recyclerView;
         int id = view.getId();
-        if (z && id == this.liveHistoryRView.getId()) {
-            this.liveHistoryRView.requestFocus();
-            recyclerView = this.liveHistoryRView;
-        } else if (!z || id != this.vodHistoryRView.getId()) {
-            return;
+        if (z && id == liveHistoryRView.getId()) {
+            liveHistoryRView.requestFocus();
+            recyclerView = liveHistoryRView;
+        } else if (z && id == playbackHistoryRView.getId()) {
+            playbackHistoryRView.requestFocus();
+            recyclerView = playbackHistoryRView;
+        } else if (z && id == vodHistoryRView.getId()) {
+            vodHistoryRView.requestFocus();
+            recyclerView = vodHistoryRView;
         } else {
-            this.vodHistoryRView.requestFocus();
-            recyclerView = this.vodHistoryRView;
+            return;
         }
         recyclerView.requestFocusFromTouch();
     }
 
-//    @Override
-//    public boolean onKey(View view, int i, KeyEvent keyEvent) {
-//        int id = view.getId();
-//        if (keyEvent.getRepeatCount() == 0 && keyEvent.getAction() == 0) {
-//            if (id == this.liveHistoryPlacehold.getId()) {
-//                switch (i) {
-//                    case 19:
-//                    case 22:
-//                        return true;
-//                    case 20:
-//                        if (!this.vodHistoryRView.requestFocus()) {
-//                            this.vodHistoryPlacehold.requestFocus();
-//                        }
-//                        return true;
-//                    case 21:
-//                        MainActivity.handler.sendEmptyMessage(SopHandler.EVENT_FOCUS_HISTORY_BUTTON);
-//                        return true;
-//                }
-//            } else if (id == this.vodHistoryPlacehold.getId()) {
-//                switch (i) {
-//                    case 19:
-//                        if (this.liveHistoryRView.requestFocus()) {
-//                            return true;
-//                        }
-//                        this.liveHistoryPlacehold.requestFocus();
-//                        return true;
-//                    case 20:
-//                    case 22:
-//                        return true;
-//                    case 21:
-//                        MainActivity.handler.sendEmptyMessage(SopHandler.EVENT_FOCUS_HISTORY_BUTTON);
-//                        return true;
-//                }
-//            }
-//        }
-//        return super.onKey(view, i, keyEvent);
-//    }
-//
-//    @Override
-//    public void onResume() {
-//        super.onResume();
-//        loadGroupData();
-//    }
-//
-//    @Override
-//    public void onStart() {
-//        super.onStart();
-//        this.inited = true;
-//    }
+    @Override
+    public boolean onKey(View view, int i, KeyEvent keyEvent) {
+        int id = view.getId();
+        if (keyEvent.getRepeatCount() == KeyEvent.ACTION_DOWN && keyEvent.getAction() == KeyEvent.ACTION_DOWN) {
+            if (id == liveHistoryPlacehold.getId()) {
+                switch (i) {
+                    case KeyEvent.KEYCODE_DPAD_UP:
+                    case KeyEvent.KEYCODE_DPAD_RIGHT:
+                        return true;
+                    case KeyEvent.KEYCODE_DPAD_DOWN:
+                        if (!playbackHistoryRView.requestFocus())
+                            playbackHistoryRView.requestFocus();
+                        return true;
+                    case KeyEvent.KEYCODE_DPAD_LEFT:
+                        MainActivity.SendMessage(Constant.EVENT_FOCUS_HISTORY_BUTTON);
+                        return true;
+                }
+            } else if (id == playbackHistoryPlacehold.getId()) {
+                switch (i) {
+                    case KeyEvent.KEYCODE_DPAD_UP:
+                        if (!liveHistoryRView.requestFocus())
+                            liveHistoryPlacehold.requestFocus();
+                        return true;
+                    case KeyEvent.KEYCODE_DPAD_DOWN:
+                        if (!vodHistoryRView.requestFocus())
+                            vodHistoryPlacehold.requestFocus();
+                        return true;
+                    case KeyEvent.KEYCODE_DPAD_RIGHT:
+                        return true;
+                    case KeyEvent.KEYCODE_DPAD_LEFT:
+                        MainActivity.SendMessage(Constant.EVENT_FOCUS_HISTORY_BUTTON);
+                        return true;
+                }
+            } else if (id == vodHistoryPlacehold.getId()) {
+                switch (i) {
+                    case KeyEvent.KEYCODE_DPAD_UP:
+                        if (!playbackHistoryRView.requestFocus())
+                            playbackHistoryRView.requestFocus();
+                        return true;
+                    case KeyEvent.KEYCODE_DPAD_DOWN:
+                    case KeyEvent.KEYCODE_DPAD_RIGHT:
+                        return true;
+                    case KeyEvent.KEYCODE_DPAD_LEFT:
+                        MainActivity.SendMessage(Constant.EVENT_FOCUS_HISTORY_BUTTON);
+                        return true;
+                }
+            }
+        }
+        return true; //super.onKey(view, i, keyEvent);
+    }
 
     @Override // android.view.View.OnTouchListener
     public boolean onTouch(View view, MotionEvent motionEvent) {
-        if (motionEvent.getAction() == 1) {
-            motionEvent.toString();
+        if (motionEvent.getAction() == MotionEvent.ACTION_UP) {
             view.callOnClick();
         }
         return true;
@@ -248,13 +284,14 @@ public class HistoryLayout extends RelativeLayout implements View.OnFocusChangeL
 
     @SuppressLint({"NotifyDataSetChanged"})
     public static void updateDataSet() {
-        HistoryAdapter historyAdapter = liveHistoryAdapter;
-        if (historyAdapter != null) {
-            historyAdapter.notifyDataSetChanged();
+        if (liveHistoryAdapter != null) {
+            liveHistoryAdapter.notifyDataSetChanged();
         }
-        HistoryAdapter historyAdapter2 = vodHistoryAdapter;
-        if (historyAdapter2 != null) {
-            historyAdapter2.notifyDataSetChanged();
+        if (playbackHistoryAdapter != null) {
+            playbackHistoryAdapter.notifyDataSetChanged();
+        }
+        if (vodHistoryAdapter != null) {
+            vodHistoryAdapter.notifyDataSetChanged();
         }
     }
 }

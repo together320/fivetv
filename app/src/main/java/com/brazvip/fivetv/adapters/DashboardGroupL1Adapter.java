@@ -10,6 +10,9 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 
 import androidx.recyclerview.widget.RecyclerView;
+
+import com.brazvip.fivetv.Constant;
+import com.brazvip.fivetv.MainActivity;
 import com.brazvip.fivetv.R;
 import com.brazvip.fivetv.layouts.DashboardLayout;
 
@@ -38,16 +41,16 @@ public class DashboardGroupL1Adapter extends CustomItemAdapter<DashboardGroupL1A
         this.onKeyListener = new View.OnKeyListener() { //new View$OnKeyListenerC2425a(this, context, 0);
             @Override
             public boolean onKey(View view, int i, KeyEvent keyEvent) {
-                return lambda$new$0(mContext, view, i, keyEvent);
+                return onGroupKey(mContext, view, i, keyEvent);
             }
         };
     }
 
-    public static void m1743c(final DashboardGroupL1Adapter dashboardGroupL1Adapter, final int n, final View view) {
-        dashboardGroupL1Adapter.lambda$onBindViewHolder$1(n, view);
+    public static void selectItem(final DashboardGroupL1Adapter dashboardGroupL1Adapter, final int index, final View view) {
+        dashboardGroupL1Adapter.onItemSelected(index);
     }
 
-    public boolean lambda$new$0(Context context, View view, int i, KeyEvent keyEvent) {
+    public boolean onGroupKey(Context context, View view, int i, KeyEvent keyEvent) {
         RecyclerView.LayoutManager layoutManager = this.recyclerView.getLayoutManager();
         if (keyEvent.getAction() != 0) {
             if (keyEvent.getAction() == 1 && HRecyclerViewAdapter2.isReturnKeycode(keyEvent) && (keyEvent.getFlags() & 128) != 128) {
@@ -58,8 +61,8 @@ public class DashboardGroupL1Adapter extends CustomItemAdapter<DashboardGroupL1A
                 return true;
             }
             return false;
-        } else if (i == 4) {
-            //Utils.showQuitDialog(context);
+        } else if (i == KeyEvent.KEYCODE_BACK) {
+            MainActivity.SendMessage(Constant.MSG_SHOW_QUIT_DIALOG);
             return true;
         } else {
             switch (i) {
@@ -83,21 +86,17 @@ public class DashboardGroupL1Adapter extends CustomItemAdapter<DashboardGroupL1A
         }
     }
 
-    public void lambda$onBindViewHolder$1(int i, View view) {
-        onItemSelected(i);
-    }
-
-    private void loadItemAt(int i) {
-        Message obtainMessage = DashboardLayout.dashboardHandler.obtainMessage(20);
+    private void loadItemAt(int index) {
+        Message obtainMessage = DashboardLayout.dashboardHandler.obtainMessage(DashboardLayout.L1_GROUP_SELECTED);
         Bundle bundle = new Bundle();
-        bundle.putString("title", this.l1Titles.get(i));
+        bundle.putString("title", this.l1Titles.get(index));
         obtainMessage.setData(bundle);
         DashboardLayout.dashboardHandler.sendMessageDelayed(obtainMessage, 20L);
     }
 
     @Override
     public int getItemCount() {
-        return this.l1Titles.size();
+        return l1Titles.size();
     }
 
     @Override
@@ -106,7 +105,7 @@ public class DashboardGroupL1Adapter extends CustomItemAdapter<DashboardGroupL1A
         if (position == 0 && this.mSelectedItem == 0) {
             loadItemAt(0);
         }
-        viewHolder.groupName.setText(this.l1Titles.get(position));
+        viewHolder.groupName.setText(l1Titles.get(position));
         viewHolder.itemView.setOnClickListener(new ViewOnClickListener(this, position));
     }
 
@@ -122,7 +121,7 @@ public class DashboardGroupL1Adapter extends CustomItemAdapter<DashboardGroupL1A
 
             @Override
             public void onClick(View view) {
-                DashboardGroupL1Adapter.m1743c((DashboardGroupL1Adapter) this.adapter, this.position, view);
+                DashboardGroupL1Adapter.selectItem((DashboardGroupL1Adapter) this.adapter, this.position, view);
             }
         }
 
@@ -132,8 +131,8 @@ public class DashboardGroupL1Adapter extends CustomItemAdapter<DashboardGroupL1A
     }
 
     @Override
-    public void onItemSelected(int i) {
-        super.onItemSelected(i);
-        loadItemAt(i);
+    public void onItemSelected(int index) {
+        super.onItemSelected(index);
+        loadItemAt(index);
     }
 }

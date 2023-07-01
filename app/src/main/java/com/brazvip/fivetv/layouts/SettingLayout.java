@@ -12,13 +12,17 @@ import androidx.appcompat.widget.SwitchCompat;
 import androidx.cardview.widget.CardView;
 
 import com.brazvip.fivetv.Config;
+import com.brazvip.fivetv.Constant;
 import com.brazvip.fivetv.MainActivity;
 import com.brazvip.fivetv.R;
 import com.brazvip.fivetv.SopApplication;
 import com.brazvip.fivetv.instances.ChannelInstance;
+import com.brazvip.fivetv.instances.HistoryInstance;
 import com.brazvip.fivetv.instances.UpdateInstance;
+import com.brazvip.fivetv.utils.CustomQueue;
 import com.brazvip.fivetv.utils.PrefUtils;
 import com.lzy.okgo.db.CacheManager;
+import com.lzy.okgo.model.Priority;
 
 public class SettingLayout extends RelativeLayout {
 
@@ -135,21 +139,23 @@ public class SettingLayout extends RelativeLayout {
     private void setClearCache() {
         CacheManager.getInstance().clear();
 
-//        BSHistory.liveHistory = new CustomQueue<>(100);
-//        BSHistory.vodHistory = new CustomQueue<>(Priority.UI_NORMAL);
-//        SopCast.cacheManager.saveObject("liveHistory", BSHistory.liveHistory, 315360000);
-//        SopCast.cacheManager.saveObject("vodHistory", BSHistory.vodHistory, 315360000);
-//        SopCast.cacheManager.clearCache();
+        HistoryInstance.liveHistory = new CustomQueue<>(Priority.UI_LOW);
+        HistoryInstance.playbackHistory = new CustomQueue<>(Priority.UI_NORMAL);
+        HistoryInstance.vodHistory = new CustomQueue<>(Priority.UI_NORMAL);
+        MainActivity.cacheManager.saveObject("liveHistory", HistoryInstance.liveHistory, HistoryInstance.SAVE_ID);
+        MainActivity.cacheManager.saveObject("playbackHistory", HistoryInstance.playbackHistory, HistoryInstance.SAVE_ID);
+        MainActivity.cacheManager.saveObject("vodHistory", HistoryInstance.vodHistory, HistoryInstance.SAVE_ID);
+        MainActivity.cacheManager.clearCache();
 
         ChannelInstance.channelGrouping();
         Message message = new Message();
         message.what = 1;
-        MenuLayout.mMsgHandler.sendMessage(message);
+        MenuLayout.handler.sendMessage(message);
 
-//        SopCast.handler.sendEmptyMessage(SopHandler.EVENT_RELOAD_VOD_GROUPS);
-//        Message message2 = new Message();
-//        message2.what = 1;
-//        VodFragment.handler.sendMessage(message2);
+        MainActivity.handler.sendEmptyMessage(Constant.EVENT_RELOAD_VOD_GROUPS);
+        Message msg = new Message();
+        msg.what = 1;
+        VodLayout.handler.sendMessage(msg);
 
         PrefUtils.ToastShort(R.string.done);
     }

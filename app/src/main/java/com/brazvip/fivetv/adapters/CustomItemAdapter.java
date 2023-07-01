@@ -15,27 +15,39 @@ public abstract class CustomItemAdapter<VH extends RecyclerView.ViewHolder> exte
 
     public int mSelectedItem = 0;
     public int nextSelectItem = -1;
-    public View.OnFocusChangeListener onFocusChangeListener = new ViewOnFocusChangeListener(this, 2);
-    public View.OnKeyListener onKeyListener = new ViewOnKeyListener2(this, 1);
+    public View.OnFocusChangeListener onFocusChangeListener = new View.OnFocusChangeListener() {
+        @Override
+        public void onFocusChange(View view, boolean b) {
+            onItemFocusChange(view, b);
+        }
+    };
 
-    public void lambda$new$0(View view, boolean z) {
+    public View.OnKeyListener onKeyListener = new View.OnKeyListener() {
+        @Override
+        public boolean onKey(View view, int i, KeyEvent keyEvent) {
+            return onItemKey(view, i, keyEvent);
+        }
+    };
+
+    public void onItemFocusChange(View view, boolean z) {
         if (z) {
             this.nextSelectItem = 0;
         }
         notifyItemChanged(this.mSelectedItem);
     }
 
-    public boolean lambda$new$1(View view, int i, KeyEvent keyEvent) {
+    public boolean onItemKey(View view, int keyCode, KeyEvent keyEvent) {
         RecyclerView.LayoutManager layoutManager = this.recyclerView.getLayoutManager();
-        if (keyEvent.getAction() == 0) {
-            if (i == 20) {
+        if (keyEvent.getAction() == KeyEvent.ACTION_DOWN) {
+            if (keyCode == KeyEvent.KEYCODE_DPAD_DOWN) {
                 return tryMoveSelection(layoutManager, 1);
             }
-            if (i == 19) {
+            if (keyCode == KeyEvent.KEYCODE_DPAD_UP) {
                 return tryMoveSelection(layoutManager, -1);
             }
             return false;
-        } else if (keyEvent.getAction() == 1 && HRecyclerViewAdapter2.isReturnKeycode(keyEvent) && (keyEvent.getFlags() & 128) != 128) {
+        } else if (keyEvent.getAction() == KeyEvent.ACTION_UP && HRecyclerViewAdapter2.isReturnKeycode(keyEvent) &&
+                (keyEvent.getFlags() & KeyEvent.FLAG_LONG_PRESS) != KeyEvent.FLAG_LONG_PRESS) {
             RecyclerView.ViewHolder findViewHolderForAdapterPosition = this.recyclerView.findViewHolderForAdapterPosition(this.mSelectedItem);
             if (findViewHolderForAdapterPosition != null) {
                 findViewHolderForAdapterPosition.itemView.performClick();

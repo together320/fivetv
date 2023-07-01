@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:visibility="visible">
+
+    <LinearLayout
+        android:id="@+id/debugLayout"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="right"
+        android:layout_marginTop="100px"
+        android:layout_marginRight="40px"
+        android:gravity="right"
+        android:orientation="vertical">
+
+        <TextView
+            android:id="@+id/bufferView"
+            style="@style/debug_text"
+            android:text="Init ..."
+            android:textSize="20dp" />
+
+        <TextView
+            android:id="@+id/drView"
+            style="@style/debug_text"
+            android:text="0" />
+
+        <TextView
+            android:id="@+id/urView"
+            style="@style/debug_text"
+            android:text="0" />
+
+        <TextView
+            android:id="@+id/totalView"
+            style="@style/debug_text"
+            android:text="0" />
+
+        <TextView
+            android:id="@+id/peersView"
+            style="@style/debug_text"
+            android:text="0" />
+
+        <TextView
+            android:id="@+id/prepareView"
+            style="@style/debug_text"
+            android:text="_._/_._" />
+
+        <TextView
+            android:id="@+id/retvView"
+            style="@style/debug_text"
+            android:text="0" />
+
+        <TextView
+            android:id="@+id/durationView"
+            style="@style/debug_text"
+            android:text="0D 00:00:00" />
+
+        <TextView
+            android:id="@+id/sTypeView"
+            style="@style/debug_text"
+            android:text="0" />
+
+        <TextView
+            android:id="@+id/scVerView"
+            style="@style/debug_text"
+            android:text="" />
+
+        <TextView
+            android:id="@+id/appVerView"
+            style="@style/debug_text"
+            android:text="x.x.x" />
+
+        <TextView
+            android:id="@+id/appPackageView"
+            style="@style/debug_text"
+            android:text="io.binstream.demo" />
+
+        <TextView
+            android:id="@+id/netTypeView"
+            style="@style/debug_text"
+            android:text="unknow" />
+    </LinearLayout>
+</FrameLayout>

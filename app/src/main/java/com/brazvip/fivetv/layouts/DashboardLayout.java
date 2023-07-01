@@ -19,6 +19,8 @@ import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.brazvip.fivetv.Constant;
+import com.brazvip.fivetv.MainActivity;
 import com.brazvip.fivetv.R;
 import com.brazvip.fivetv.adapters.DashboardGroupL1Adapter;
 import com.brazvip.fivetv.adapters.DashboardGroupL2Adapter;
@@ -75,7 +77,7 @@ public class DashboardLayout extends RelativeLayout implements View.OnKeyListene
 
         @Override // com.brazvip.fivetv.adapter.NavigationListener
         public boolean navigateLeft() {
-            //SopCast.handler.sendEmptyMessage(SopHandler.EVENT_FOCUS_DASH_BUTTON);
+            MainActivity.SendMessage(Constant.EVENT_FOCUS_DASH_BUTTON);
             return true;
         }
 
@@ -84,7 +86,7 @@ public class DashboardLayout extends RelativeLayout implements View.OnKeyListene
             return true;
         }
     };
-    private NavigationListener gridNavListener = new NavigationListener() { // from class: com.brazvip.fivetv.fragment.DashboardLayout.2
+    private NavigationListener gridNavListener = new NavigationListener() {
         @Override // com.brazvip.fivetv.adapter.NavigationListener
         public boolean navigateAbove() {
             return false;
@@ -97,7 +99,7 @@ public class DashboardLayout extends RelativeLayout implements View.OnKeyListene
 
         @Override // com.brazvip.fivetv.adapter.NavigationListener
         public boolean navigateLeft() {
-            //SopCast.handler.sendEmptyMessage(SopHandler.EVENT_FOCUS_DASH_BUTTON);
+            MainActivity.SendMessage(Constant.EVENT_FOCUS_DASH_BUTTON);
             return true;
         }
 
@@ -188,7 +190,7 @@ public class DashboardLayout extends RelativeLayout implements View.OnKeyListene
 
                 @Override // com.brazvip.fivetv.adapter.NavigationListener
                 public boolean navigateLeft() {
-                    //SopCast.handler.sendEmptyMessage(SopHandler.EVENT_FOCUS_DASH_BUTTON);
+                    MainActivity.SendMessage(Constant.EVENT_FOCUS_DASH_BUTTON);
                     return true;
                 }
 
@@ -245,7 +247,7 @@ public class DashboardLayout extends RelativeLayout implements View.OnKeyListene
         if (this.binding == null || this.binding.groupL1_rv.requestFocus()) {
             return;
         }
-        //SopCast.handler.sendEmptyMessage(SopHandler.EVENT_FOCUS_DASH_BUTTON);
+        MainActivity.SendMessage(Constant.EVENT_FOCUS_DASH_BUTTON);
     }
 
     public void loadDashLayout() {
@@ -253,8 +255,12 @@ public class DashboardLayout extends RelativeLayout implements View.OnKeyListene
     }
 
     public void loadDashboardContent() {
-        groupL1Adapter = new DashboardGroupL1Adapter(
-                new ArrayList<>(DashboardInstance.getInstance().groupL1L2Map.keySet()), getContext(), new NavigationListener() {
+        if (DashboardInstance.getInstance().groupL1L2Map == null) {
+            binding.line_1_placeholder.setVisibility(View.VISIBLE);
+        } else {
+            try {
+                groupL1Adapter = new DashboardGroupL1Adapter(
+                        new ArrayList<>(DashboardInstance.getInstance().groupL1L2Map.keySet()), getContext(), new NavigationListener() {
                     @Override // com.brazvip.fivetv.adapter.NavigationListener
                     public boolean navigateAbove() {
                         return true;
@@ -270,7 +276,7 @@ public class DashboardLayout extends RelativeLayout implements View.OnKeyListene
 
                     @Override // com.brazvip.fivetv.adapter.NavigationListener
                     public boolean navigateLeft() {
-                        //SopCast.handler.sendEmptyMessage(SopHandler.EVENT_FOCUS_DASH_BUTTON);
+                        MainActivity.SendMessage(Constant.EVENT_FOCUS_DASH_BUTTON);
                         return true;
                     }
 
@@ -278,15 +284,20 @@ public class DashboardLayout extends RelativeLayout implements View.OnKeyListene
                     public boolean navigateRight() {
                         return true;
                     }
-        });
-        this.binding.groupL1_rv.setAdapter(groupL1Adapter);
+                });
+                binding.groupL1_rv.setAdapter(groupL1Adapter);
 
-//        SportAdapter sportAdapter = new SportAdapter(DashboardInstance.getInstance().getSportsData(), mContext);
-//        this.sportAdapter = sportAdapter;
-//        this.binding.f7115i.setAdapter(sportAdapter);
-//        this.binding.f7113g.setLayoutManager(this.newReleasesLM);
+//                sportAdapter = new SportAdapter(DashboardInstance.getInstance().getSportsData(), mContext);
+//                binding.sports_rv.setAdapter(sportAdapter);
+//                binding.new_releases_rv.setLayoutManager(newReleasesLM);
 
-        this.binding.dashboard_root.setVisibility(View.VISIBLE);
+            } catch(Exception e) {
+                e.printStackTrace();
+                binding.line_1_placeholder.setVisibility(View.VISIBLE);
+            }
+        }
+
+        binding.dashboard_root.setVisibility(View.VISIBLE);
     }
 
     public void initComponent() {
@@ -320,46 +331,46 @@ public class DashboardLayout extends RelativeLayout implements View.OnKeyListene
     }
 
     @Override
-    public boolean onKey(View view, int i, KeyEvent keyEvent) {
+    public boolean onKey(View view, int keyCode, KeyEvent keyEvent) {
         if (keyEvent.getAction() == 0) {
-            if (i == 4) {
-                //SopCast.handler.sendEmptyMessage(SopHandler.EVENT_FOCUS_DASH_BUTTON);
+            if (keyCode == 4) {
+                MainActivity.SendMessage(Constant.EVENT_FOCUS_DASH_BUTTON);
                 return true;
             }
             int id = view.getId();
             if (id == this.binding.groupL1_rv.getId()) {
-                switch (i) {
+                switch (keyCode) {
                     case 19:
                     case 22:
                         return true;
                     case 20:
                     case 21:
-                        //SopCast.handler.sendEmptyMessage(SopHandler.EVENT_FOCUS_DASH_BUTTON);
+                        MainActivity.SendMessage(Constant.EVENT_FOCUS_DASH_BUTTON);
                         return true;
                 }
             } else if (id == this.binding.groupL2_rv.getId()) {
-                switch (i) {
+                switch (keyCode) {
                     case 19:
                     case 22:
                         return true;
                     case 20:
                     case 21:
-                        //SopCast.handler.sendEmptyMessage(SopHandler.EVENT_FOCUS_DASH_BUTTON);
+                        MainActivity.SendMessage(Constant.EVENT_FOCUS_DASH_BUTTON);
                         return true;
                 }
             } else if (id == this.binding.others_grid_ll.getId() || id == linesScrollView.getId()) {
-                switch (i) {
+                switch (keyCode) {
                     case 19:
                     case 20:
                     case 22:
                         return true;
                     case 21:
-                        //SopCast.handler.sendEmptyMessage(SopHandler.EVENT_FOCUS_DASH_BUTTON);
+                        MainActivity.SendMessage(Constant.EVENT_FOCUS_DASH_BUTTON);
                         return true;
                 }
             }
         }
-        //return super.onKey(view, i, keyEvent);
+        //return super.onKey(view, keyCode, keyEvent);
         return false;
     }
 

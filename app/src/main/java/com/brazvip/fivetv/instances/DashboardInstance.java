@@ -14,19 +14,16 @@ import java.util.Objects;
 import com.brazvip.fivetv.LibTvServiceClient;
 import com.brazvip.fivetv.beans.DashboardInfo;
 
-/* loaded from: classes.dex */
 public class DashboardInstance {
     public static String TAG = "DashboardInstance";
     private static DashboardInstance INSTANCE;
     private List<DashboardInfo> dashboardJson = null;
     public Map<String, List<String>> groupL1L2Map = null;
-    public Map<String, List<DashboardInfo.Line>> groupL2LinesMap = new LinkedHashMap();
+    public Map<String, List<DashboardInfo.Line>> groupL2LinesMap = new LinkedHashMap<>();
 
-    /* loaded from: classes.dex */
     public static class SportsBean_temp {
         public String channelName;
 
-        /* renamed from: id */
         public int f8698id;
         public String leagueName;
         public String matchEndTime;
@@ -52,7 +49,7 @@ public class DashboardInstance {
         }
 
         public int hashCode() {
-            return Objects.hash(Integer.valueOf(this.f8698id), this.team1Name, this.team2Name);
+            return Objects.hash(this.f8698id, this.team1Name, this.team2Name);
         }
     }
 
@@ -69,26 +66,31 @@ public class DashboardInstance {
         return INSTANCE;
     }
 
-    public static List<SportsBean_temp> getSportsData() {
+    public List<SportsBean_temp> getSportsData() {
         return new ArrayList();
     }
 
     private void levelGrouping(List<DashboardInfo> list) {
-        this.groupL1L2Map = new LinkedHashMap();
+        this.groupL1L2Map = new LinkedHashMap<>();
         for (DashboardInfo dashboardInfo : list) {
-            ArrayList arrayList = new ArrayList();
+            List<String> titleList = new ArrayList<>();
             for (DashboardInfo.DashBoardGroup dashBoardGroup : dashboardInfo.groups) {
-                arrayList.add(dashBoardGroup.title);
+                titleList.add(dashBoardGroup.title);
                 groupL2LinesMap.put(dashBoardGroup.title, dashBoardGroup.lines);
             }
-            groupL1L2Map.put(dashboardInfo.title, arrayList);
+            groupL1L2Map.put(dashboardInfo.title, titleList);
         }
     }
 
     public boolean getDashboardCache() {
         if (dashboardJson == null) {
             try {
-                dashboardJson = JSON.parseObject(LibTvServiceClient.getInstance().getCacheDashboard(), new TypeReference<List<DashboardInfo>>() { });
+                String strDashboard = LibTvServiceClient.getInstance().getCacheDashboard();
+                String dash[] = strDashboard.split("\"items\":");
+                for (int i = 0; i < dash.length; i++) {
+                    Log.e(TAG, dash[i] + "\"items\":");
+                }
+                dashboardJson = JSON.parseObject(strDashboard, new TypeReference<List<DashboardInfo>>() { });
             } catch (JSONException e) {
                 System.err.println(e.getMessage());
             }
